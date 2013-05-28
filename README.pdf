@@ -1,0 +1,1317 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document http://www.reportlab.com
+% 'BasicFonts': class PDFDictionary 
+1 0 obj
+% The standard fonts dictionary
+<< /F1 2 0 R
+ /F2 3 0 R
+ /F3 4 0 R
+ /F4 9 0 R
+ /F5 11 0 R >>
+endobj
+% 'F1': class PDFType1Font 
+2 0 obj
+% Font Helvetica
+<< /BaseFont /Helvetica
+ /Encoding /WinAnsiEncoding
+ /Name /F1
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F2': class PDFType1Font 
+3 0 obj
+% Font Helvetica-Bold
+<< /BaseFont /Helvetica-Bold
+ /Encoding /WinAnsiEncoding
+ /Name /F2
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'F3': class PDFType1Font 
+4 0 obj
+% Font Helvetica-Oblique
+<< /BaseFont /Helvetica-Oblique
+ /Encoding /WinAnsiEncoding
+ /Name /F3
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'Annot.NUMBER1': class PDFDictionary 
+5 0 obj
+<< /A << /S /URI
+ /Type /Action
+ /URI (https://localhost:5150/v1/schematics) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 105.6929
+ 257.7736
+ 532.5827
+ 269.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'Annot.NUMBER2': class PDFDictionary 
+6 0 obj
+<< /A << /S /URI
+ /Type /Action
+ /URI (https://localhost:5150/v1/schematics) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 105.6929
+ 239.7736
+ 266.3229
+ 251.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'Annot.NUMBER3': class PDFDictionary 
+7 0 obj
+<< /A << /S /URI
+ /Type /Action
+ /URI (https://localhost:5150/v1/schematics) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 105.6929
+ 221.7736
+ 266.3229
+ 233.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'Annot.NUMBER4': class PDFDictionary 
+8 0 obj
+<< /A << /S /URI
+ /Type /Action
+ /URI (https://localhost:5150/v1/schematics) >>
+ /Border [ 0
+ 0
+ 0 ]
+ /Rect [ 105.6929
+ 203.7736
+ 266.3229
+ 215.7736 ]
+ /Subtype /Link
+ /Type /Annot >>
+endobj
+% 'F4': class PDFType1Font 
+9 0 obj
+% Font Courier
+<< /BaseFont /Courier
+ /Encoding /WinAnsiEncoding
+ /Name /F4
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'Page1': class PDFPage 
+10 0 obj
+% Page dictionary
+<< /Annots [ 5 0 R
+ 6 0 R
+ 7 0 R
+ 8 0 R ]
+ /Contents 30 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 29 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'F5': class PDFType1Font 
+11 0 obj
+% Font Helvetica-BoldOblique
+<< /BaseFont /Helvetica-BoldOblique
+ /Encoding /WinAnsiEncoding
+ /Name /F5
+ /Subtype /Type1
+ /Type /Font >>
+endobj
+% 'Page2': class PDFPage 
+12 0 obj
+% Page dictionary
+<< /Contents 31 0 R
+ /MediaBox [ 0
+ 0
+ 595.2756
+ 841.8898 ]
+ /Parent 29 0 R
+ /Resources << /Font 1 0 R
+ /ProcSet [ /PDF
+ /Text
+ /ImageB
+ /ImageC
+ /ImageI ] >>
+ /Rotate 0
+ /Trans <<  >>
+ /Type /Page >>
+endobj
+% 'R13': class PDFCatalog 
+13 0 obj
+% Document Root
+<< /Outlines 15 0 R
+ /PageLabels 32 0 R
+ /PageMode /UseNone
+ /Pages 29 0 R
+ /Type /Catalog >>
+endobj
+% 'R14': class PDFInfo 
+14 0 obj
+<< /Author ()
+ /CreationDate (D:20130527235157+06'00')
+ /Creator (\(unspecified\))
+ /Keywords ()
+ /Producer (ReportLab PDF Library - www.reportlab.com)
+ /Subject (\(unspecified\))
+ /Title (Tribble a unified Cluster Management API) >>
+endobj
+% 'R15': class PDFOutlines 
+15 0 obj
+<< /Count 15
+ /First 16 0 R
+ /Last 16 0 R
+ /Type /Outlines >>
+endobj
+% 'Outline.0': class OutlineEntryObject 
+16 0 obj
+<< /Count 12
+ /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 674.0236
+ 0 ]
+ /First 17 0 R
+ /Last 28 0 R
+ /Parent 15 0 R
+ /Title (Open Tribble Cloud Clustering API) >>
+endobj
+% 'Outline.14.0': class OutlineEntryObject 
+17 0 obj
+<< /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 575.0236
+ 0 ]
+ /Next 18 0 R
+ /Parent 16 0 R
+ /Title (Schematic Definition) >>
+endobj
+% 'Outline.14.1': class OutlineEntryObject 
+18 0 obj
+<< /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 515.0236
+ 0 ]
+ /Next 19 0 R
+ /Parent 16 0 R
+ /Prev 17 0 R
+ /Title (Zones Definition) >>
+endobj
+% 'Outline.14.2': class OutlineEntryObject 
+19 0 obj
+<< /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 443.0236
+ 0 ]
+ /Next 20 0 R
+ /Parent 16 0 R
+ /Prev 18 0 R
+ /Title (Instances Definition) >>
+endobj
+% 'Outline.14.3': class OutlineEntryObject 
+20 0 obj
+<< /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 395.0236
+ 0 ]
+ /Next 21 0 R
+ /Parent 16 0 R
+ /Prev 19 0 R
+ /Title (Headers used to access the API resources) >>
+endobj
+% 'Outline.14.4': class OutlineEntryObject 
+21 0 obj
+<< /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 308.0236
+ 0 ]
+ /Next 22 0 R
+ /Parent 16 0 R
+ /Prev 20 0 R
+ /Title (Available Endpoints) >>
+endobj
+% 'Outline.14.5': class OutlineEntryObject 
+22 0 obj
+<< /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 194.0236
+ 0 ]
+ /Next 23 0 R
+ /Parent 16 0 R
+ /Prev 21 0 R
+ /Title (Example usage for using GET with the API) >>
+endobj
+% 'Outline.14.6': class OutlineEntryObject 
+23 0 obj
+<< /Dest [ 10 0 R
+ /XYZ
+ 62.69291
+ 128.0279
+ 0 ]
+ /Next 24 0 R
+ /Parent 16 0 R
+ /Prev 22 0 R
+ /Title (Example usage for using PUT with the API) >>
+endobj
+% 'Outline.14.7': class OutlineEntryObject 
+24 0 obj
+<< /Dest [ 12 0 R
+ /XYZ
+ 62.69291
+ 765.0236
+ 0 ]
+ /Next 25 0 R
+ /Parent 16 0 R
+ /Prev 23 0 R
+ /Title (Example usage for using DELETE with the API) >>
+endobj
+% 'Outline.14.8': class OutlineEntryObject 
+25 0 obj
+<< /Dest [ 12 0 R
+ /XYZ
+ 62.69291
+ 710.2996
+ 0 ]
+ /Next 26 0 R
+ /Parent 16 0 R
+ /Prev 24 0 R
+ /Title (Example usage for using POST with the API) >>
+endobj
+% 'Outline.14.9': class OutlineEntryObject 
+26 0 obj
+<< /Count 1
+ /Dest [ 12 0 R
+ /XYZ
+ 62.69291
+ 596.1371
+ 0 ]
+ /First 27 0 R
+ /Last 27 0 R
+ /Next 28 0 R
+ /Parent 16 0 R
+ /Prev 25 0 R
+ /Title (WARNINGS) >>
+endobj
+% 'Outline.15.0': class OutlineEntryObject 
+27 0 obj
+<< /Dest [ 12 0 R
+ /XYZ
+ 62.69291
+ 476.1371
+ 0 ]
+ /Parent 26 0 R
+ /Title (If you would like to help out please send in your pull requests) >>
+endobj
+% 'Outline.14.10': class OutlineEntryObject 
+28 0 obj
+<< /Dest [ 12 0 R
+ /XYZ
+ 62.69291
+ 449.1371
+ 0 ]
+ /Parent 16 0 R
+ /Prev 26 0 R
+ /Title (Installation) >>
+endobj
+% 'R29': class PDFPages 
+29 0 obj
+% page tree
+<< /Count 2
+ /Kids [ 10 0 R
+ 12 0 R ]
+ /Type /Pages >>
+endobj
+% 'R30': class PDFStream 
+30 0 obj
+% page stream
+<< /Length 10344 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 741.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL 37.12488 0 Td (Tribble a unified Cluster Management API) Tj T* -37.12488 0 Td ET
+Q
+Q
+q
+1 0 0 1 62.69291 716.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 48.03937 0 Td (Date:) Tj T* -48.03937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (2013-05-01 14:22) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 701.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 49.14937 0 Td (tags:) Tj T* -49.14937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (rackspace, openstack, aws, ec2, amazon, cloud, clustering, api) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 686.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 28.02937 0 Td (category:) Tj T* -28.02937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (*nix) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 653.0236 cm
+q
+BT 1 0 0 1 0 3.5 Tm 21 TL /F2 17.5 Tf 0 0 0 rg (Open Tribble Cloud Clustering API) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 587.0236 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 50 Tm /F1 10 Tf 12 TL .364985 Tw (Tribble is an API system with allows for multiple cloud deployments, on multiple cloud providers all based) Tj T* 0 Tw 1.688443 Tw (on schematics. The system uses an authenticated system which restricts access access to resources) Tj T* 0 Tw .049318 Tw (based on a username, key, and password. Authentication is presently done through the API and managed) Tj T* 0 Tw .68311 Tw (via the "cloudauth" table. Usernames and Passwords are stored in this table which restrict access to the) Tj T* 0 Tw (various API endpoints and the resources within the system.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 557.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Schematic Definition) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 527.0236 cm
+q
+BT 1 0 0 1 0 14 Tm .425433 Tw 12 TL /F1 10 Tf 0 0 0 rg (A ) Tj /F3 10 Tf (Schematic ) Tj /F1 10 Tf (contains the cloud provider information, pertinent information on configuration management,) Tj T* 0 Tw (and zones.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 497.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Zones Definition) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 455.0236 cm
+q
+BT 1 0 0 1 0 26 Tm .863516 Tw 12 TL /F1 10 Tf 0 0 0 rg (A ) Tj /F3 10 Tf (Zone ) Tj /F1 10 Tf (contains the initial run script used for configuration management if any is provided. A Zone also) Tj T* 0 Tw .383984 Tw (contains information needed to construct instances and a reference the keys used to access the instance) Tj T* 0 Tw (upon boot.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 425.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Instances Definition) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 407.0236 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 0 rg (A ) Tj /F3 10 Tf (Instance ) Tj /F1 10 Tf (is the embodiment of a cloud server) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 377.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Headers used to access the API resources) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 365.0236 cm
+Q
+q
+1 0 0 1 62.69291 350.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 37.47937 0 Td (X-User:) Tj T* -37.47937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (SomeUserName) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 335.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 12.45937 0 Td (X-Secretkey:) Tj T* -12.45937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (key) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 320.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F2 10 Tf 12 TL 12.46937 0 Td (X-Password:) Tj T* -12.46937 0 Td ET
+Q
+Q
+q
+1 0 0 1 91.03937 3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (password) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 290.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Available Endpoints) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 278.0236 cm
+Q
+q
+1 0 0 1 62.69291 206.0236 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 66 cm
+Q
+q
+1 0 0 1 20 66 cm
+Q
+q
+1 0 0 1 20 54 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 .501961 rg
+0 0 .501961 RG
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (https://localhost:5150/v1/schematics) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 48 cm
+Q
+q
+1 0 0 1 20 36 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (https://localhost:5150/v1/schematics) Tj 0 0 0 rg (/) Tj (<) Tj (schematic_id) Tj (>) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 18 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (https://localhost:5150/v1/schematics) Tj 0 0 0 rg (/) Tj (<) Tj (schematic_id) Tj (>) Tj (/zones) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 2 Tm 12 TL /F1 10 Tf 0 0 .501961 rg (https://localhost:5150/v1/schematics) Tj 0 0 0 rg (/) Tj (<) Tj (schematic_id) Tj (>) Tj (/zones/) Tj (<) Tj (zones_id) Tj (>) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 206.0236 cm
+Q
+q
+1 0 0 1 62.69291 176.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Example usage for using GET with the API) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 140.0279 cm
+q
+q
+.457447 0 0 .457447 0 0 cm
+q
+1 0 0 1 6.6 14.42789 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 1026 60 re B*
+Q
+q
+.960784 .960784 .862745 rg
+n 156 36.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 312 36.75 138 12 re f*
+.960784 .960784 .862745 rg
+n 474 36.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 156 24.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 312 24.75 138 12 re f*
+.960784 .960784 .862745 rg
+n 474 24.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 156 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 312 12.75 138 12 re f*
+.960784 .960784 .862745 rg
+n 474 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 156 .75 132 12 re f*
+.960784 .960784 .862745 rg
+n 312 .75 138 12 re f*
+.960784 .960784 .862745 rg
+n 474 .75 132 12 re f*
+BT 1 0 0 1 0 38 Tm 12 TL /F4 10 Tf 0 0 0 rg (curl -X GET --insecure -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics) Tj T* (curl -X GET --insecure -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj  T* (curl -X GET --insecure -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj (/zones) Tj T* (curl -X GET --insecure -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj (/zones/) Tj (<) Tj (zone_id) Tj (>) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 110.0279 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Example usage for using PUT with the API) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 89.31705 cm
+q
+q
+.341688 0 0 .341688 0 0 cm
+q
+1 0 0 1 6.6 19.31585 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 1374 36 re B*
+Q
+q
+.960784 .960784 .862745 rg
+n 156 12.75 150 12 re f*
+.960784 .960784 .862745 rg
+n 330 12.75 192 12 re f*
+.960784 .960784 .862745 rg
+n 546 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 702 12.75 138 12 re f*
+.960784 .960784 .862745 rg
+n 864 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 156 .75 108 12 re f*
+.960784 .960784 .862745 rg
+n 288 .75 192 12 re f*
+.960784 .960784 .862745 rg
+n 504 .75 132 12 re f*
+.960784 .960784 .862745 rg
+n 660 .75 138 12 re f*
+.960784 .960784 .862745 rg
+n 822 .75 132 12 re f*
+BT 1 0 0 1 0 14 Tm 12 TL /F4 10 Tf 0 0 0 rg (curl -X PUT --insecure -d ) Tj .729412 .129412 .129412 rg ('{"cloud_region": "dfw"}') Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("Content-Type: application/json") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj  T* (curl -X PUT --insecure -d ) Tj .729412 .129412 .129412 rg ('{"quantity": 25}') Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("Content-Type: application/json") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj (/zones/) Tj (<) Tj (zone_id) Tj (>) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+ 
+endstream
+endobj
+% 'R31': class PDFStream 
+31 0 obj
+% page stream
+<< /Length 10453 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 747.0236 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Example usage for using DELETE with the API) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 722.2996 cm
+q
+q
+.449569 0 0 .449569 0 0 cm
+q
+1 0 0 1 6.6 14.68072 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 1044 36 re B*
+Q
+q
+.960784 .960784 .862745 rg
+n 174 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 330 12.75 138 12 re f*
+.960784 .960784 .862745 rg
+n 492 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 174 .75 132 12 re f*
+.960784 .960784 .862745 rg
+n 330 .75 138 12 re f*
+.960784 .960784 .862745 rg
+n 492 .75 132 12 re f*
+BT 1 0 0 1 0 14 Tm 12 TL /F4 10 Tf 0 0 0 rg (curl -X DELETE --insecure -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj  T* (curl -X DELETE --insecure -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj (/zones/) Tj (<) Tj (zone_id) Tj (>) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 692.2996 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Example usage for using POST with the API) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 668.4836 cm
+q
+q
+.425163 0 0 .425163 0 0 cm
+q
+1 0 0 1 6.6 15.52347 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 1104 36 re B*
+Q
+q
+.960784 .960784 .862745 rg
+n 294 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 450 12.75 138 12 re f*
+.960784 .960784 .862745 rg
+n 612 12.75 132 12 re f*
+.960784 .960784 .862745 rg
+n 294 .75 132 12 re f*
+.960784 .960784 .862745 rg
+n 450 .75 138 12 re f*
+.960784 .960784 .862745 rg
+n 612 .75 132 12 re f*
+BT 1 0 0 1 0 14 Tm 12 TL /F4 10 Tf 0 0 0 rg (curl -X POST --insecure -T /path/to/json.file -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics) Tj T* (curl -X POST --insecure -T /path/to/json.file -H ) Tj .729412 .129412 .129412 rg ("x-user: someusername") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-secretkey: keyiused") Tj 0 0 0 rg ( -H ) Tj .729412 .129412 .129412 rg ("x-password: password") Tj 0 0 0 rg ( https://localhost:5150/v1/schematics/) Tj (<) Tj (schematic_id) Tj (>) Tj (/zones) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 636.4836 cm
+q
+BT 1 0 0 1 0 14 Tm 1.752485 Tw 12 TL /F1 10 Tf 0 0 0 rg (Please see the example directory for an example of a valid json schematic with all available options.) Tj T* 0 Tw /F3 10 Tf (NOTE ) Tj /F1 10 Tf (not all options are needed or other wise required.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 608.1371 cm
+n 0 14.17323 m 469.8898 14.17323 l S
+Q
+q
+1 0 0 1 62.69291 578.1371 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (WARNINGS) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 566.1371 cm
+Q
+q
+1 0 0 1 62.69291 488.1371 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 72 cm
+Q
+q
+1 0 0 1 20 72 cm
+Q
+q
+1 0 0 1 20 36 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 26 Tm /F1 10 Tf 12 TL 4.090697 Tw (In this generation of the application there is NO user management via the API. User) Tj T* 0 Tw .113318 Tw (management is done all through the administration client which is only available on the local box) Tj T* 0 Tw (where the application is installed.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 18 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (This is very much in development. Expect changes in the API, as well as table / column layout.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 10.5 0 Td (\177) Tj T* -10.5 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Shoot me a line if you have any questions.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 488.1371 cm
+Q
+q
+1 0 0 1 62.69291 461.1371 cm
+q
+BT 1 0 0 1 0 2.5 Tm 15 TL /F5 12.5 Tf 0 0 0 rg (If you would like to help out please send in your pull requests) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 431.1371 cm
+q
+BT 1 0 0 1 0 3 Tm 18 TL /F2 15 Tf 0 0 0 rg (Installation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 419.1371 cm
+Q
+q
+1 0 0 1 62.69291 141.9371 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 271.2 cm
+Q
+q
+1 0 0 1 20 271.2 cm
+Q
+q
+1 0 0 1 20 259.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (1.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Setup a MySQL Database, somewhere.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 253.2 cm
+Q
+q
+1 0 0 1 20 241.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (2.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Login to said MySQL database and create the database you want to use for the system.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 235.2 cm
+Q
+q
+1 0 0 1 20 223.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (3.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Go to the bin directory in the cloned application) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 217.2 cm
+Q
+q
+1 0 0 1 20 181.2 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 21 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (4.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 26 Tm .41811 Tw 12 TL /F1 10 Tf 0 0 0 rg (Go back to your system where you are going to be running the application. Create the directory) Tj T* 0 Tw .70284 Tw ("/etc/Tribble", then create the file "config.cfg" in that directory and set the permissions to ") Tj /F3 10 Tf (600) Tj /F1 10 Tf (".) Tj T* 0 Tw (Add the following variables to the config file.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 181.2 cm
+Q
+q
+1 0 0 1 20 175.2 cm
+Q
+q
+1 0 0 1 20 54 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 0 cm
+q
+q
+1 0 0 1 0 0 cm
+q
+1 0 0 1 6.6 6.6 cm
+q
+.662745 .662745 .662745 RG
+.5 w
+.960784 .960784 .862745 rg
+n -6 -6 428.6898 120 re B*
+Q
+q
+.960784 .960784 .862745 rg
+n 0 96.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 6 96.75 30 12 re f*
+.960784 .960784 .862745 rg
+n 36 96.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 0 84.75 54 12 re f*
+.960784 .960784 .862745 rg
+n 60 84.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 72 84.75 24 12 re f*
+.960784 .960784 .862745 rg
+n 0 72.75 66 12 re f*
+.960784 .960784 .862745 rg
+n 72 72.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 84 72.75 78 12 re f*
+.960784 .960784 .862745 rg
+n 0 60.75 66 12 re f*
+.960784 .960784 .862745 rg
+n 72 60.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 84 60.75 78 12 re f*
+.960784 .960784 .862745 rg
+n 0 48.75 42 12 re f*
+.960784 .960784 .862745 rg
+n 48 48.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 60 48.75 54 12 re f*
+.960784 .960784 .862745 rg
+n 0 36.75 42 12 re f*
+.960784 .960784 .862745 rg
+n 48 36.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 60 36.75 24 12 re f*
+.960784 .960784 .862745 rg
+n 0 24.75 42 12 re f*
+.960784 .960784 .862745 rg
+n 48 24.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 60 24.75 102 12 re f*
+.960784 .960784 .862745 rg
+n 0 12.75 54 12 re f*
+.960784 .960784 .862745 rg
+n 60 12.75 6 12 re f*
+.960784 .960784 .862745 rg
+n 72 12.75 30 12 re f*
+.960784 .960784 .862745 rg
+n 0 .75 60 12 re f*
+.960784 .960784 .862745 rg
+n 66 .75 6 12 re f*
+.960784 .960784 .862745 rg
+n 78 .75 24 12 re f*
+BT 1 0 0 1 0 98 Tm 12 TL /F4 10 Tf 0 0 0 rg ([) Tj (basic) Tj (]) Tj  T* (log_level) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (info) Tj  T* (DB_USERNAME) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlusername) Tj  T* (DB_PASSWORD) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlpassword) Tj  T* (DB_HOST) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (localhost) Tj  T* (DB_PORT) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj .4 .4 .4 rg (3306) Tj 0 0 0 rg  T* (DB_NAME) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqldatabasename) Tj  T* (DB_ENGINE) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysql) Tj  T* (debug_mode) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj 0 .501961 0 rg (True) Tj T* ET
+Q
+Q
+Q
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 54 cm
+Q
+q
+1 0 0 1 20 48 cm
+Q
+q
+1 0 0 1 20 48 cm
+Q
+q
+1 0 0 1 20 36 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (5.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Run the file "dpc_dbcreate.py" \(This will create the needed tables\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 18 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (6.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Run the file "dpc_admin.py" \(This will create you a user\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (7.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Run the file "dpc_keycreate.py" \(This will create your Self Signed SSL\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+1 0 0 1 20 0 cm
+Q
+q
+Q
+Q
+q
+1 0 0 1 62.69291 141.9371 cm
+Q
+ 
+endstream
+endobj
+% 'R32': class PDFPageLabels 
+32 0 obj
+% Document Root
+<< /Nums [ 0
+ 33 0 R
+ 1
+ 34 0 R ] >>
+endobj
+% 'R33': class PDFPageLabel 
+33 0 obj
+% None
+<< /S /D
+ /St 1 >>
+endobj
+% 'R34': class PDFPageLabel 
+34 0 obj
+% None
+<< /S /D
+ /St 2 >>
+endobj
+xref
+0 35
+0000000000 65535 f
+0000000113 00000 n
+0000000258 00000 n
+0000000423 00000 n
+0000000598 00000 n
+0000000791 00000 n
+0000001045 00000 n
+0000001299 00000 n
+0000001553 00000 n
+0000001795 00000 n
+0000001954 00000 n
+0000002280 00000 n
+0000002468 00000 n
+0000002749 00000 n
+0000002908 00000 n
+0000003196 00000 n
+0000003322 00000 n
+0000003547 00000 n
+0000003731 00000 n
+0000003926 00000 n
+0000004125 00000 n
+0000004344 00000 n
+0000004542 00000 n
+0000004761 00000 n
+0000004980 00000 n
+0000005202 00000 n
+0000005422 00000 n
+0000005651 00000 n
+0000005864 00000 n
+0000006021 00000 n
+0000006138 00000 n
+0000016582 00000 n
+0000027139 00000 n
+0000027245 00000 n
+0000027322 00000 n
+trailer
+<< /ID 
+ % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
+ [(\320\245\362k\013u\237\013RS\277\335"bC:) (\320\245\362k\013u\237\013RS\277\335"bC:)] 
+
+ /Info 14 0 R
+ /Root 13 0 R
+ /Size 35 >>
+startxref
+27369
+%%EOF

@@ -1,0 +1,28 @@
+{
+    "config_key": "",
+    "config_server": "",
+    "config_env": "",
+    "config_user": "",
+    "config_validation_clientname": "",
+    "config_validation_key": "",
+    "cloud_key": "",
+    "cloud_url": "",
+    "cloud_provider": "",
+    "cloud_region": "",
+    "cloud_username": "",
+    "cloud_tenant": "",
+    "zones": [
+        {
+            "schematic_runlist": "",
+            "schematic_script": "",
+            "zone_name": "",
+            "size_id": "",
+            "image_id": "",
+            "name_convention": "",
+            "quantity": "",
+            "instances_keys": {
+                "ssh_user": "root",
+            }
+        }
+    ]
+}
