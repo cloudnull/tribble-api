@@ -126,7 +126,7 @@ Installation
         debug_mode = True
 
 
-  5. Run the file "dpc_dbcreate.py" (This will create the needed tables)
+  6. Run the file "dpc_dbcreate.py" (This will create the needed tables)
   #. Run the file "dpc_admin.py" (This will create you a user)
   #. Run the file "dpc_keycreate.py" (This will create your Self Signed SSL)
   
