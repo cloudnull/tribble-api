@@ -108,10 +108,8 @@ Installation
 ~~~~~~~~~~~~
 
   1. Setup a MySQL Database, somewhere.
-  #. Login to said MySQL database and create the database you want to use for the system, also create a user to access that database.
-  #. Go to the bin directory in the cloned application
+  #. Login to said MySQL and create the database you want to use for the system, also create a user to access that database.
   #. Go back to your system where you are going to be running the application. Create the directory "/etc/Tribble", then create the file "config.cfg" in that directory and set the permissions to "`600`". Add the following variables to the config file.
-  #. Use ``PIP`` to install "apache-libcloud", "fabric", "python-daemon==1.6", "SQLAlchemy", "Flask-RESTful", "Flask", and "Flask-SQLAlchemy"
 
     .. code-block:: python
 
@@ -125,8 +123,9 @@ Installation
         DB_ENGINE = mysql
         debug_mode = True
 
-
-  6. Run the file "dpc_dbcreate.py" (This will create the needed tables)
+  4. Use ``PIP`` to install "apache-libcloud", "fabric", "python-daemon==1.6", "SQLAlchemy", "Flask-RESTful", "Flask", and "Flask-SQLAlchemy"
+  #. Go to the bin directory in the cloned application
+  #. Run the file "dpc_dbcreate.py" (This will create the needed tables)
   #. Run the file "dpc_admin.py" (This will create you a user)
   #. Run the file "dpc_keycreate.py" (This will create your Self Signed SSL)
   

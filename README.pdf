@@ -187,7 +187,7 @@ endobj
 % 'R15': class PDFInfo 
 15 0 obj
 << /Author ()
- /CreationDate (D:20130528000840+06'00')
+ /CreationDate (D:20130528001452+06'00')
  /Creator (\(unspecified\))
  /Keywords ()
  /Producer (ReportLab PDF Library - www.reportlab.com)
@@ -784,7 +784,7 @@ endobj
 % 'R32': class PDFStream 
 32 0 obj
 % page stream
-<< /Length 10679 >>
+<< /Length 11015 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
@@ -1058,18 +1058,18 @@ q
 1 0 0 1 62.69291 329.1371 cm
 Q
 q
-1 0 0 1 62.69291 185.1371 cm
+1 0 0 1 62.69291 81.93714 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 BT 1 0 0 1 0 2 Tm  T* ET
 q
-1 0 0 1 20 138 cm
+1 0 0 1 20 241.2 cm
 Q
 q
-1 0 0 1 20 138 cm
+1 0 0 1 20 241.2 cm
 Q
 q
-1 0 0 1 20 126 cm
+1 0 0 1 20 229.2 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -1090,10 +1090,10 @@ q
 Q
 Q
 q
-1 0 0 1 20 120 cm
+1 0 0 1 20 223.2 cm
 Q
 q
-1 0 0 1 20 96 cm
+1 0 0 1 20 199.2 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -1107,48 +1107,24 @@ q
 1 0 0 1 23 -3 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 1.076235 Tw (Login to said MySQL database and create the database you want to use for the system, also) Tj T* 0 Tw (create a user to access that database.) Tj T* ET
+BT 1 0 0 1 0 14 Tm /F1 10 Tf 12 TL 1.307633 Tw (Login to said MySQL and create the database you want to use for the system, also create a) Tj T* 0 Tw (user to access that database.) Tj T* ET
 Q
 Q
 q
 Q
 Q
 q
-1 0 0 1 20 90 cm
+1 0 0 1 20 193.2 cm
 Q
 q
-1 0 0 1 20 78 cm
-0 0 0 rg
-BT /F1 10 Tf 12 TL ET
-q
-1 0 0 1 6 -3 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (3.) Tj T* -5.66 0 Td ET
-Q
-Q
-q
-1 0 0 1 23 -3 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Go to the bin directory in the cloned application) Tj T* ET
-Q
-Q
-q
-Q
-Q
-q
-1 0 0 1 20 72 cm
-Q
-q
-1 0 0 1 20 36 cm
+1 0 0 1 20 157.2 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
 1 0 0 1 6 21 cm
 q
 0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (4.) Tj T* -5.66 0 Td ET
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (3.) Tj T* -5.66 0 Td ET
 Q
 Q
 q
@@ -1161,44 +1137,13 @@ q
 Q
 Q
 q
+1 0 0 1 20 157.2 cm
+Q
+q
+1 0 0 1 20 151.2 cm
+Q
+q
 1 0 0 1 20 30 cm
-Q
-q
-1 0 0 1 20 6 cm
-0 0 0 rg
-BT /F1 10 Tf 12 TL ET
-q
-1 0 0 1 6 9 cm
-q
-0 0 0 rg
-BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (5.) Tj T* -5.66 0 Td ET
-Q
-Q
-q
-1 0 0 1 23 -3 cm
-q
-BT 1 0 0 1 0 14 Tm 6.731395 Tw 12 TL /F1 10 Tf 0 0 0 rg (Use ) Tj /F4 10 Tf (PIP ) Tj /F1 10 Tf (to install "apache-libcloud", "fabric", "python-daemon==1.6", "SQLAlchemy",) Tj T* 0 Tw ("Flask-RESTful", "Flask", and "Flask-SQLAlchemy") Tj T* ET
-Q
-Q
-q
-Q
-Q
-q
-1 0 0 1 20 6 cm
-Q
-q
-1 0 0 1 20 0 cm
-Q
-q
-Q
-Q
-q
-1 0 0 1 62.69291 76.86614 cm
-0 0 0 rg
-BT /F1 10 Tf 12 TL ET
-BT 1 0 0 1 0 2 Tm  T* ET
-q
-1 0 0 1 20 0 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 BT 1 0 0 1 0 2 Tm  T* ET
@@ -1213,90 +1158,45 @@ q
 .662745 .662745 .662745 RG
 .5 w
 .960784 .960784 .862745 rg
-n -6 -6 416.6898 84 re B*
+n -6 -6 422.6898 120 re B*
 Q
 q
 .960784 .960784 .862745 rg
-n 0 60.75 6 12 re f*
+n 0 96.75 6 12 re f*
 .960784 .960784 .862745 rg
-n 6 60.75 30 12 re f*
+n 6 96.75 30 12 re f*
 .960784 .960784 .862745 rg
-n 36 60.75 6 12 re f*
+n 36 96.75 6 12 re f*
 .960784 .960784 .862745 rg
-n 0 48.75 54 12 re f*
+n 0 84.75 54 12 re f*
 .960784 .960784 .862745 rg
-n 60 48.75 6 12 re f*
+n 60 84.75 6 12 re f*
 .960784 .960784 .862745 rg
-n 72 48.75 24 12 re f*
+n 72 84.75 24 12 re f*
 .960784 .960784 .862745 rg
-n 0 36.75 66 12 re f*
+n 0 72.75 66 12 re f*
 .960784 .960784 .862745 rg
-n 72 36.75 6 12 re f*
+n 72 72.75 6 12 re f*
 .960784 .960784 .862745 rg
-n 84 36.75 78 12 re f*
+n 84 72.75 78 12 re f*
 .960784 .960784 .862745 rg
-n 0 24.75 66 12 re f*
+n 0 60.75 66 12 re f*
 .960784 .960784 .862745 rg
-n 72 24.75 6 12 re f*
+n 72 60.75 6 12 re f*
 .960784 .960784 .862745 rg
-n 84 24.75 78 12 re f*
+n 84 60.75 78 12 re f*
 .960784 .960784 .862745 rg
-n 0 12.75 42 12 re f*
+n 0 48.75 42 12 re f*
 .960784 .960784 .862745 rg
-n 48 12.75 6 12 re f*
+n 48 48.75 6 12 re f*
 .960784 .960784 .862745 rg
-n 60 12.75 96 12 re f*
+n 60 48.75 96 12 re f*
 .960784 .960784 .862745 rg
-n 0 .75 42 12 re f*
+n 0 36.75 42 12 re f*
 .960784 .960784 .862745 rg
-n 48 .75 6 12 re f*
+n 48 36.75 6 12 re f*
 .960784 .960784 .862745 rg
-n 60 .75 24 12 re f*
-BT 1 0 0 1 0 62 Tm 12 TL /F4 10 Tf 0 0 0 rg ([) Tj (basic) Tj (]) Tj  T* (log_level) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (info) Tj  T* (DB_USERNAME) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlusername) Tj  T* (DB_PASSWORD) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlpassword) Tj  T* (DB_HOST) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlhostaddress) Tj  T* (DB_PORT) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj .4 .4 .4 rg (3306) Tj 0 0 0 rg  T* ET
-Q
-Q
-Q
-Q
-Q
-q
-Q
-Q
-q
-Q
-Q
- 
-endstream
-endobj
-% 'R33': class PDFStream 
-33 0 obj
-% page stream
-<< /Length 2313 >>
-stream
-1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
-q
-1 0 0 1 62.69291 661.8236 cm
-0 0 0 rg
-BT /F1 10 Tf 12 TL ET
-BT 1 0 0 1 0 2 Tm  T* ET
-q
-1 0 0 1 20 54 cm
-0 0 0 rg
-BT /F1 10 Tf 12 TL ET
-BT 1 0 0 1 0 2 Tm  T* ET
-q
-1 0 0 1 20 0 cm
-q
-q
-1 0 0 1 0 0 cm
-q
-1 0 0 1 6.6 6.6 cm
-q
-.662745 .662745 .662745 RG
-.5 w
-.960784 .960784 .862745 rg
-n -6 -6 416.6898 48 re B*
-Q
-q
+n 60 36.75 24 12 re f*
 .960784 .960784 .862745 rg
 n 0 24.75 42 12 re f*
 .960784 .960784 .862745 rg
@@ -1315,7 +1215,7 @@ n 0 .75 60 12 re f*
 n 66 .75 6 12 re f*
 .960784 .960784 .862745 rg
 n 78 .75 24 12 re f*
-BT 1 0 0 1 0 26 Tm 12 TL /F4 10 Tf 0 0 0 rg (DB_NAME) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqldatabasename) Tj  T* (DB_ENGINE) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysql) Tj  T* (debug_mode) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj 0 .501961 0 rg (True) Tj T* ET
+BT 1 0 0 1 0 98 Tm 12 TL /F4 10 Tf 0 0 0 rg ([) Tj (basic) Tj (]) Tj  T* (log_level) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (info) Tj  T* (DB_USERNAME) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlusername) Tj  T* (DB_PASSWORD) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlpassword) Tj  T* (DB_HOST) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqlhostaddress) Tj  T* (DB_PORT) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj .4 .4 .4 rg (3306) Tj 0 0 0 rg  T* (DB_NAME) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysqldatabasename) Tj  T* (DB_ENGINE) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj (mysql) Tj  T* (debug_mode) Tj ( ) Tj .4 .4 .4 rg (=) Tj 0 0 0 rg ( ) Tj 0 .501961 0 rg (True) Tj T* ET
 Q
 Q
 Q
@@ -1323,12 +1223,76 @@ Q
 Q
 q
 Q
+Q
+q
+1 0 0 1 20 30 cm
+Q
+q
+1 0 0 1 20 24 cm
+Q
+q
+1 0 0 1 20 24 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 9 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (4.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+BT 1 0 0 1 0 14 Tm 6.731395 Tw 12 TL /F1 10 Tf 0 0 0 rg (Use ) Tj /F4 10 Tf (PIP ) Tj /F1 10 Tf (to install "apache-libcloud", "fabric", "python-daemon==1.6", "SQLAlchemy",) Tj T* 0 Tw ("Flask-RESTful", "Flask", and "Flask-SQLAlchemy") Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
+Q
+Q
+ 
+endstream
+endobj
+% 'R33': class PDFStream 
+33 0 obj
+% page stream
+<< /Length 1585 >>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+1 0 0 1 62.69291 699.9526 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 0 2 Tm  T* ET
+q
+1 0 0 1 20 66 cm
 Q
 q
 1 0 0 1 20 54 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (5.) Tj T* -5.66 0 Td ET
+Q
 Q
 q
-1 0 0 1 20 48 cm
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Go to the bin directory in the cloned application) Tj T* ET
+Q
+Q
+q
+Q
 Q
 q
 1 0 0 1 20 48 cm
@@ -1409,7 +1373,7 @@ q
 Q
 Q
 q
-1 0 0 1 62.69291 661.8236 cm
+1 0 0 1 62.69291 699.9526 cm
 Q
  
 endstream
@@ -1477,19 +1441,19 @@ xref
 0000006301 00000 n
 0000006427 00000 n
 0000016861 00000 n
-0000027640 00000 n
-0000030056 00000 n
-0000030175 00000 n
-0000030252 00000 n
-0000030329 00000 n
+0000027976 00000 n
+0000029664 00000 n
+0000029783 00000 n
+0000029860 00000 n
+0000029937 00000 n
 trailer
 << /ID 
  % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
- [({\234e\343%\177\022\344\311 \225\021\2136\016:) ({\234e\343%\177\022\344\311 \225\021\2136\016:)] 
+ [(k\357\207\210r\177\217Q\204sBl\376Q\004r) (k\357\207\210r\177\217Q\204sBl\376Q\004r)] 
 
  /Info 15 0 R
  /Root 14 0 R
  /Size 38 >>
 startxref
-30376
+29984
 %%EOF
