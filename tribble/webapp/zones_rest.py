@@ -154,8 +154,79 @@ class ZonesRest(Resource):
         else:
             return {'response': "Updates Recieved"}, 201
 
-    def post(self, _sid=None, _zid=None):
+    def post(self, _sid=None):
         """
         Post a Zone
         """
-        return {'response': "Deletes Recieved"}, 200
+        auth = auth_mech(hdata=request.data,
+                         rdata=request.headers)
+        if not auth:
+            return {'response': 'Missing Information'}, 400
+        else:
+            user_id, _hd = auth
+        try:
+            if not all([user_id, _hd]):
+                return {'response': 'Missing Information'}, 400
+            else:
+                LOG.info(_hd)
+                skms = Schematics.query.filter(
+                    Schematics.auth_id == user_id).filter(
+                    Schematics.id == _sid).first()
+            if not skms:
+                return {'response': 'No Schematic Found'}, 404
+            if 'zones' in _hd:
+                for _zn in _hd['zones']:
+                    key_data = _zn['instances_keys']
+                    _ssh_user = key_data.get('ssh_user')
+                    pri = key_data.get('ssh_key_pri')
+                    pub = key_data.get('ssh_key_pub')
+                    if not pri:
+                        from tribble.operations import fabrics
+                        pub, pri = fabrics.KeyGen().build_ssh_key()
+
+                    ssh = InstancesKeys(ssh_user=_ssh_user,
+                                        ssh_key_pri=pri,
+                                        ssh_key_pub=pub,
+                                        key_name=key_data.get('key_name'))
+                    _DB.session.add(ssh)
+                    _DB.session.flush()
+
+                    zon = Zones(schematic_id=_sid,
+                                schematic_runlist=_zn.get('schematic_runlist'),
+                                schematic_script=_zn.get('schematic_script'),
+                                zone_name=_zn.get('zone_name',
+                                                  utils.rand_string(length=20)),
+                                size_id=_zn.get('size_id'),
+                                image_id=_zn.get('image_id'),
+                                name_convention=_zn.get('name_convention'),
+                                quantity=_zn.get('quantity'),
+                                credential_id=ssh.id)
+                    _DB.session.add(zon)
+                    _DB.session.flush()
+
+                    packet = {'cloud_key': skms.cloud_key,
+                              'cloud_username': skms.cloud_username,
+                              'cloud_region': skms.cloud_region,
+                              'quantity': zon.quantity,
+                              'name': zon.name_convention,
+                              'image': zon.image_id,
+                              'size': zon.size_id,
+                              'zone_id': zon.id,
+                              'credential_id': ssh.id,
+                              'schematic_script': zon.schematic_script,
+                              'provider': skms.cloud_provider,
+                              'ssh_username': ssh.ssh_user,
+                              'ssh_key_pri': ssh.ssh_key_pri,
+                              'ssh_key_pub': ssh.ssh_key_pub,
+                              'key_name': ssh.key_name,
+                              'job': 'build'}
+                    LOG.debug(packet)
+                    QUEUE.put(packet)
+            _DB.session.commit()
+        except Exception:
+            LOG.error(traceback.format_exc())
+            return {'response': 'Unexpected Error'}, 500
+        else:
+            return {'response': ('Application requests have been recieved'
+                                 ' for Schematic %s'
+                                 % _sid)}, 200

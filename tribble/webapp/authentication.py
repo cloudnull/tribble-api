@@ -17,7 +17,7 @@ def cloudauth():
         Attempt a decode of a password found in the database.
         This is a place holder currently pw is in Plane text
         """
-        from tribble.webapp import rosetta
+        from tribble.appsetup import rosetta
         password = rosetta.decrypt(password=key,
                                    ciphertext=cipher)
         if password == psw:

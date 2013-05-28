@@ -1,4 +1,4 @@
-tribblefrom multiprocessing import Process, Queue, cpu_count, active_children
+from multiprocessing import Process, cpu_count, active_children
 from signal import SIGKILL
 import os
 import traceback
