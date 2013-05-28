@@ -187,7 +187,7 @@ endobj
 % 'R15': class PDFInfo 
 15 0 obj
 << /Author ()
- /CreationDate (D:20130528001452+06'00')
+ /CreationDate (D:20130528001703+06'00')
  /Creator (\(unspecified\))
  /Keywords ()
  /Producer (ReportLab PDF Library - www.reportlab.com)
@@ -1262,19 +1262,19 @@ endobj
 % 'R33': class PDFStream 
 33 0 obj
 % page stream
-<< /Length 1585 >>
+<< /Length 1931 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
-1 0 0 1 62.69291 699.9526 cm
+1 0 0 1 62.69291 681.9526 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 BT 1 0 0 1 0 2 Tm  T* ET
 q
-1 0 0 1 20 66 cm
+1 0 0 1 20 84 cm
 Q
 q
-1 0 0 1 20 54 cm
+1 0 0 1 20 72 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -1295,10 +1295,10 @@ q
 Q
 Q
 q
-1 0 0 1 20 48 cm
+1 0 0 1 20 66 cm
 Q
 q
-1 0 0 1 20 36 cm
+1 0 0 1 20 54 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -1319,10 +1319,10 @@ q
 Q
 Q
 q
-1 0 0 1 20 30 cm
+1 0 0 1 20 48 cm
 Q
 q
-1 0 0 1 20 18 cm
+1 0 0 1 20 36 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -1343,10 +1343,10 @@ q
 Q
 Q
 q
-1 0 0 1 20 12 cm
+1 0 0 1 20 30 cm
 Q
 q
-1 0 0 1 20 0 cm
+1 0 0 1 20 18 cm
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
@@ -1367,13 +1367,37 @@ q
 Q
 Q
 q
+1 0 0 1 20 12 cm
+Q
+q
+1 0 0 1 20 0 cm
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL 5.66 0 Td (9.) Tj T* -5.66 0 Td ET
+Q
+Q
+q
+1 0 0 1 23 -3 cm
+q
+0 0 0 rg
+BT 1 0 0 1 0 2 Tm /F1 10 Tf 12 TL (Finally Run the file "dpc.local.py" \(This will Start the API\)) Tj T* ET
+Q
+Q
+q
+Q
+Q
+q
 1 0 0 1 20 0 cm
 Q
 q
 Q
 Q
 q
-1 0 0 1 62.69291 699.9526 cm
+1 0 0 1 62.69291 681.9526 cm
 Q
  
 endstream
@@ -1442,18 +1466,18 @@ xref
 0000006427 00000 n
 0000016861 00000 n
 0000027976 00000 n
-0000029664 00000 n
-0000029783 00000 n
-0000029860 00000 n
-0000029937 00000 n
+0000030010 00000 n
+0000030129 00000 n
+0000030206 00000 n
+0000030283 00000 n
 trailer
 << /ID 
  % ReportLab generated PDF document -- digest (http://www.reportlab.com) 
- [(k\357\207\210r\177\217Q\204sBl\376Q\004r) (k\357\207\210r\177\217Q\204sBl\376Q\004r)] 
+ [(L\364!\347\275\225\375\351g\001\224Cl\346\314\331) (L\364!\347\275\225\375\351g\001\224Cl\346\314\331)] 
 
  /Info 15 0 R
  /Root 14 0 R
  /Size 38 >>
 startxref
-29984
+30330
 %%EOF

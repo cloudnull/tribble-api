@@ -128,4 +128,5 @@ Installation
   #. Run the file "dpc_dbcreate.py" (This will create the needed tables)
   #. Run the file "dpc_admin.py" (This will create you a user)
   #. Run the file "dpc_keycreate.py" (This will create your Self Signed SSL)
+  #. Finally Run the file "dpc.local.py" (This will Start the API)
   
