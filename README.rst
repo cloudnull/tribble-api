@@ -7,7 +7,7 @@ Tribble a unified Cluster Management API
 Open Tribble Cloud Clustering API
 =================================
 
-Tribble is an API system with allows for multiple cloud deployments, on multiple cloud providers all based on schematics. The system uses an authenticated system which restricts access access to resources based on a username, key, and password. Authentication is presently done through the API and managed via the "cloudauth" table. Usernames and Passwords are stored in this table which restrict access to the various API endpoints and the resources within the system.
+Tribble is an API system with allows for multiple cloud deployments, on multiple cloud providers all based on schematics. The system uses an authenticated system which restricts access to resources based on a username, key, and password. Authentication is presently done through the API and managed via the "cloudauth" table. Usernames and Passwords are stored in this table which restrict access to the various API endpoints and the resources within the system.
 
 
 Schematic Definition
@@ -19,13 +19,13 @@ A *Schematic* contains the cloud provider information, pertinent information on 
 Zones Definition
 ~~~~~~~~~~~~~~~~
 
-A *Zone* contains the initial run script used for configuration management if any is provided. A Zone also contains information needed to construct instances and a reference the keys used to access the instance upon boot.
+A *Zone* contains the initial run script used for configuration management, if any is provided. A Zone also contains information needed to construct instances and a reference to the keys used for the instance upon boot.
 
 
 Instances Definition
 ~~~~~~~~~~~~~~~~~~~~
 
-A *Instance* is the embodiment of a cloud server
+A *Instance* is the embodiment of a Cloud Server
 
 
 Headers used to access the API resources
@@ -83,7 +83,7 @@ Example usage for using POST with the API
     curl -X POST --insecure -T /path/to/json.file -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>/zones
 
 
-Please see the example directory for an example of a valid json schematic with all available options. *NOTE* not all options are needed or other wise required.
+Please see the example directory for an example of a valid JSON schematic with all available options. *NOTE* not all options are needed or other wise required.
 
 
 --------
@@ -95,6 +95,9 @@ WARNINGS
   * In this generation of the application there is NO user management via the API. User management is done all through the administration client which is only available on the local box where the application is installed.
   * This is very much in development. Expect changes in the API, as well as table / column layout.
   * Shoot me a line if you have any questions.
+  * NOT everything is working with 100% efficiency.
+  * NOT everything is working as intended, IE: If you "`PUT`" any updates to the system, they will be received and reflected in the database, however nothing is done with the updated information. The only way the system will take action in an environment is through a "`POST`" or a "`DELETE`". This will be changing soon, though is worth noting now.
+  * This is NOT production ready yet. But will be eventually. 
 
 
 If you would like to help out please send in your pull requests
