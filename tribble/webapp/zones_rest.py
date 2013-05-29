@@ -46,6 +46,7 @@ class ZonesRest(Resource):
                             _di = dzone['instances'] = []
                             for inst in insts:
                                 _di.append(pop_ts(inst.__dict__))
+                            dzone['num_instances'] = len(_di)
                         retskms.append(dzone)
         except Exception:
             LOG.error(traceback.format_exc())
@@ -70,12 +71,13 @@ class ZonesRest(Resource):
             if not _skm:
                 return {'response': 'No Schematic Found'}, 404
             zon = Zones.query.filter(
-                Zones.schematic_id == _skm.id).first()
+                Zones.schematic_id == _skm.id,
+                Zones.id == _zid).first()
             if not zon:
                 return {'response': 'No Zone Found'}, 404
             else:
                 insts = Instances.query.filter(
-                    Instances.zone_id == zon.id).all()
+                    Instances.zone_id == _zid).all()
                 if insts:
                     for ins in insts:
                         _DB.session.delete(ins)
@@ -88,10 +90,10 @@ class ZonesRest(Resource):
                             'uuids': [ins.instance_id for ins in insts],
                             'job': 'delete'}
                     QUEUE.put(cell)
-                _DB.session.delete(zon)
-                _DB.session.flush()
                 key = InstancesKeys.query.filter(
                     InstancesKeys.id == zon.credential_id).first()
+                _DB.session.delete(zon)
+                _DB.session.flush()
                 _DB.session.delete(key)
                 _DB.session.flush()
         except Exception:
@@ -106,17 +108,18 @@ class ZonesRest(Resource):
         Update a Zone
         """
         if not _sid:
-            return {'response': 'Missing Information'}, 400
+            return {'response': 'No Schematic specified'}, 400
 
         auth = auth_mech(hdata=request.data,
                          rdata=request.headers)
         if not auth:
-            return {'response': 'Missing Information'}, 400
+            return {'response': 'Authentication or Data Type Failure'}, 401
         else:
             user_id, _hd = auth
         try:
             if not all([user_id, _hd]):
-                return {'response': 'Missing Information'}, 400
+                return {'response': ('Missing Information %s %s'
+                                     % (user_id, _hd))}, 400
             else:
                 skms = Schematics.query.filter(
                     Schematics.auth_id == user_id).filter(
@@ -158,15 +161,18 @@ class ZonesRest(Resource):
         """
         Post a Zone
         """
+        if not _sid:
+            return {'response': 'No Schematic specified'}, 400
         auth = auth_mech(hdata=request.data,
                          rdata=request.headers)
         if not auth:
-            return {'response': 'Missing Information'}, 400
+            return {'response': 'Authentication or Data Type Failure'}, 401
         else:
             user_id, _hd = auth
         try:
             if not all([user_id, _hd]):
-                return {'response': 'Missing Information'}, 400
+                return {'response': ('Missing Information %s %s'
+                                     % (user_id, _hd))}, 400
             else:
                 LOG.info(_hd)
                 skms = Schematics.query.filter(

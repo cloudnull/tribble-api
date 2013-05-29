@@ -44,7 +44,8 @@ def auth_mech(rdata, hdata=None):
             LOG.debug(hdata)
             try:
                 djson = loads(hdata)
-            except Exception:
+            except Exception, exp:
+                LOG.error(traceback.format_exc())
                 return False
             return user_id, djson
         else:

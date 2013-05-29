@@ -4,6 +4,7 @@ import os
 import traceback
 import time
 from daemon import pidfile
+
 from tribble.appsetup.start import LOG, QUEUE
 from tribble import info
 
@@ -20,7 +21,7 @@ class MainDisptach(object):
         self.logger = LOG
         self.queue = QUEUE
         self.system = sys_control
-        self.amw = 350
+        self.amw = 100
         self.amq = 250
         self.main()
 
@@ -71,9 +72,9 @@ class MainDisptach(object):
         and is then returned as an integer.
         """
         cpu = cpu_count()
-        tpc = cpu * 5
+        tpc = cpu * 10
         _qz = self.queue.qsize()
-        _mw = cpu * 50
+        _mw = tpc
         if _mw > self.amw:
             _mw = self.amw
 
@@ -102,9 +103,11 @@ class MainDisptach(object):
         _aw = []
         while self.system:
             try:
-                if self.queue.empty():
+                _qs = self.queue.qsize()
+                self.logger.debug('queue size %s' % _qs)
+                if (_qs == 0):
                     time.sleep(3)
-                elif (self.queue.qsize() >= self.amq):
+                elif (_qs >= self.amq):
                     import tempfile
                     dump_file = ('%s%s%s_EMERGENCY.dump'
                                  % (tempfile.gettempdir(),
@@ -116,21 +119,21 @@ class MainDisptach(object):
                                             ' a PROBLEM. As such we are dumping'
                                             ' the tasks. Dump File is "%s"'
                                             '\n========================|\n'
-                                            % (self.queue.qsize(), dump_file))
-                    while not self.queue.empty():
+                                            % (_qs, dump_file))
+                    while not _qs > 0:
                         try:
                             with open(dump_file, 'a') as _file:
-                                get_file = self.queue.get(timeout=3)
+                                get_file = self.queue.get()
                                 dumped = ('%s\n' % get_file)
                                 _file.write(dumped)
-                        except Exception, exp:
+                        except Exception:
                             self.logger.error(traceback.format_exc())
                             break
                 else:
                     w_count = len(_aw)
                     workers = self.compute_workers(w_count)
 
-                    self.logger.info('queue size  %d' % self.queue.qsize())
+                    self.logger.info('queue size  %d' % _qs)
                     self.logger.info('Active Jobs %d' % w_count)
                     self.logger.info('num workers %d' % workers)
 
@@ -144,7 +147,7 @@ class MainDisptach(object):
                         time.sleep(.25)
             except Exception:
                 self.logger.error(traceback.format_exc())
-            finally:
+            else:
                 if _aw:
                     for job in _aw:
                         if not job.is_alive():
@@ -165,6 +168,7 @@ class MainDisptach(object):
         from tribble.operations import constructor, utils
         try:
             cell = queue.get(timeout=2)
+            self.logger.info(cell)
             if cell['job'] == 'build':
                 job = constructor.bob_builder
             elif cell['job'] == 'delete':

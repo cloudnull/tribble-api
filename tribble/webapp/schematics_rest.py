@@ -10,7 +10,7 @@ from tribble.webapp import pop_ts, parse_dict_list, auth_mech
 
 
 class SchematicsRest(Resource):
-    def get(self, _id=None):
+    def get(self, _sid=None):
         """
         get method
         """
@@ -18,10 +18,10 @@ class SchematicsRest(Resource):
         if not user_id:
             return {'response': 'Missing Information'}, 400
         try:
-            if _id:
+            if _sid:
                 skms = Schematics.query.filter(
                     Schematics.auth_id == user_id,
-                    Schematics.id == _id).all()
+                    Schematics.id == _sid).all()
             else:
                 skms = Schematics.query.filter(
                     Schematics.auth_id == user_id).all()
@@ -42,11 +42,11 @@ class SchematicsRest(Resource):
         else:
             return {'response': retskms}, 200
 
-    def delete(self, _id=None):
+    def delete(self, _sid=None):
         """
         Delete a Cluster
         """
-        if not _id:
+        if not _sid:
             return {'response': 'Missing Information'}, 400
 
         user_id = auth_mech(rdata=request.headers)
@@ -55,7 +55,7 @@ class SchematicsRest(Resource):
         try:
             _skm = Schematics.query.filter(
                 Schematics.auth_id == user_id).filter(
-                Schematics.id == _id).first()
+                Schematics.id == _sid).first()
             if not _skm:
                 return {'response': 'No Schematic Found'}, 404
             zon = Zones.query.filter(
@@ -90,11 +90,11 @@ class SchematicsRest(Resource):
             _DB.session.commit()
             return {'response': "Deletes Recieved"}, 203
 
-    def put(self, _id):
+    def put(self, _sid):
         """
         Update Cluster
         """
-        if not _id:
+        if not _sid:
             return {'response': 'Missing Information'}, 400
 
         auth = auth_mech(hdata=request.data,
@@ -109,7 +109,7 @@ class SchematicsRest(Resource):
             else:
                 _skm = Schematics.query.filter(
                     Schematics.auth_id == user_id).filter(
-                    Schematics.id == _id).first()
+                    Schematics.id == _sid).first()
             if _skm:
                 _skm.cloud_key = _hd.get('cloud_key', _skm.cloud_key)
                 _skm.cloud_provider = _hd.get('cloud_provider',

@@ -10,6 +10,14 @@ from tribble.operations.cloud_auth import apiauth
 from tribble.operations import utils
 
 
+class NoImageFound(Exception):
+    pass
+
+
+class NoSizeFound(Exception):
+    pass
+
+
 class DeadOnArival(Exception):
     pass
 
@@ -56,21 +64,26 @@ def bob_builder(nucleus):
                'ssh_key_pub': ssh.ssh_key_pub,
                'key_name': ssh.key_name}
     """
-    conn = apiauth(packet=nucleus)
-    _size = [_sz for _sz in conn.list_sizes()
-             if _sz.id == nucleus.get('size')]
-    _image = [_im for _im in conn.list_images()
-              if _im.id == nucleus.get('image')]
+    try:
+        conn = apiauth(packet=nucleus)
+        if not conn:
+            raise DeadOnArival('No Connection Available')
 
-    if not _image:
-        raise DeadOnArival('Image not found')
-    else:
-        _image = _image[0]
+        _size = [_sz for _sz in conn.list_sizes()
+                 if _sz.id == nucleus.get('size')]
+        if not _size:
+            raise NoSizeFound('Size not found')
 
-    if not _size:
-        raise DeadOnArival('Size not found')
+        _image = [_im for _im in conn.list_images()
+                  if _im.id == nucleus.get('image')]
+        if not _image:
+            raise NoImageFound('Image not found')
+    except Exception, exp:
+        LOG.warn(exp)
+        return False
     else:
-        _size = _size[0]
+        image = _image[0]
+        size = _size[0]
 
     stupid_hack()
 
@@ -78,8 +91,8 @@ def bob_builder(nucleus):
     node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
                           utils.rand_string())
     specs = {'name': node_name,
-             'image': _image,
-             'size': _size,
+             'image': image,
+             'size': size,
              'max_tries': 15,
              'timeout': 1200,
              'deploy': _sd}
@@ -95,13 +108,12 @@ def bob_builder(nucleus):
         try:
             _nd = conn.deploy_node(**specs)
         except DeploymentError, exp:
+            from libcloud.compute.types import NodeState
             LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
                 stupid_hack()
                 dead_node = [_nd for _nd in conn.list_nodes()
-                             if (_nd.name == specs['name'] and
-                                 _nd.imageId == specs['image'] and
-                                 _nd.state != 0)]
+                             if (_nd.name == specs['name'] and _nd.state == NodeState.UNKNOWN)]
                 if dead_node:
                     for node in dead_node:
                         LOG.warn('Removing Node that failed to Build ==> %s'
