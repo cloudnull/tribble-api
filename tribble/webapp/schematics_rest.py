@@ -234,6 +234,8 @@ class SchematicsRest(Resource):
                     packet = {'cloud_key': skm.cloud_key,
                               'cloud_username': skm.cloud_username,
                               'cloud_region': skm.cloud_region,
+                              'cloud_url': skm.cloud_url,
+                              'cloud_version': 'PLACEHOLDER_UPDATE_DB',
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,
