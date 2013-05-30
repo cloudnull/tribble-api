@@ -235,7 +235,7 @@ class SchematicsRest(Resource):
                               'cloud_username': skm.cloud_username,
                               'cloud_region': skm.cloud_region,
                               'cloud_url': skm.cloud_url,
-                              'cloud_version': 'PLACEHOLDER_UPDATE_DB',
+                              'cloud_version': skm.cloud_version,
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,

@@ -214,7 +214,7 @@ class ZonesRest(Resource):
                               'cloud_username': skms.cloud_username,
                               'cloud_region': skms.cloud_region,
                               'cloud_url': skms.cloud_url,
-                              'cloud_version': 'PLACEHOLDER_UPDATE_DB',
+                              'cloud_version': skms.cloud_version,
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,
