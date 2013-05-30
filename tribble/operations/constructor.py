@@ -87,33 +87,38 @@ def bob_builder(nucleus):
 
     stupid_hack()
 
-    _sd = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
     node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
                           utils.rand_string())
     specs = {'name': node_name,
              'image': image,
              'size': size,
              'max_tries': 15,
-             'timeout': 1200,
-             'deploy': _sd}
+             'timeout': 1200}
 
-    if nucleus['provider'].upper() == 'AMAZON':
-        specs['ssh_username'] = nucleus.get('ssh_username'),
-        specs['ssh_key'] = nucleus.get('ssh_key_pri'),
+    if nucleus['provider'].upper() in ('AMAZON', 'OPENSTACK'):
+        if nucleus['provider'].upper() == 'AMAZON':
+            specs['ssh_key'] = nucleus.get('ssh_key_pri')
+        specs['ssh_username'] = nucleus.get('ssh_username')
         specs['ex_keyname'] = nucleus.get('key_name')
+    else:
+        specs['deploy'] = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
 
     LOG.info('Building Node Based on %s' % specs)
 
     for retry in utils.retryloop(attempts=5, timeout=900, delay=10):
         try:
-            _nd = conn.deploy_node(**specs)
+            if 'deploy' in specs:
+                _nd = conn.deploy_node(**specs)
+            else:
+                _nd = conn.create_node(**specs)
         except DeploymentError, exp:
             from libcloud.compute.types import NodeState
             LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
                 stupid_hack()
                 dead_node = [_nd for _nd in conn.list_nodes()
-                             if (_nd.name == specs['name'] and _nd.state == NodeState.UNKNOWN)]
+                             if (_nd.name == specs['name'] and
+                                 _nd.state == NodeState.UNKNOWN)]
                 if dead_node:
                     for node in dead_node:
                         LOG.warn('Removing Node that failed to Build ==> %s'
