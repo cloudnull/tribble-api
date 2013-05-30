@@ -105,6 +105,7 @@ def start_server(debug=False):
              'certfile': cert}
 
     restifier.routes(api=API)
+    APP.url_map.strict_slashes = False
     APP.errorhandler(not_found)
     APP.before_request(authentication.cloudauth)
     APP.threaded = True

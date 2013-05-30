@@ -1,6 +1,7 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud import security
+from tribble.appsetup.start import LOG
 
 
 class CantContinue(Exception):
@@ -25,21 +26,31 @@ def apiauth(packet):
                  'US_WEST': Provider.EC2_US_WEST}
 
     provider = packet.get('provider')
-
-    if provider.upper() == 'OPENSTACK':
-        driver = get_driver(Provider.OPENSTACK)
-        conn = driver(packet.get('cloud_username'),
-                      packet.get('cloud_key'),
-                      ex_force_auth_url=packet.get('cloud_url'),
-                      ex_force_auth_version='2.0_password')
-    elif packet.get('cloud_region'):
-        _region = packet.get('cloud_region').upper()
-        if _region in endpoints:
-            driver = get_driver(endpoints[_region])
+    try:
+        if provider.upper() == 'OPENSTACK':
+            driver = get_driver(Provider.OPENSTACK)
             conn = driver(packet.get('cloud_username'),
-                          packet.get('cloud_key'))
+                          packet.get('cloud_key'),
+                          ex_force_auth_url=packet.get('cloud_url'),
+                          ex_force_auth_version='2.0_password')
+        elif provider.upper() == 'VMWARE':
+            driver = get_driver(Provider.VCLOUD)
+            conn = driver(packet.get('cloud_username'),
+                          packet.get('cloud_key'),
+                          host=packet.get('cloud_url'),
+                          api_version=packet.get('cloud_version'))
+        elif packet.get('cloud_region') in Provider.__dict__:
+            _region = packet.get('cloud_region').upper()
+            driver = get_driver(endpoints[_region])
+            specs = {'ex_force_auth_url': packet.get('cloud_url'),
+                     'ex_force_auth_version': packet.get('cloud_version')}
+            conn = driver(packet.get('cloud_username'),
+                      packet.get('cloud_key'),
+                      **specs)
         else:
-            raise CantContinue('You provided an unsupported region')
+            raise CantContinue('We are not able to continue at this point')
+    except Exception, exp:
+        LOG.info(exp)
+        raise CantContinue('System has haulted on specified Request')
     else:
-        raise CantContinue('We are not able to continue at this point')
-    return conn
+        return conn

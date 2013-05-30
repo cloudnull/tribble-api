@@ -1,4 +1,5 @@
-from flask import request
+from flask import request, redirect
+from tribble.appsetup.start import LOG
 from tribble.db.models import CloudAuth
 from tribble.webapp import not_found
 
