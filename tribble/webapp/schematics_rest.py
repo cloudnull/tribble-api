@@ -237,21 +237,28 @@ class SchematicsRest(Resource):
                     packet = {'cloud_key': skm.cloud_key,
                               'cloud_username': skm.cloud_username,
                               'cloud_region': skm.cloud_region,
-                              'cloud_url': skm.cloud_url,
-                              'cloud_version': skm.cloud_version,
+                              'cloud_provider': skm.cloud_provider,
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,
                               'size': zon.size_id,
                               'zone_id': zon.id,
                               'credential_id': ssh.id,
-                              'schematic_script': zon.schematic_script,
-                              'provider': skm.cloud_provider,
                               'ssh_username': ssh.ssh_user,
                               'ssh_key_pri': ssh.ssh_key_pri,
                               'ssh_key_pub': ssh.ssh_key_pub,
                               'key_name': ssh.key_name,
                               'job': 'build'}
+
+                    if skm.cloud_url:
+                        packet['cloud_url'] = skm.cloud_url
+                    if skm.cloud_version:
+                        packet['cloud_version'] = skm.cloud_version
+                    if skm.cloud_tenant:
+                        packet['cloud_tenant'] = skm.cloud_tenant
+                    if zon.schematic_script:
+                        packet['schematic_script'] = zon.schematic_script
+
                     LOG.debug(packet)
                     QUEUE.put(packet)
             _DB.session.commit()

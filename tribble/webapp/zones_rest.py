@@ -18,23 +18,23 @@ class ZonesRest(Resource):
             return {'response': 'Missing Information'}, 400
         try:
             if _sid:
-                skms = Schematics.query.filter(
+                skmss = Schematics.query.filter(
                     Schematics.auth_id == user_id,
                     Schematics.id == _sid).first()
             else:
                 return {'response': 'No Schematic Specified'}, 400
 
-            if not skms:
+            if not skmss:
                 return {'response': 'No Schematic found'}, 404
             else:
-                retskms = []
+                retskmss = []
                 if _zid:
                     zon = Zones.query.filter(
-                        Zones.schematic_id == skms.id,
+                        Zones.schematic_id == skmss.id,
                         Zones.id == _zid).all()
                 else:
                     zon = Zones.query.filter(
-                        Zones.schematic_id == skms.id).all()
+                        Zones.schematic_id == skmss.id).all()
                 if not zon:
                     return {'response': 'No Zone found'}, 404
                 else:
@@ -47,12 +47,12 @@ class ZonesRest(Resource):
                             for inst in insts:
                                 _di.append(pop_ts(inst.__dict__))
                             dzone['num_instances'] = len(_di)
-                        retskms.append(dzone)
+                        retskmss.append(dzone)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
-            return {'response': retskms}, 200
+            return {'response': retskmss}, 200
 
     def delete(self, _sid=None, _zid=None):
         """
@@ -65,13 +65,13 @@ class ZonesRest(Resource):
         if not user_id:
             return {'response': 'You are not authorized'}, 401
         try:
-            _skm = Schematics.query.filter(
+            _skms = Schematics.query.filter(
                 Schematics.auth_id == user_id).filter(
                 Schematics.id == _sid).first()
-            if not _skm:
+            if not _skms:
                 return {'response': 'No Schematic Found'}, 404
             zon = Zones.query.filter(
-                Zones.schematic_id == _skm.id,
+                Zones.schematic_id == _skms.id,
                 Zones.id == _zid).first()
             if not zon:
                 return {'response': 'No Zone Found'}, 404
@@ -82,11 +82,11 @@ class ZonesRest(Resource):
                     for ins in insts:
                         _DB.session.delete(ins)
                         _DB.session.flush()
-                    cell = {'id': _skm.id,
-                            'cloud_key': _skm.cloud_key,
-                            'cloud_username': _skm.cloud_username,
-                            'cloud_region': _skm.cloud_region,
-                            'provider': _skm.cloud_provider,
+                    cell = {'id': _skms.id,
+                            'cloud_key': _skms.cloud_key,
+                            'cloud_username': _skms.cloud_username,
+                            'cloud_region': _skms.cloud_region,
+                            'provider': _skms.cloud_provider,
                             'uuids': [ins.instance_id for ins in insts],
                             'job': 'delete'}
                     QUEUE.put(cell)
@@ -121,13 +121,13 @@ class ZonesRest(Resource):
                 return {'response': ('Missing Information %s %s'
                                      % (user_id, _hd))}, 400
             else:
-                skms = Schematics.query.filter(
+                skmss = Schematics.query.filter(
                     Schematics.auth_id == user_id).filter(
                     Schematics.id == _sid).first()
-            if skms:
+            if skmss:
                 if _zid:
                     zon = Zones.query.filter(
-                        Zones.schematic_id == skms.id,
+                        Zones.schematic_id == skmss.id,
                         Zones.id == _zid).first()
                     if zon:
                         zon.quantity = _hd.get('quantity', zon.quantity)
@@ -213,21 +213,28 @@ class ZonesRest(Resource):
                     packet = {'cloud_key': skms.cloud_key,
                               'cloud_username': skms.cloud_username,
                               'cloud_region': skms.cloud_region,
-                              'cloud_url': skms.cloud_url,
-                              'cloud_version': skms.cloud_version,
+                              'cloud_provider': skms.cloud_provider,
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,
                               'size': zon.size_id,
                               'zone_id': zon.id,
                               'credential_id': ssh.id,
-                              'schematic_script': zon.schematic_script,
-                              'provider': skms.cloud_provider,
                               'ssh_username': ssh.ssh_user,
                               'ssh_key_pri': ssh.ssh_key_pri,
                               'ssh_key_pub': ssh.ssh_key_pub,
                               'key_name': ssh.key_name,
                               'job': 'build'}
+
+                    if skms.cloud_url:
+                        packet['cloud_url'] = skms.cloud_url
+                    if skms.cloud_version:
+                        packet['cloud_version'] = skms.cloud_version
+                    if skms.cloud_tenant:
+                        packet['cloud_tenant'] = skms.cloud_tenant
+                    if zon.schematic_script:
+                        packet['schematic_script'] = zon.schematic_script
+
                     LOG.debug(packet)
                     QUEUE.put(packet)
             _DB.session.commit()

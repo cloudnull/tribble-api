@@ -25,7 +25,7 @@ def apiauth(packet):
                  'US_EAST': Provider.EC2_US_EAST,
                  'US_WEST': Provider.EC2_US_WEST}
 
-    provider = packet.get('provider')
+    provider = packet.get('cloud_provider', Provider.DUMMY)
     try:
         if provider.upper() == 'OPENSTACK':
             driver = get_driver(Provider.OPENSTACK)
@@ -36,13 +36,20 @@ def apiauth(packet):
             driver = get_driver(Provider.VCLOUD)
             specs = {'host': packet.get('cloud_url'),
                      'api_version': packet.get('cloud_version', '1.5')}
-        elif packet.get('cloud_region') in Provider.__dict__:
-            _region = packet.get('cloud_region').upper()
-            driver = get_driver(endpoints[_region])
+        elif packet.get('cloud_region').upper() in endpoints:
+            region = packet.get('cloud_region').upper()
+            driver = get_driver(endpoints[region])
+            specs = {'ex_force_auth_url': packet.get('cloud_url'),
+                     'ex_force_auth_version': packet.get('cloud_version')}
+        elif packet.get('cloud_provider') in Provider.__dict__:
+            region = packet.get('cloud_region').upper()
+            driver = get_driver(Provider.__dict__[region])
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version')}
         else:
-            raise CantContinue('We are not able to continue at this point')
+            driver = get_driver(provider)
+            specs = {'ex_force_auth_url': packet.get('cloud_url'),
+                     'ex_force_auth_version': packet.get('cloud_version')}
     except Exception, exp:
         LOG.info(exp)
         raise CantContinue('System has haulted on specified Request')
