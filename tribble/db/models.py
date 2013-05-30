@@ -106,7 +106,7 @@ class Schematics(_DB.Model):
     cloud_provider = _DB.Column('cloud_provider',
                                 _DB.VARCHAR(length=30),
                                 nullable=False)
-    cloud_region = _DB.Column('cloud_version',
+    cloud_version = _DB.Column('cloud_version',
                               _DB.VARCHAR(length=10),
                               nullable=True)
     cloud_region = _DB.Column('cloud_region',
@@ -132,9 +132,9 @@ class Schematics(_DB.Model):
                     autoincrement=True)
 
     def __init__(self, cloud_key, cloud_url, cloud_username,
-                 cloud_provider, cloud_region, cloud_tenant, config_key,
-                 config_server, config_username, config_validation_clientname,
-                 config_validation_key, auth_id):
+                 cloud_provider, cloud_version, cloud_region, cloud_tenant,
+                 config_key, config_server, config_username,
+                 config_validation_clientname, config_validation_key, auth_id):
         """
         Schematics provide for the configuration which would peratine to a
         built Zone.
@@ -143,6 +143,7 @@ class Schematics(_DB.Model):
         self.cloud_key = cloud_key
         self.cloud_url = cloud_url
         self.cloud_provider = cloud_provider
+        self.cloud_version = cloud_version
         self.cloud_region = cloud_region
         self.cloud_tenant = cloud_tenant
         self.cloud_username = cloud_username
