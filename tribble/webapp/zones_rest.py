@@ -213,6 +213,8 @@ class ZonesRest(Resource):
                     packet = {'cloud_key': skms.cloud_key,
                               'cloud_username': skms.cloud_username,
                               'cloud_region': skms.cloud_region,
+                              'cloud_url': skms.cloud_url,
+                              'cloud_version': 'PLACEHOLDER_UPDATE_DB',
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,
