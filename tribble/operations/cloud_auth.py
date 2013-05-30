@@ -29,28 +29,26 @@ def apiauth(packet):
     try:
         if provider.upper() == 'OPENSTACK':
             driver = get_driver(Provider.OPENSTACK)
-            conn = driver(packet.get('cloud_username'),
-                          packet.get('cloud_key'),
-                          ex_force_auth_url=packet.get('cloud_url'),
-                          ex_force_auth_version='2.0_password')
+            specs = {'ex_force_auth_url': packet.get('cloud_url'),
+                     'ex_force_auth_version': packet.get('cloud_version',
+                                                         '2.0_password'),
+                     'auth_url': packet.get('cloud_url')}
         elif provider.upper() == 'VMWARE':
             driver = get_driver(Provider.VCLOUD)
-            conn = driver(packet.get('cloud_username'),
-                          packet.get('cloud_key'),
-                          host=packet.get('cloud_url'),
-                          api_version=packet.get('cloud_version'))
+            specs = {'host': packet.get('cloud_url'),
+                     'api_version': packet.get('cloud_version')}
         elif packet.get('cloud_region') in Provider.__dict__:
             _region = packet.get('cloud_region').upper()
             driver = get_driver(endpoints[_region])
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version')}
-            conn = driver(packet.get('cloud_username'),
-                      packet.get('cloud_key'),
-                      **specs)
         else:
             raise CantContinue('We are not able to continue at this point')
     except Exception, exp:
         LOG.info(exp)
         raise CantContinue('System has haulted on specified Request')
     else:
+        conn = driver(packet.get('cloud_username'),
+                      packet.get('cloud_key'),
+                      **specs)
         return conn
