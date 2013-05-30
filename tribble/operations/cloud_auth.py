@@ -31,8 +31,7 @@ def apiauth(packet):
             driver = get_driver(Provider.OPENSTACK)
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version',
-                                                         '2.0_password'),
-                     'auth_url': packet.get('cloud_url')}
+                                                         '2.0_password')}
         elif provider.upper() == 'VMWARE':
             driver = get_driver(Provider.VCLOUD)
             specs = {'host': packet.get('cloud_url'),
@@ -48,6 +47,7 @@ def apiauth(packet):
         LOG.info(exp)
         raise CantContinue('System has haulted on specified Request')
     else:
+        LOG.debug(specs)
         conn = driver(packet.get('cloud_username'),
                       packet.get('cloud_key'),
                       **specs)
