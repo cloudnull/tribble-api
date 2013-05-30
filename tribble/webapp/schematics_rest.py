@@ -114,6 +114,8 @@ class SchematicsRest(Resource):
                 _skm.cloud_key = _hd.get('cloud_key', _skm.cloud_key)
                 _skm.cloud_provider = _hd.get('cloud_provider',
                                                _skm.cloud_provider)
+                _skm.cloud_version = _hd.get('cloud_version',
+                                             _skm.cloud_version)
                 _skm.cloud_region = _hd.get('cloud_region',
                                              _skm.cloud_region)
                 _skm.cloud_tenant = _hd.get('cloud_tenant',
@@ -190,6 +192,7 @@ class SchematicsRest(Resource):
                              cloud_url=_hd.get('cloud_url'),
                              cloud_username=_hd.get('cloud_username'),
                              cloud_provider=_hd.get('cloud_provider'),
+                             cloud_version=_hd.get('cloud_version'),
                              cloud_region=_hd.get('cloud_region'),
                              cloud_tenant=_hd.get('cloud_tenant'),
                              config_key=_hd.get('config_key'),
