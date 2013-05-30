@@ -35,7 +35,7 @@ def apiauth(packet):
         elif provider.upper() == 'VMWARE':
             driver = get_driver(Provider.VCLOUD)
             specs = {'host': packet.get('cloud_url'),
-                     'api_version': packet.get('cloud_version')}
+                     'api_version': packet.get('cloud_version', '1.5')}
         elif packet.get('cloud_region') in Provider.__dict__:
             _region = packet.get('cloud_region').upper()
             driver = get_driver(endpoints[_region])
