@@ -194,7 +194,8 @@ class SchematicsRest(Resource):
                              cloud_provider=_hd.get('cloud_provider'),
                              cloud_version=_hd.get('cloud_version'),
                              cloud_region=_hd.get('cloud_region'),
-                             cloud_tenant=_hd.get('cloud_tenant'),
+                             cloud_tenant=_hd.get('cloud_tenant',
+                                                  _hd.get('cloud_username')),
                              config_key=_hd.get('config_key'),
                              config_server=_hd.get('config_server'),
                              config_username=_hd.get('config_username'),
@@ -238,6 +239,7 @@ class SchematicsRest(Resource):
                               'cloud_username': skm.cloud_username,
                               'cloud_region': skm.cloud_region,
                               'cloud_provider': skm.cloud_provider,
+                              'cloud_tenant': skm.cloud_tenant,
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,
@@ -254,8 +256,8 @@ class SchematicsRest(Resource):
                         packet['cloud_url'] = skm.cloud_url
                     if skm.cloud_version:
                         packet['cloud_version'] = skm.cloud_version
-                    if skm.cloud_tenant:
-                        packet['cloud_tenant'] = skm.cloud_tenant
+                    if zon.schematic_runlist:
+                        packet['schematic_runlist'] = zon.schematic_runlist
                     if zon.schematic_script:
                         packet['schematic_script'] = zon.schematic_script
 

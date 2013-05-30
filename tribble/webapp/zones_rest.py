@@ -214,6 +214,7 @@ class ZonesRest(Resource):
                               'cloud_username': skms.cloud_username,
                               'cloud_region': skms.cloud_region,
                               'cloud_provider': skms.cloud_provider,
+                              'cloud_tenant': skms.cloud_tenant,
                               'quantity': zon.quantity,
                               'name': zon.name_convention,
                               'image': zon.image_id,
@@ -230,8 +231,8 @@ class ZonesRest(Resource):
                         packet['cloud_url'] = skms.cloud_url
                     if skms.cloud_version:
                         packet['cloud_version'] = skms.cloud_version
-                    if skms.cloud_tenant:
-                        packet['cloud_tenant'] = skms.cloud_tenant
+                    if zon.schematic_runlist:
+                        packet['schematic_runlist'] = zon.schematic_runlist
                     if zon.schematic_script:
                         packet['schematic_script'] = zon.schematic_script
 

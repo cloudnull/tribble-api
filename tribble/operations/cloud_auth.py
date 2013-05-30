@@ -31,7 +31,8 @@ def apiauth(packet):
             driver = get_driver(Provider.OPENSTACK)
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version',
-                                                         '2.0_password')}
+                                                         '2.0_password'),
+                     'ex_tenant_name': packet.get('cloud_username')}
         elif provider.upper() == 'VMWARE':
             driver = get_driver(Provider.VCLOUD)
             specs = {'host': packet.get('cloud_url'),
