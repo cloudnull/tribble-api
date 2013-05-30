@@ -107,8 +107,8 @@ class Schematics(_DB.Model):
                                 _DB.VARCHAR(length=30),
                                 nullable=False)
     cloud_version = _DB.Column('cloud_version',
-                              _DB.VARCHAR(length=10),
-                              nullable=True)
+                               _DB.VARCHAR(length=10),
+                               nullable=True)
     cloud_region = _DB.Column('cloud_region',
                               _DB.VARCHAR(length=30),
                               nullable=True)
