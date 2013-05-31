@@ -131,14 +131,18 @@ def bob_builder(nucleus):
             if nucleus.get('cloud_networks'):
                 networks = nucleus.get('cloud_networks').split(',')
                 specs['networks'] = networks
+
             if nucleus.get('inject_files'):
                 files = nucleus.get('inject_files').split(',')
                 specs['ex_files'] = files
+
             if nucleus.get('security_groups'):
                 sec_groups = nucleus.get('security_groups').split(',')
                 specs['ex_security_groups'] = sec_groups
+
         if nucleus['cloud_provider'].upper() == 'RACKSPACE':
             specs = ssh_deploy(nucleus)
+
         if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
             specs['ex_keyname'] = nucleus.get('key_name')
             specs['ex_userdata'] = nucleus.get('cloud_init')
@@ -154,8 +158,9 @@ def bob_builder(nucleus):
                 _nd = conn.deploy_node(**specs)
             else:
                 _nd = conn.create_node(**specs)
+                node_post(info=_nd, atom=nucleus)
 
-            for _retry in utils.retryloop(attempts=200, timeout=900, delay=20):
+            for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
                 inst = [node for node in conn.list_nodes() if node.id == _nd.id]
                 if inst:
                     try:
@@ -165,9 +170,10 @@ def bob_builder(nucleus):
                         else:
                             _nd = ins
                     except utils.RetryError:
-                        raise DeploymentError('Never Active')
-
-            LOG.debug(_nd.__dict__)
+                        raise DeploymentError('ID:%s NAME:%s was Never Active'
+                                              % (_nd.id, _nd.name))
+                    else:
+                        LOG.debug(_nd.__dict__)
         except DeploymentError, exp:
             LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
@@ -198,4 +204,4 @@ def node_post(info, atom):
     _DB.session.add(ins)
     _DB.session.flush()
     _DB.session.commit()
-    LOG.info('Instance Built ID:%s NAME:%s' % (info.uuid, info.name))
+    LOG.info('Instance posted ID:%s NAME:%s' % (info.uuid, info.name))

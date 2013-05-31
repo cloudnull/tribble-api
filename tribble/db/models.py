@@ -72,14 +72,8 @@ class InstancesKeys(_DB.Model):
         self.key_name = key_name
 
 
-class Schematics(_DB.Model):
-    __tablename__ = 'schematics'
-    auth_id = _DB.Column('auth_id',
-                         _DB.VARCHAR(length=200),
-                         _DB.ForeignKey('cloudauth.id'),
-                         nullable=False)
-    schematic_constraint = relation(
-        'CloudAuth', primaryjoin='Schematics.auth_id==CloudAuth.id')
+class ConfigManager(_DB.Model):
+    __tablename__ = 'config_manager'
     config_key = _DB.Column('config_key',
                             _DB.TEXT(),
                             nullable=True)
@@ -91,12 +85,51 @@ class Schematics(_DB.Model):
     config_username = _DB.Column('config_username',
                                  _DB.VARCHAR(length=150),
                                  nullable=True)
-    config_validation_clientname = _DB.Column('config_validation_clientname',
+    config_clientname = _DB.Column('config_clientname',
                                                _DB.VARCHAR(length=150),
                                                nullable=True)
     config_validation_key = _DB.Column('config_validation_key',
                                        _DB.TEXT(),
                                        nullable=True)
+    created_at = _DB.Column('created_at',
+                            _DB.TIMESTAMP(),
+                            nullable=False)
+    updated_at = _DB.Column('updated_at',
+                            _DB.TIMESTAMP(),
+                            nullable=False)
+    id = _DB.Column('id',
+                    _DB.VARCHAR(length=200),
+                    default=uuid,
+                    primary_key=True,
+                    nullable=False,
+                    autoincrement=True)
+
+    def __init__(self, config_key, config_server, config_username,
+                 config_clientname, config_validation_key):
+        """
+        All Config Management is stored here.
+        """
+        self.config_key = config_key
+        self.config_server = config_server
+        self.config_username = config_username
+        self.config_clientname = config_clientname
+        self.config_validation_key = config_validation_key
+
+
+class Schematics(_DB.Model):
+    __tablename__ = 'schematics'
+    auth_id = _DB.Column('auth_id',
+                         _DB.VARCHAR(length=200),
+                         _DB.ForeignKey('cloudauth.id'),
+                         nullable=False)
+    schematic_constraint = relation(
+        'CloudAuth', primaryjoin='Schematics.auth_id==CloudAuth.id')
+    config_id = _DB.Column('config_id',
+                           _DB.VARCHAR(length=200),
+                           _DB.ForeignKey('config_manager.id'),
+                           nullable=True)
+    schematic_constraint = relation(
+        'ConfigManager', primaryjoin='Schematics.config_id==ConfigManager.id')
     cloud_key = _DB.Column('cloud_key',
                            _DB.VARCHAR(length=150),
                            nullable=True)
@@ -131,14 +164,14 @@ class Schematics(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, cloud_key, cloud_url, cloud_username,
+    def __init__(self, config_id, cloud_key, cloud_url, cloud_username,
                  cloud_provider, cloud_version, cloud_region, cloud_tenant,
-                 config_key, config_server, config_username,
-                 config_validation_clientname, config_validation_key, auth_id):
+                 auth_id):
         """
         Schematics provide for the configuration which would peratine to a
         built Zone.
         """
+        self.config_id = config_id
         self.auth_id = auth_id
         self.cloud_key = cloud_key
         self.cloud_url = cloud_url
@@ -147,11 +180,6 @@ class Schematics(_DB.Model):
         self.cloud_region = cloud_region
         self.cloud_tenant = cloud_tenant
         self.cloud_username = cloud_username
-        self.config_key = config_key
-        self.config_server = config_server
-        self.config_username = config_username
-        self.config_validation_clientname = config_validation_clientname
-        self.config_validation_key = config_validation_key
 
 
 class Zones(_DB.Model):

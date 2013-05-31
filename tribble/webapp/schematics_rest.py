@@ -2,11 +2,11 @@ import traceback
 from flask import request
 from sqlalchemy import and_
 from flask.ext.restful import Resource
-from tribble.db.models import CloudAuth, Schematics
+from tribble.db.models import CloudAuth, Schematics, ConfigManager
 from tribble.db.models import Instances, InstancesKeys, Zones
 from tribble.appsetup.start import _DB, LOG, QUEUE
 from tribble.operations import utils
-from tribble.webapp import pop_ts, parse_dict_list, auth_mech
+from tribble.webapp import pop_ts, parse_dict_list, auth_mech, build_cell
 
 
 class SchematicsRest(Resource):
@@ -35,6 +35,10 @@ class SchematicsRest(Resource):
                         Zones.schematic_id == _skm.id).all()
                     if zon:
                         _dz = dskm['num_zones'] = len(zon)
+                    con = ConfigManager.query.filter(
+                        ConfigManager.id == _skm.config_id).first()
+                    if con:
+                        dskm['config_manager'] = pop_ts(con.__dict__)
                 retskms.append(dskm)
         except Exception:
             LOG.error(traceback.format_exc())
@@ -56,6 +60,8 @@ class SchematicsRest(Resource):
             _skm = Schematics.query.filter(
                 Schematics.auth_id == user_id).filter(
                 Schematics.id == _sid).first()
+            _cons = ConfigManager.query.filter(
+                ConfigManager.id == _skm.config_id).first()
             if not _skm:
                 return {'response': 'No Schematic Found'}, 404
             zon = Zones.query.filter(
@@ -68,19 +74,18 @@ class SchematicsRest(Resource):
                         for ins in insts:
                             _DB.session.delete(ins)
                             _DB.session.flush()
-                        cell = {'id': _skm.id,
-                                'cloud_key': _skm.cloud_key,
-                                'cloud_username': _skm.cloud_username,
-                                'cloud_region': _skm.cloud_region,
-                                'provider': _skm.cloud_provider,
-                                'uuids': [ins.instance_id for ins in insts],
-                                'job': 'delete'}
+                        servers = [ins.instance_id for ins in insts]
+                        cell = build_cell(job='delete',
+                                          schematic=_skm,
+                                          uuids=servers)
                         QUEUE.put(cell)
                     _DB.session.delete(zone)
                     _DB.session.flush()
                     key = InstancesKeys.query.filter(
                         InstancesKeys.id == zone.credential_id).first()
                     _DB.session.delete(key)
+            _DB.session.delete(_cons)
+            _DB.session.flush()
             _DB.session.delete(_skm)
             _DB.session.flush()
         except Exception:
@@ -110,6 +115,7 @@ class SchematicsRest(Resource):
                 _skm = Schematics.query.filter(
                     Schematics.auth_id == user_id).filter(
                     Schematics.id == _sid).first()
+
             if _skm:
                 _skm.cloud_key = _hd.get('cloud_key', _skm.cloud_key)
                 _skm.cloud_provider = _hd.get('cloud_provider',
@@ -123,20 +129,26 @@ class SchematicsRest(Resource):
                 _skm.cloud_url = _hd.get('cloud_url', _skm.cloud_url)
                 _skm.cloud_username = _hd.get('cloud_username',
                                                _skm.cloud_username)
-                _skm.config_env = _hd.get('config_env', _skm.config_env)
-                _skm.config_key = _hd.get('config_key', _skm.config_key)
-                _skm.config_server = _hd.get('config_server',
-                                              _skm.config_server)
-                _skm.config_username = _hd.get('config_username',
-                                                _skm.config_username)
-                _skm.config_validation_clientname = _hd.get(
-                    'config_validation_clientname',
-                    _skm.config_validation_clientname)
-                _skm.config_validation_key = _hd.get(
-                    'config_validation_key',
-                    _skm.config_validation_key)
                 _DB.session.add(_skm)
                 _DB.session.flush()
+
+                _con = ConfigManager.query.filter(
+                        ConfigManager.id == _skm.config_id).first()
+                if _con:
+                    _con.config_env = _hd.get('config_env', _skm.config_env)
+                    _con.config_key = _hd.get('config_key', _skm.config_key)
+                    _con.config_server = _hd.get('config_server',
+                                                  _skm.config_server)
+                    _con.config_username = _hd.get('config_username',
+                                                    _skm.config_username)
+                    _con.config_clientname = _hd.get(
+                        'config_clientname', _con.config_validation_clientname)
+                    _con.config_validation_key = _hd.get(
+                        'config_validation_key',
+                        _con.config_validation_key)
+                    _DB.session.add(_con)
+                    _DB.session.flush()
+
                 if 'zones' in _hd:
                     zone_ids = [_zn['id'] for _zn in _hd['zones']
                                 if 'id' in _zn]
@@ -148,26 +160,35 @@ class SchematicsRest(Resource):
                             if zone['id'] == _zon.id:
                                 _dz = zone
                                 _zon.quantity = _dz.get(
-                                    'quantity', _zon.quantity)
+                                    'quantity',
+                                    _zon.quantity)
                                 _zon.image_id = _dz.get(
                                     'image_id', _zon.image_id)
                                 _zon.name_convention = _dz.get(
-                                    'name_convention', _zon.name_convention)
+                                    'name_convention',
+                                    _zon.name_convention)
                                 _zon.security_groups = _hd.get(
                                     'security_groups'),
-                                _zon.inject_files = _hd.get('inject_files'),
-                                _zon.cloud_networks = _hd.get('cloud_networks'),
-                                _zon.cloud_init = _hd.get('cloud_init'),
+                                _zon.inject_files = _hd.get(
+                                    'inject_files'),
+                                _zon.cloud_networks = _hd.get(
+                                    'cloud_networks'),
+                                _zon.cloud_init = _hd.get(
+                                    'cloud_init'),
                                 _zon.quantity = _dz.get(
                                     'quantity', _zon.quantity)
                                 _zon.schematic_runlist = _dz.get(
-                                    'schematic_runlist', _zon.schematic_runlist)
+                                    'schematic_runlist',
+                                    _zon.schematic_runlist)
                                 _zon.schematic_script = _dz.get(
-                                    'schematic_script', _zon.schematic_script)
-                                _zon.zone_name = _dz.get('zone_name',
-                                                         utils.rand_string(
-                                                            length=20))
-                                _zon.size_id = _dz.get('size_id', _zon.size_id)
+                                    'schematic_script',
+                                    _zon.schematic_script)
+                                _zon.zone_name = _dz.get(
+                                    'zone_name',
+                                    utils.rand_string(length=20))
+                                _zon.size_id = _dz.get(
+                                    'size_id',
+                                    _zon.size_id)
                                 _DB.session.add(_zon)
                                 _DB.session.flush()
                 _DB.session.commit()
@@ -195,7 +216,17 @@ class SchematicsRest(Resource):
                 return {'response':
                     'Missing Information, Not Acceptable'}, 406
             LOG.info(_hd)
+            con = ConfigManager(config_key=_hd.get('config_key'),
+                                config_server=_hd.get('config_server'),
+                                config_username=_hd.get('config_username'),
+                                config_clientname=_hd.get('config_clientname'),
+                                config_validation_key=_hd.get(
+                                    'config_validation_key'))
+            _DB.session.add(con)
+            _DB.session.flush()
+
             skm = Schematics(auth_id=user_id,
+                             config_id=con.id,
                              cloud_key=_hd.get('cloud_key'),
                              cloud_url=_hd.get('cloud_url'),
                              cloud_username=_hd.get('cloud_username'),
@@ -203,14 +234,7 @@ class SchematicsRest(Resource):
                              cloud_version=_hd.get('cloud_version'),
                              cloud_region=_hd.get('cloud_region'),
                              cloud_tenant=_hd.get('cloud_tenant',
-                                                  _hd.get('cloud_username')),
-                             config_key=_hd.get('config_key'),
-                             config_server=_hd.get('config_server'),
-                             config_username=_hd.get('config_username'),
-                             config_validation_clientname=_hd.get(
-                                'config_validation_clientname'),
-                             config_validation_key=_hd.get(
-                                'config_validation_key'))
+                                                  _hd.get('cloud_username')))
             _DB.session.add(skm)
             _DB.session.flush()
 
@@ -247,40 +271,11 @@ class SchematicsRest(Resource):
                     _DB.session.add(zon)
                     _DB.session.flush()
 
-                    packet = {'cloud_key': skm.cloud_key,
-                              'cloud_username': skm.cloud_username,
-                              'cloud_region': skm.cloud_region,
-                              'cloud_provider': skm.cloud_provider,
-                              'cloud_tenant': skm.cloud_tenant,
-                              'quantity': zon.quantity,
-                              'name': zon.name_convention,
-                              'image': zon.image_id,
-                              'size': zon.size_id,
-                              'zone_id': zon.id,
-                              'credential_id': ssh.id,
-                              'ssh_username': ssh.ssh_user,
-                              'ssh_key_pri': ssh.ssh_key_pri,
-                              'ssh_key_pub': ssh.ssh_key_pub,
-                              'key_name': ssh.key_name,
-                              'job': 'build'}
-
-                    if skm.cloud_url:
-                        packet['cloud_url'] = skm.cloud_url
-                    if skm.cloud_version:
-                        packet['cloud_version'] = skm.cloud_version
-                    if zon.schematic_runlist:
-                        packet['schematic_runlist'] = zon.schematic_runlist
-                    if zon.schematic_script:
-                        packet['schematic_script'] = zon.schematic_script
-                    if zon.cloud_networks:
-                        packet['cloud_networks'] = zon.networks
-                    if zon.security_groups:
-                        packet['security_groups'] = zon.security_groups
-                    if zon.inject_files:
-                        packet['inject_files'] = zon.inject_files
-                    if zon.cloud_init:
-                        packet['cloud_init'] = zon.cloud_init
-
+                    packet = build_cell(job='build',
+                                        schematic=skm,
+                                        zone=zon,
+                                        sshkey=ssh,
+                                        config=con)
                     LOG.debug(packet)
                     QUEUE.put(packet)
             _DB.session.commit()
