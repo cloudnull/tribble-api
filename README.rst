@@ -123,7 +123,7 @@ Installation
         DB_ENGINE = mysql
         debug_mode = True
 
-  4. Use ``PIP`` to install "apache-libcloud", "fabric", "python-daemon==1.6", "SQLAlchemy", "Flask-RESTful", "Flask", and "Flask-SQLAlchemy"
+  4. Use ``PIP`` to install "apache-libcloud", "fabric", "python-daemon==1.6", "MySQL-python", "SQLAlchemy", "gevent", "Flask-RESTful", "Flask", and "Flask-SQLAlchemy"
   #. Go to the bin directory in the cloned application
   #. Run the file "dpc_dbcreate.py" (This will create the needed tables)
   #. Run the file "dpc_admin.py" (This will create you a user)
