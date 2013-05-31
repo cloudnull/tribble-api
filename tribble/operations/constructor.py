@@ -67,6 +67,19 @@ def bob_builder(nucleus):
                'ssh_key_pub': ssh.ssh_key_pub,
                'key_name': ssh.key_name}
     """
+    def ssh_deploy(nucleus):
+        from libcloud.compute.deployment import SSHKeyDeployment
+        from libcloud.compute.deployment import MultiStepDeployment
+        from libcloud.compute.deployment import ScriptDeployment
+        if nucleus.get('schematic_script'):
+            ssh = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
+            scr = ScriptDeployment(script=nucleus.get('schematic_script'))
+            dep = MultiStepDeployment([ssh, scr])
+        else:
+            dep = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
+        specs['deploy'] = dep
+        return specs
+
     try:
         conn = apiauth(packet=nucleus)
         if not conn:
@@ -110,10 +123,6 @@ def bob_builder(nucleus):
         if nucleus['cloud_provider'].upper() == 'AMAZON':
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
             specs['ssh_username'] = nucleus.get('ssh_username')
-        elif nucleus['cloud_provider'].upper() == 'OPENSTACK':
-            if nucleus.get('security_groups'):
-                sec_groups = nucleus.get('security_groups').split(',')
-                specs['ex_security_groups'] = sec_groups
         elif nucleus['cloud_provider'].upper() in ('OPENSTACK', 'RACKSPACE'):
             if nucleus.get('cloud_networks'):
                 networks = nucleus.get('cloud_networks').split(',')
@@ -121,19 +130,16 @@ def bob_builder(nucleus):
             if nucleus.get('inject_files'):
                 files = nucleus.get('inject_files').split(',')
                 specs['ex_files'] = files
-        specs['ex_keyname'] = nucleus.get('key_name')
-        specs['ex_userdata'] = nucleus.get('cloud_init')
+            if nucleus.get('security_groups'):
+                sec_groups = nucleus.get('security_groups').split(',')
+                specs['ex_security_groups'] = sec_groups
+        if nucleus['cloud_provider'].upper() == 'RACKSPACE':
+            specs = ssh_deploy(nucleus)
+        if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
+            specs['ex_keyname'] = nucleus.get('key_name')
+            specs['ex_userdata'] = nucleus.get('cloud_init')
     else:
-        from libcloud.compute.deployment import SSHKeyDeployment
-        from libcloud.compute.deployment import MultiStepDeployment
-        from libcloud.compute.deployment import ScriptDeployment
-        if nucleus.get('schematic_script'):
-            ssh = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
-            scr = ScriptDeployment(script=nucleus.get('schematic_script'))
-            dep = MultiStepDeployment([ssh, scr])
-        else:
-            dep = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
-        specs['deploy'] = dep
+        specs = ssh_deploy(nucleus)
 
     LOG.debug(specs)
     LOG.info('Building Node Based on %s' % specs)
