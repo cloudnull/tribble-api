@@ -111,12 +111,13 @@ def bob_builder(nucleus):
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
             specs['ssh_username'] = nucleus.get('ssh_username')
         elif nucleus['cloud_provider'].upper() == 'OPENSTACK':
-            if nucleus.get('cloud_networks'):
-                networks = nucleus.get('cloud_networks').split(',')
-                specs['networks'] = networks
             if nucleus.get('security_groups'):
                 sec_groups = nucleus.get('security_groups').split(',')
                 specs['ex_security_groups'] = sec_groups
+        elif nucleus['cloud_provider'].upper() in ('OPENSTACK', 'RACKSPACE'):
+            if nucleus.get('cloud_networks'):
+                networks = nucleus.get('cloud_networks').split(',')
+                specs['networks'] = networks
             if nucleus.get('inject_files'):
                 files = nucleus.get('inject_files').split(',')
                 specs['ex_files'] = files

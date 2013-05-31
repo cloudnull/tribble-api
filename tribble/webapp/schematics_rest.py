@@ -186,12 +186,14 @@ class SchematicsRest(Resource):
         auth = auth_mech(hdata=request.data,
                          rdata=request.headers)
         if not auth:
-            return {'response': 'Missing Information'}, 400
+            return {'response':
+                'Failure on Authentication and or Validation'}, 401
         else:
             user_id, _hd = auth
         try:
             if not all([user_id, _hd]):
-                return {'response': 'Missing Information'}, 400
+                return {'response':
+                    'Missing Information, Not Acceptable'}, 406
             LOG.info(_hd)
             skm = Schematics(auth_id=user_id,
                              cloud_key=_hd.get('cloud_key'),
