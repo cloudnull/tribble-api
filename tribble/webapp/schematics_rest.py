@@ -60,10 +60,10 @@ class SchematicsRest(Resource):
             _skm = Schematics.query.filter(
                 Schematics.auth_id == user_id).filter(
                 Schematics.id == _sid).first()
-            _cons = ConfigManager.query.filter(
-                ConfigManager.id == _skm.config_id).first()
             if not _skm:
                 return {'response': 'No Schematic Found'}, 404
+            _cons = ConfigManager.query.filter(
+                ConfigManager.id == _skm.config_id).first()
             zon = Zones.query.filter(
                 Zones.schematic_id == _skm.id).all()
             if zon:
@@ -77,6 +77,7 @@ class SchematicsRest(Resource):
                         servers = [ins.instance_id for ins in insts]
                         cell = build_cell(job='delete',
                                           schematic=_skm,
+                                          zone=zone,
                                           uuids=servers)
                         QUEUE.put(cell)
                     _DB.session.delete(zone)
@@ -84,9 +85,9 @@ class SchematicsRest(Resource):
                     key = InstancesKeys.query.filter(
                         InstancesKeys.id == zone.credential_id).first()
                     _DB.session.delete(key)
-            _DB.session.delete(_cons)
-            _DB.session.flush()
             _DB.session.delete(_skm)
+            _DB.session.flush()
+            _DB.session.delete(_cons)
             _DB.session.flush()
         except Exception:
             LOG.error(traceback.format_exc())

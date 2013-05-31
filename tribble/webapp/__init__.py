@@ -68,49 +68,59 @@ def build_cell(job, schematic=None, zone=None,
               'cloud_provider': schematic.cloud_provider,
               'job': job}
 
-    if schematic.cloud_tenant:
-        packet['cloud_tenant'] = schematic.cloud_tenant
-    if zone.quantity:
-        packet['quantity'] = zone.quantity
-    if zone.name_convention:
-        packet['name'] = zone.name_convention
-    if zone.image_id:
-        packet['image'] = zone.image_id
-    if zone.size_id:
-        packet['size'] = zone.size_id
-    if zone.id:
-        packet['zone_id'] = zone.id
-    if sshkey.id:
-        packet['credential_id'] = sshkey.id
-    if sshkey.ssh_user:
-        packet['ssh_username'] = sshkey.ssh_user
-    if sshkey.ssh_key_pri:
-        packet['ssh_key_pri'] = sshkey.ssh_key_pri
-    if sshkey.ssh_key_pub:
-        packet['ssh_key_pub'] = sshkey.ssh_key_pub
-    if sshkey.key_name:
-        packet['key_name'] = sshkey.key_name
-    if schematic.cloud_provider:
-        packet['cloud_provider'] = schematic.cloud_provider
-    if schematic.id:
-        packet['id'] = schematic.id
-    if uuids:
+    if not config is None:
+        pass
+
+    if not schematic is None:
+        if schematic.cloud_tenant:
+            packet['cloud_tenant'] = schematic.cloud_tenant
+        if schematic.cloud_url:
+            packet['cloud_url'] = schematic.cloud_url
+        if schematic.cloud_version:
+            packet['cloud_version'] = schematic.cloud_version
+        if schematic.cloud_provider:
+            packet['cloud_provider'] = schematic.cloud_provider
+        if schematic.id:
+            packet['id'] = schematic.id
+
+    if not sshkey is None:
+        if sshkey.id:
+            packet['credential_id'] = sshkey.id
+        if sshkey.ssh_user:
+            packet['ssh_username'] = sshkey.ssh_user
+        if sshkey.ssh_key_pri:
+            packet['ssh_key_pri'] = sshkey.ssh_key_pri
+        if sshkey.ssh_key_pub:
+            packet['ssh_key_pub'] = sshkey.ssh_key_pub
+        if sshkey.key_name:
+            packet['key_name'] = sshkey.key_name
+
+    if not zone is None:
+        if zone.quantity:
+            packet['quantity'] = zone.quantity
+        if zone.name_convention:
+            packet['name'] = zone.name_convention
+        if zone.image_id:
+            packet['image'] = zone.image_id
+        if zone.size_id:
+            packet['size'] = zone.size_id
+        if zone.id:
+            packet['zone_id'] = zone.id
+        if zone.schematic_runlist:
+            packet['schematic_runlist'] = zone.schematic_runlist
+        if zone.schematic_script:
+            packet['schematic_script'] = zone.schematic_script
+        if zone.cloud_networks:
+            packet['cloud_networks'] = zone.networks
+        if zone.security_groups:
+            packet['security_groups'] = zone.security_groups
+        if zone.inject_files:
+            packet['inject_files'] = zone.inject_files
+        if zone.cloud_init:
+            packet['cloud_init'] = zone.cloud_init
+
+    if not uuids is None:
         packet['uuids'] = uuids,
-    if schematic.cloud_url:
-        packet['cloud_url'] = schematic.cloud_url
-    if schematic.cloud_version:
-        packet['cloud_version'] = schematic.cloud_version
-    if zone.schematic_runlist:
-        packet['schematic_runlist'] = zone.schematic_runlist
-    if zone.schematic_script:
-        packet['schematic_script'] = zone.schematic_script
-    if zone.cloud_networks:
-        packet['cloud_networks'] = zone.networks
-    if zone.security_groups:
-        packet['security_groups'] = zone.security_groups
-    if zone.inject_files:
-        packet['inject_files'] = zone.inject_files
-    if zone.cloud_init:
-        packet['cloud_init'] = zone.cloud_init
+
     LOG.debug('Sent Packet for Work ==> \n\n%s\n\n' % packet)
     return packet
