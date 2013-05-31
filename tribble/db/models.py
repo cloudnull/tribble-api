@@ -264,12 +264,14 @@ class Instances(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, instance_id, instance_ip, server_name, zone_id):
+    def __init__(self, instance_id, public_ip, private_ip,
+                 server_name, zone_id):
         """
         Table for all created instances. If an instance is created it is
         recorded in this table and will pertain to a specified Zone.
         """
         self.instance_id = instance_id
-        self.instance_ip = instance_ip
+        self.public_ip = public_ip
+        self.private_ip = private_ip
         self.server_name = server_name
         self.zone_id = zone_id

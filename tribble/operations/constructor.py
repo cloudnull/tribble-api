@@ -43,7 +43,8 @@ def bob_destroyer(nucleus):
     nodes = [_im for _im in conn.list_nodes() if _im.uuid in nucleus['uuids']]
     LOG.debug(nodes)
     if nodes:
-        stupid_hack()
+        rest = stupid_hack()
+        time.sleep(rest)
         for node in nodes:
             conn.destroy_node(node)
 
@@ -73,7 +74,10 @@ def bob_builder(nucleus):
         from libcloud.compute.deployment import ScriptDeployment
         if nucleus.get('schematic_script'):
             ssh = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
-            scr = ScriptDeployment(script=nucleus.get('schematic_script'))
+            user_script = str(nucleus.get('schematic_script'))
+            scr = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
+                                         % utils.rand_string()),
+                                   script=user_script)
             dep = MultiStepDeployment([ssh, scr])
         else:
             dep = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
