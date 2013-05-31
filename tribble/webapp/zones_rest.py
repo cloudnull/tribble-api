@@ -5,7 +5,7 @@ from tribble.db.models import CloudAuth, Schematics
 from tribble.db.models import Instances, InstancesKeys, Zones
 from tribble.appsetup.start import _DB, LOG, QUEUE
 from tribble.operations import utils
-from tribble.webapp import pop_ts, parse_dict_list, auth_mech
+from tribble.webapp import pop_ts, parse_dict_list, auth_mech, build_cell
 
 
 class ZonesRest(Resource):
@@ -82,13 +82,10 @@ class ZonesRest(Resource):
                     for ins in insts:
                         _DB.session.delete(ins)
                         _DB.session.flush()
-                    cell = {'id': _skms.id,
-                            'cloud_key': _skms.cloud_key,
-                            'cloud_username': _skms.cloud_username,
-                            'cloud_region': _skms.cloud_region,
-                            'provider': _skms.cloud_provider,
-                            'uuids': [ins.instance_id for ins in insts],
-                            'job': 'delete'}
+                        cell = build_cell(job='delete',
+                                          schematic=_skms,
+                                          zone=zon)
+                        cell['uuids'] = [ins.instance_id for ins in insts]
                     QUEUE.put(cell)
                 key = InstancesKeys.query.filter(
                     InstancesKeys.id == zon.credential_id).first()
@@ -218,39 +215,10 @@ class ZonesRest(Resource):
                     _DB.session.add(zon)
                     _DB.session.flush()
 
-                    packet = {'cloud_key': skms.cloud_key,
-                              'cloud_username': skms.cloud_username,
-                              'cloud_region': skms.cloud_region,
-                              'cloud_provider': skms.cloud_provider,
-                              'cloud_tenant': skms.cloud_tenant,
-                              'quantity': zon.quantity,
-                              'name': zon.name_convention,
-                              'image': zon.image_id,
-                              'size': zon.size_id,
-                              'zone_id': zon.id,
-                              'credential_id': ssh.id,
-                              'ssh_username': ssh.ssh_user,
-                              'ssh_key_pri': ssh.ssh_key_pri,
-                              'ssh_key_pub': ssh.ssh_key_pub,
-                              'key_name': ssh.key_name,
-                              'job': 'build'}
-
-                    if skms.cloud_url:
-                        packet['cloud_url'] = skms.cloud_url
-                    if skms.cloud_version:
-                        packet['cloud_version'] = skms.cloud_version
-                    if zon.schematic_runlist:
-                        packet['schematic_runlist'] = zon.schematic_runlist
-                    if zon.schematic_script:
-                        packet['schematic_script'] = zon.schematic_script
-                    if zon.cloud_networks:
-                        packet['cloud_networks'] = zon.networks
-                    if zon.security_groups:
-                        packet['security_groups'] = zon.security_groups
-                    if zon.inject_files:
-                        packet['inject_files'] = zon.inject_files
-                    if zon.cloud_init:
-                        packet['cloud_init'] = zon.cloud_init
+                    packet = build_cell(job='build',
+                                        schematic=skms,
+                                        zone=zon,
+                                        sshkey=ssh)
 
                     LOG.debug(packet)
                     QUEUE.put(packet)

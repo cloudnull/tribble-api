@@ -39,14 +39,16 @@ def bob_destroyer(nucleus):
                'provider': skm.cloud_provider}
     """
     conn = apiauth(packet=nucleus)
-    LOG.debug(nucleus['uuids'])
-    nodes = [_im for _im in conn.list_nodes() if _im.uuid in nucleus['uuids']]
-    LOG.debug(nodes)
-    if nodes:
-        rest = stupid_hack()
-        time.sleep(rest)
-        for node in nodes:
-            conn.destroy_node(node)
+    node_list = [_nd for _nd in conn.list_nodes()]
+    LOG.debug('Nodes to Delete %s' % nucleus['uuids'])
+    LOG.debug('All nodes in the customer API ==> %s' % node_list)
+    for dim in node_list:
+        LOG.debug(dim.uuid)
+        for uuid in nucleus['uuids']:
+            if str(uuid) == dim.uuid:
+                LOG.info('DELETING %s' % dim.id)
+                time.sleep(stupid_hack())
+                conn.destroy_node(dim)
 
 
 def bob_builder(nucleus):
@@ -158,7 +160,6 @@ def bob_builder(nucleus):
                 _nd = conn.deploy_node(**specs)
             else:
                 _nd = conn.create_node(**specs)
-                node_post(info=_nd, atom=nucleus)
 
             for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
                 inst = [node for node in conn.list_nodes() if node.id == _nd.id]

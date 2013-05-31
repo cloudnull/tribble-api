@@ -57,7 +57,7 @@ def auth_mech(rdata, hdata=None):
 
 
 def build_cell(job, schematic=None, zone=None,
-               sshkey=None, config=None, uuids=None):
+               sshkey=None, config=None):
     """
     Craft the packet that we need to perform actions
     """
@@ -118,9 +118,6 @@ def build_cell(job, schematic=None, zone=None,
             packet['inject_files'] = zone.inject_files
         if zone.cloud_init:
             packet['cloud_init'] = zone.cloud_init
-
-    if not uuids is None:
-        packet['uuids'] = uuids,
 
     LOG.debug('Sent Packet for Work ==> \n\n%s\n\n' % packet)
     return packet

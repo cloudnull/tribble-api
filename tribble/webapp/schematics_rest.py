@@ -74,11 +74,10 @@ class SchematicsRest(Resource):
                         for ins in insts:
                             _DB.session.delete(ins)
                             _DB.session.flush()
-                        servers = [ins.instance_id for ins in insts]
                         cell = build_cell(job='delete',
                                           schematic=_skm,
-                                          zone=zone,
-                                          uuids=servers)
+                                          zone=zone)
+                        cell['uuids'] = [ins.instance_id for ins in insts]
                         QUEUE.put(cell)
                     _DB.session.delete(zone)
                     _DB.session.flush()
