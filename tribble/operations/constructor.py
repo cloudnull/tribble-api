@@ -30,6 +30,8 @@ def stupid_hack():
 
 def bob_destroyer(nucleus):
     """
+    Kill an instance from information in our DB
+
     nucleus = {'id': skm.id,
                'cloud_key': skm.cloud_key,
                'cloud_username': skm.cloud_username,
@@ -48,6 +50,8 @@ def bob_destroyer(nucleus):
 
 def bob_builder(nucleus):
     """
+    Build an instance from values in our DB
+
     nucleus = {'cloud_key': skm.cloud_key,
                'cloud_username': skm.cloud_username,
                'cloud_region': skm.cloud_region,
@@ -100,14 +104,35 @@ def bob_builder(nucleus):
              'timeout': 1200}
     LOG.debug(specs)
 
-    if nucleus['cloud_provider'].upper() in ('AMAZON', 'OPENSTACK'):
+    if nucleus['cloud_provider'].upper() in ('AMAZON',
+                                             'OPENSTACK',
+                                             'RACKSPACE'):
         if nucleus['cloud_provider'].upper() == 'AMAZON':
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
-        specs['ssh_username'] = nucleus.get('ssh_username')
+            specs['ssh_username'] = nucleus.get('ssh_username')
+        elif nucleus['cloud_provider'].upper() == 'OPENSTACK':
+            if nucleus.get('cloud_networks'):
+                networks = nucleus.get('cloud_networks').split(',')
+                specs['networks'] = networks
+            if nucleus.get('security_groups'):
+                sec_groups = nucleus.get('security_groups').split(',')
+                specs['ex_security_groups'] = sec_groups
+            if nucleus.get('inject_files'):
+                files = nucleus.get('inject_files').split(',')
+                specs['ex_files'] = files
         specs['ex_keyname'] = nucleus.get('key_name')
+        specs['ex_userdata'] = nucleus.get('cloud_init')
     else:
         from libcloud.compute.deployment import SSHKeyDeployment
-        specs['deploy'] = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
+        from libcloud.compute.deployment import MultiStepDeployment
+        from libcloud.compute.deployment import ScriptDeployment
+        if nucleus.get('schematic_script'):
+            ssh = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
+            scr = ScriptDeployment(script=nucleus.get('schematic_script'))
+            dep = MultiStepDeployment([ssh, scr])
+        else:
+            dep = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
+        specs['deploy'] = dep
 
     LOG.debug(specs)
     LOG.info('Building Node Based on %s' % specs)
@@ -122,13 +147,14 @@ def bob_builder(nucleus):
             for _retry in utils.retryloop(attempts=200, timeout=900, delay=20):
                 inst = [node for node in conn.list_nodes() if node.id == _nd.id]
                 if inst:
-                    if not inst[0].state == NodeState.RUNNING:
-                        try:
+                    try:
+                        ins = inst[0]
+                        if not ins.state == NodeState.RUNNING:
                             _retry()
-                        except utils.RetryError:
-                            raise DeploymentError('Never Active')
-                    else:
-                        _nd = inst[0]
+                        else:
+                            _nd = ins
+                    except utils.RetryError:
+                        raise DeploymentError('Never Active')
 
             LOG.debug(_nd.__dict__)
         except DeploymentError, exp:
@@ -153,12 +179,9 @@ def bob_builder(nucleus):
 
 
 def node_post(info, atom):
-    if not info.public_ips:
-        _ip = info.private_ips
-    else:
-        _ip = info.public_ips
     ins = Instances(instance_id=str(info.uuid),
-                    instance_ip=str(_ip),
+                    public_ip=str(info.public_ips),
+                    private_ip=str(info.private_ips),
                     server_name=str(info.name),
                     zone_id=atom.get('zone_id'))
     _DB.session.add(ins)

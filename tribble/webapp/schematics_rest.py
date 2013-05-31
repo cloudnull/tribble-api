@@ -153,6 +153,11 @@ class SchematicsRest(Resource):
                                     'image_id', _zon.image_id)
                                 _zon.name_convention = _dz.get(
                                     'name_convention', _zon.name_convention)
+                                _zon.security_groups = _hd.get(
+                                    'security_groups'),
+                                _zon.inject_files = _hd.get('inject_files'),
+                                _zon.cloud_networks = _hd.get('cloud_networks'),
+                                _zon.cloud_init = _hd.get('cloud_init'),
                                 _zon.quantity = _dz.get(
                                     'quantity', _zon.quantity)
                                 _zon.schematic_runlist = _dz.get(
@@ -160,7 +165,8 @@ class SchematicsRest(Resource):
                                 _zon.schematic_script = _dz.get(
                                     'schematic_script', _zon.schematic_script)
                                 _zon.zone_name = _dz.get('zone_name',
-                                                         utils.rand_string(length=20))
+                                                         utils.rand_string(
+                                                            length=20))
                                 _zon.size_id = _dz.get('size_id', _zon.size_id)
                                 _DB.session.add(_zon)
                                 _DB.session.flush()
@@ -227,6 +233,10 @@ class SchematicsRest(Resource):
                                 schematic_script=_zn.get('schematic_script'),
                                 zone_name=_zn.get('zone_name',
                                                   utils.rand_string(length=20)),
+                                security_groups=_zn.get('security_groups'),
+                                inject_files=_zn.get('inject_files'),
+                                cloud_networks=_zn.get('cloud_networks'),
+                                cloud_init=_zn.get('cloud_init'),
                                 size_id=_zn.get('size_id'),
                                 image_id=_zn.get('image_id'),
                                 name_convention=_zn.get('name_convention'),
@@ -260,6 +270,14 @@ class SchematicsRest(Resource):
                         packet['schematic_runlist'] = zon.schematic_runlist
                     if zon.schematic_script:
                         packet['schematic_script'] = zon.schematic_script
+                    if zon.cloud_networks:
+                        packet['cloud_networks'] = zon.networks
+                    if zon.security_groups:
+                        packet['security_groups'] = zon.security_groups
+                    if zon.inject_files:
+                        packet['inject_files'] = zon.inject_files
+                    if zon.cloud_init:
+                        packet['cloud_init'] = zon.cloud_init
 
                     LOG.debug(packet)
                     QUEUE.put(packet)

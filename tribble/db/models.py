@@ -168,6 +168,18 @@ class Zones(_DB.Model):
     schematic_script = _DB.Column('schematic_script',
                                   _DB.TEXT(),
                                   nullable=True)
+    security_groups = _DB.Column('security_groups',
+                                 _DB.TEXT(length=200),
+                                 nullable=True)
+    inject_files = _DB.Column('inject_files',
+                              _DB.BLOB(),
+                              nullable=True)
+    cloud_networks = _DB.Column('cloud_networks',
+                                _DB.TEXT(length=200),
+                                nullable=True)
+    cloud_init = _DB.Column('cloud_init',
+                            _DB.TEXT(length=4000),
+                            nullable=True)
     zone_name = _DB.Column('zone_name',
                            _DB.VARCHAR(length=200),
                            nullable=False)
@@ -202,12 +214,17 @@ class Zones(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, schematic_id, schematic_runlist, schematic_script,
+    def __init__(self, security_groups, inject_files, cloud_networks,
+                 cloud_init, schematic_id, schematic_runlist, schematic_script,
                  zone_name, size_id, image_id, name_convention, quantity,
                  credential_id):
         """
         Zones provide a specific setup for a collection of instances.
         """
+        self.security_groups = security_groups
+        self.inject_files = inject_files
+        self.cloud_networks = cloud_networks
+        self.cloud_init = cloud_init
         self.schematic_runlist = schematic_runlist
         self.schematic_id = schematic_id
         self.schematic_script = schematic_script
@@ -228,8 +245,10 @@ class Instances(_DB.Model):
         'Zones', primaryjoin='Instances.zone_id==Zones.id')
     instance_id = _DB.Column('instance_id',
                              _DB.VARCHAR(length=200))
-    instance_ip = _DB.Column('instance_ip',
-                             _DB.VARCHAR(length=200))
+    public_ip = _DB.Column('public_ip',
+                           _DB.VARCHAR(length=200))
+    private_ip = _DB.Column('private_ip',
+                            _DB.VARCHAR(length=200))
     server_name = _DB.Column('server_name',
                              _DB.VARCHAR(length=200))
     created_at = _DB.Column('created_at',
