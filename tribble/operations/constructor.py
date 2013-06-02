@@ -1,23 +1,11 @@
 import traceback
 import time
 import random
+from libcloud.compute.base import DeploymentError
 from tribble.db.models import Instances
 from tribble.appsetup.start import _DB, LOG
-from libcloud.compute.base import DeploymentError
-from tribble.operations.cloud_auth import apiauth
 from tribble.operations import utils
-
-
-class NoImageFound(Exception):
-    pass
-
-
-class NoSizeFound(Exception):
-    pass
-
-
-class DeadOnArival(Exception):
-    pass
+from tribble.operations import ret_conn, ret_image, ret_size
 
 
 def stupid_hack():
@@ -70,7 +58,29 @@ def bob_builder(nucleus):
                'ssh_key_pub': ssh.ssh_key_pub,
                'key_name': ssh.key_name}
     """
+    def wait_active(_nd):
+        """
+        Wait for a node to go active
+        """
+        for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
+            inst = [node for node in conn.list_nodes() if node.id == _nd.id]
+            if inst:
+                try:
+                    ins = inst[0]
+                    if not ins.state == NodeState.RUNNING:
+                        _retry()
+                    else:
+                        _nd = ins
+                except utils.RetryError:
+                    raise DeploymentError('ID:%s NAME:%s was Never Active'
+                                          % (_nd.id, _nd.name))
+                else:
+                    LOG.debug(_nd.__dict__)
+
     def ssh_deploy(nucleus):
+        """
+        Prepaire for a deployment Method
+        """
         from libcloud.compute.deployment import SSHKeyDeployment
         from libcloud.compute.deployment import MultiStepDeployment
         from libcloud.compute.deployment import ScriptDeployment
@@ -86,34 +96,19 @@ def bob_builder(nucleus):
         specs['deploy'] = dep
         return specs
 
-    try:
-        conn = apiauth(packet=nucleus)
-        if not conn:
-            raise DeadOnArival('No Connection Available')
+    conn = ret_conn(nucleus=nucleus)
+    if not conn:
+        raise DeploymentError('No Available Connection')
 
-        _size = [_sz for _sz in conn.list_sizes()
-                 if _sz.id == nucleus.get('size')]
-        if not _size:
-            raise NoSizeFound('Size not found')
-        else:
-            LOG.debug(_size)
+    image = ret_image(conn=conn, nucleus=nucleus)
+    if not image:
+        raise DeploymentError('No Image found')
 
-        _image = [_im for _im in conn.list_images()
-                  if _im.id == nucleus.get('image')]
-        if not _image:
-            raise NoImageFound('Image not found')
-        else:
-            LOG.debug(_image)
-    except Exception, exp:
-        LOG.warn(exp)
-        return False
-    else:
-        image = _image[0]
-        size = _size[0]
+    size = ret_size(conn=conn, nucleus=nucleus)
+    if not size:
+        raise DeploymentError('No Size ID Found')
 
-    rest = stupid_hack()
-    time.sleep(rest)
-
+    time.sleep(stupid_hack())
     node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
                           utils.rand_string())
     specs = {'name': node_name,
@@ -126,21 +121,9 @@ def bob_builder(nucleus):
     if nucleus['cloud_provider'].upper() in ('AMAZON',
                                              'OPENSTACK',
                                              'RACKSPACE'):
-        if nucleus['cloud_provider'].upper() == 'AMAZON':
-            specs['ssh_key'] = nucleus.get('ssh_key_pri')
-            specs['ssh_username'] = nucleus.get('ssh_username')
-        elif nucleus['cloud_provider'].upper() in ('OPENSTACK', 'RACKSPACE'):
-            if nucleus.get('cloud_networks'):
-                networks = nucleus.get('cloud_networks').split(',')
-                specs['networks'] = networks
-
-            if nucleus.get('inject_files'):
-                files = nucleus.get('inject_files').split(',')
-                specs['ex_files'] = files
-
-            if nucleus.get('security_groups'):
-                sec_groups = nucleus.get('security_groups').split(',')
-                specs['ex_security_groups'] = sec_groups
+        if nucleus.get('security_groups'):
+            sec_groups = nucleus.get('security_groups').split(',')
+            specs['ex_security_groups'] = sec_groups
 
         if nucleus['cloud_provider'].upper() == 'RACKSPACE':
             specs = ssh_deploy(nucleus)
@@ -148,6 +131,16 @@ def bob_builder(nucleus):
         if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
             specs['ex_keyname'] = nucleus.get('key_name')
             specs['ex_userdata'] = nucleus.get('cloud_init')
+            specs['ssh_key'] = nucleus.get('ssh_key_pri')
+            specs['ssh_username'] = nucleus.get('ssh_username')
+
+        if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'RACKSPACE'):
+            if nucleus.get('cloud_networks'):
+                networks = nucleus.get('cloud_networks').split(',')
+                specs['networks'] = networks
+            if nucleus.get('inject_files'):
+                files = nucleus.get('inject_files').split(',')
+                specs['ex_files'] = files
     else:
         specs = ssh_deploy(nucleus)
 
@@ -156,29 +149,17 @@ def bob_builder(nucleus):
     from libcloud.compute.types import NodeState
     for retry in utils.retryloop(attempts=5, timeout=900, delay=10):
         try:
+            time.sleep(stupid_hack())
             if 'deploy' in specs:
                 _nd = conn.deploy_node(**specs)
             else:
                 _nd = conn.create_node(**specs)
+                wait_active(_nd)
 
-            for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
-                inst = [node for node in conn.list_nodes() if node.id == _nd.id]
-                if inst:
-                    try:
-                        ins = inst[0]
-                        if not ins.state == NodeState.RUNNING:
-                            _retry()
-                        else:
-                            _nd = ins
-                    except utils.RetryError:
-                        raise DeploymentError('ID:%s NAME:%s was Never Active'
-                                              % (_nd.id, _nd.name))
-                    else:
-                        LOG.debug(_nd.__dict__)
         except DeploymentError, exp:
             LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
-                stupid_hack()
+                time.sleep(stupid_hack())
                 dead_node = [_nd for _nd in conn.list_nodes()
                              if (_nd.name == specs['name'] and
                                  _nd.state == NodeState.UNKNOWN)]

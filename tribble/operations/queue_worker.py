@@ -167,22 +167,21 @@ class MainDisptach(object):
         """
         from tribble.operations import constructor, utils
         try:
-            cell = queue.get(timeout=2)
-            self.logger.info(cell)
-            if cell['job'] == 'build':
-                job = constructor.bob_builder
-            elif cell['job'] == 'delete':
-                job = constructor.bob_destroyer
-            else:
-                raise NoJobToDo('No Job has been provided')
+            cells = queue.get(timeout=2)
+            self.logger.info(cells)
+            for cell in cells:
+                if cell['job'] == 'build':
+                    job = constructor.bob_builder
+                elif cell['job'] == 'delete':
+                    job = constructor.bob_destroyer
+                else:
+                    raise NoJobToDo('No Job has been provided')
 
-            try:
-                quantity = cell.get('quantity', 1)
+                qnty = int(cell.get('quantity', 1))
+                LOG.info('Quantity of Nodes to build == %s' % qnty)
                 utils.worker_proc(job_action=job,
                                   t_args=cell,
-                                  num_jobs=int(quantity))
-            except Exception:
-                self.logger.critical(traceback.format_exc())
+                                  num_jobs=qnty)
         except Exception:
             self.logger.debug('Nothing to pull from Queue')
         finally:

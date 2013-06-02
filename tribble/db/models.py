@@ -86,8 +86,8 @@ class ConfigManager(_DB.Model):
                                  _DB.VARCHAR(length=150),
                                  nullable=True)
     config_clientname = _DB.Column('config_clientname',
-                                               _DB.VARCHAR(length=150),
-                                               nullable=True)
+                                   _DB.VARCHAR(length=150),
+                                   nullable=True)
     config_validation_key = _DB.Column('config_validation_key',
                                        _DB.TEXT(),
                                        nullable=True)

@@ -69,7 +69,7 @@ def worker_proc(job_action, num_jobs, t_args=None):
     process_threads(processes=processes)
 
 
-def compute_workers(base_count=10):
+def compute_workers(base_count=5):
     from multiprocessing import cpu_count
     try:
         max_threads = (cpu_count() * base_count)
@@ -82,7 +82,7 @@ def process_threads(processes):
     """
     Process the built actions
     """
-    max_threads = compute_workers
+    max_threads = compute_workers()
     post_process = []
     while processes:
         jobs = len(processes)

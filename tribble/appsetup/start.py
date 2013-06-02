@@ -58,8 +58,10 @@ def application(conf, eng):
     """
     from flask import Flask
     app = Flask(__name__)
+
     for key in conf.keys():
         app.config[key] = conf[key]
+
     app.config['SQLALCHEMY_DATABASE_URI'] = eng
     app.config['SQLALCHEMY_POOL_SIZE'] = 250
     app.config['SQLALCHEMY_POOL_TIMEOUT'] = 60

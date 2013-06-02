@@ -69,7 +69,16 @@ def build_cell(job, schematic=None, zone=None,
               'job': job}
 
     if not config is None:
-        pass
+        if config.config_key:
+            packet['config_key'] = config.config_key
+        if config.config_server:
+            packet['config_server'] = config.config_server
+        if config.config_validation_key:
+            packet['config_validation_key'] = config.config_validation_key
+        if config.config_username:
+            packet['config_username'] = config.config_username
+        if config.config_clientname:
+            packet['config_clientname'] = config.config_clientname
 
     if not schematic is None:
         if schematic.cloud_tenant:

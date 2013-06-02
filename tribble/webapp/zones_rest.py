@@ -1,10 +1,9 @@
 import traceback
 from flask import request
 from flask.ext.restful import Resource
-from tribble.db.models import CloudAuth, Schematics
-from tribble.db.models import Instances, InstancesKeys, Zones
 from tribble.appsetup.start import _DB, LOG, QUEUE
 from tribble.operations import utils
+from tribble.purveyors import db_proc
 from tribble.webapp import pop_ts, parse_dict_list, auth_mech, build_cell
 
 
@@ -18,33 +17,27 @@ class ZonesRest(Resource):
             return {'response': 'Missing Information'}, 400
         try:
             if _sid:
-                skmss = Schematics.query.filter(
-                    Schematics.auth_id == user_id,
-                    Schematics.id == _sid).first()
+                _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
             else:
                 return {'response': 'No Schematic Specified'}, 400
 
-            if not skmss:
+            if not _skm:
                 return {'response': 'No Schematic found'}, 404
             else:
                 retskmss = []
                 if _zid:
-                    zon = Zones.query.filter(
-                        Zones.schematic_id == skmss.id,
-                        Zones.id == _zid).all()
+                    zon = [db_proc.get_zones_by_id(skm=_skm, zid=_zid)]
                 else:
-                    zon = Zones.query.filter(
-                        Zones.schematic_id == skmss.id).all()
+                    zon = db_proc.get_zones(skm=_skm)
                 if not zon:
                     return {'response': 'No Zone found'}, 404
                 else:
                     for zone in zon:
                         dzone = pop_ts(zone.__dict__)
-                        insts = Instances.query.filter(
-                            Instances.zone_id == zone.id).all()
-                        if insts:
+                        ints = db_proc.get_instances(zon=zone)
+                        if ints:
                             _di = dzone['instances'] = []
-                            for inst in insts:
+                            for inst in ints:
                                 _di.append(pop_ts(inst.__dict__))
                             dzone['num_instances'] = len(_di)
                         retskmss.append(dzone)
@@ -65,39 +58,33 @@ class ZonesRest(Resource):
         if not user_id:
             return {'response': 'You are not authorized'}, 401
         try:
-            _skms = Schematics.query.filter(
-                Schematics.auth_id == user_id).filter(
-                Schematics.id == _sid).first()
-            if not _skms:
+            _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
+            if not _skm:
                 return {'response': 'No Schematic Found'}, 404
-            zon = Zones.query.filter(
-                Zones.schematic_id == _skms.id,
-                Zones.id == _zid).first()
-            if not zon:
+            _zon = db_proc.get_zones_by_id(skm=_skm, zid=_zid)
+            if not _zon:
                 return {'response': 'No Zone Found'}, 404
             else:
-                insts = Instances.query.filter(
-                    Instances.zone_id == _zid).all()
-                if insts:
-                    for ins in insts:
-                        _DB.session.delete(ins)
-                        _DB.session.flush()
+                sess = _DB.session
+                ints = db_proc.get_instances(zon=_zon)
+                if ints:
+                    jobs = []
+                    for ins in ints:
+                        sess = db_proc.delete_item(session=sess, item=ins)
                         cell = build_cell(job='delete',
-                                          schematic=_skms,
-                                          zone=zon)
-                        cell['uuids'] = [ins.instance_id for ins in insts]
-                    QUEUE.put(cell)
-                key = InstancesKeys.query.filter(
-                    InstancesKeys.id == zon.credential_id).first()
-                _DB.session.delete(zon)
-                _DB.session.flush()
-                _DB.session.delete(key)
-                _DB.session.flush()
+                                          schematic=_skm,
+                                          zone=_zon)
+                    cell['uuids'] = [ins.instance_id for ins in ints]
+                    jobs.append(cell)
+                key = db_proc.get_instanceskeys(zon=_zon)
+                sess = db_proc.delete_item(session=sess, item=_zon)
+                sess = db_proc.delete_item(session=sess, item=key)
+                QUEUE.put(jobs)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
-            _DB.session.commit()
+            db_proc.commit_session(session=sess)
             return {'response': "Deletes Recieved"}, 203
 
     def put(self, _sid=None, _zid=None):
@@ -106,6 +93,8 @@ class ZonesRest(Resource):
         """
         if not _sid:
             return {'response': 'No Schematic specified'}, 400
+        if not _zid:
+            return {'response': 'No Zone specified'}, 400
 
         auth = auth_mech(hdata=request.data,
                          rdata=request.headers)
@@ -118,44 +107,24 @@ class ZonesRest(Resource):
                 return {'response': ('Missing Information %s %s'
                                      % (user_id, _hd))}, 400
             else:
-                skmss = Schematics.query.filter(
-                    Schematics.auth_id == user_id).filter(
-                    Schematics.id == _sid).first()
-            if skmss:
-                if _zid:
-                    zon = Zones.query.filter(
-                        Zones.schematic_id == skmss.id,
-                        Zones.id == _zid).first()
-                    if zon:
-                        zon.quantity = _hd.get('quantity', zon.quantity)
-                        zon.image_id = _hd.get('image_id', zon.image_id)
-                        zon.name_convention = _hd.get('name_convention',
-                                                      zon.name_convention)
-                        zon.security_groups = _hd.get('security_groups'),
-                        zon.inject_files = _hd.get('inject_files'),
-                        zon.cloud_networks = _hd.get('cloud_networks'),
-                        zon.cloud_init = _hd.get('cloud_init'),
-                        zon.quantity = _hd.get('quantity', zon.quantity)
-                        zon.schematic_runlist = _hd.get('schematic_runlist',
-                                                        zon.schematic_runlist)
-                        zon.schematic_script = _hd.get('schematic_script',
-                                                       zon.schematic_script)
-                        zon.zone_name = _hd.get('zone_name',
-                                                 utils.rand_string(length=20))
-                        zon.size_id = _hd.get('size_id', zon.size_id)
-                        _DB.session.add(zon)
-                        _DB.session.flush()
-                        _DB.session.commit()
-                    else:
-                        return {'response': 'No Zone Found'}, 404
+                _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
+            if _skm:
+                _zon = db_proc.get_zones_by_id(skm=_skm, zid=_zid)
+                if _zon:
+                    sess = _DB.session
+                    sess = db_proc.put_zone(session=sess,
+                                            zon=_zon,
+                                            put=_hd,
+                                            zput=_zon)
                 else:
-                    return {'response': 'No Zone specified'}, 400
+                    return {'response': 'No Zone Found'}, 404
             else:
                 return {'response': 'No Schematic Found'}, 404
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
+            db_proc.commit_session(session=sess)
             return {'response': "Updates Recieved"}, 201
 
     def post(self, _sid=None):
@@ -176,12 +145,13 @@ class ZonesRest(Resource):
                                      % (user_id, _hd))}, 400
             else:
                 LOG.info(_hd)
-                skms = Schematics.query.filter(
-                    Schematics.auth_id == user_id).filter(
-                    Schematics.id == _sid).first()
-            if not skms:
-                return {'response': 'No Schematic Found'}, 404
+                _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
+                if not _skm:
+                    return {'response': 'No Schematic Found'}, 404
+                else:
+                    sess = _DB.session
             if 'zones' in _hd:
+                jobs = []
                 for _zn in _hd['zones']:
                     key_data = _zn['instances_keys']
                     _ssh_user = key_data.get('ssh_user')
@@ -191,42 +161,29 @@ class ZonesRest(Resource):
                         from tribble.operations import fabrics
                         pub, pri = fabrics.KeyGen().build_ssh_key()
 
-                    ssh = InstancesKeys(ssh_user=_ssh_user,
-                                        ssh_key_pri=pri,
-                                        ssh_key_pub=pub,
-                                        key_name=key_data.get('key_name'))
-                    _DB.session.add(ssh)
-                    _DB.session.flush()
+                    _ssh = db_proc.post_instanceskeys(pri=pri,
+                                                     pub=pub,
+                                                     sshu=_ssh_user,
+                                                     key_data=key_data)
+                    sess = db_proc.add_item(session=sess, item=_ssh)
 
-                    zon = Zones(schematic_id=_sid,
-                                schematic_runlist=_zn.get('schematic_runlist'),
-                                schematic_script=_zn.get('schematic_script'),
-                                zone_name=_zn.get('zone_name',
-                                                  utils.rand_string(length=20)),
-                                security_groups=_zn.get('security_groups'),
-                                inject_files=_zn.get('inject_files'),
-                                cloud_networks=_zn.get('cloud_networks'),
-                                cloud_init=_zn.get('cloud_init'),
-                                size_id=_zn.get('size_id'),
-                                image_id=_zn.get('image_id'),
-                                name_convention=_zn.get('name_convention'),
-                                quantity=_zn.get('quantity'),
-                                credential_id=ssh.id)
-                    _DB.session.add(zon)
-                    _DB.session.flush()
+                    _zon = db_proc.post_zones(skm=_skm,
+                                             zon=_zn,
+                                             ssh=_ssh)
+                    sess = db_proc.add_item(session=sess, item=_zon)
 
                     packet = build_cell(job='build',
-                                        schematic=skms,
-                                        zone=zon,
-                                        sshkey=ssh)
-
+                                        schematic=_skm,
+                                        zone=_zon,
+                                        sshkey=_ssh)
+                    jobs.append(packet)
                     LOG.debug(packet)
-                    QUEUE.put(packet)
-            _DB.session.commit()
+                QUEUE.put(packet)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
+            db_proc.commit_session(session=sess)
             return {'response': ('Application requests have been recieved'
                                  ' for Schematic %s'
                                  % _sid)}, 200
