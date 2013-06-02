@@ -39,7 +39,10 @@ def bob_destroyer(nucleus):
             if str(uuid) == dim.uuid:
                 LOG.info('DELETING %s' % dim.id)
                 time.sleep(stupid_hack())
-                conn.destroy_node(dim)
+                try:
+                    conn.destroy_node(dim)
+                except Exception, exp:
+                    LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
 
 
 def bob_builder(nucleus):
