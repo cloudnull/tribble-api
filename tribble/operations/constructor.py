@@ -3,7 +3,7 @@ import time
 import random
 from libcloud.compute.base import DeploymentError
 from tribble.db.models import Instances
-from tribble.appsetup.start import _DB, LOG
+from tribble.appsetup.start import LOG
 from tribble.operations import utils
 from tribble.operations import ret_conn, ret_image, ret_size
 
@@ -26,7 +26,10 @@ def bob_destroyer(nucleus):
                'cloud_region': skm.cloud_region,
                'provider': skm.cloud_provider}
     """
-    conn = apiauth(packet=nucleus)
+    conn = ret_conn(nucleus=nucleus)
+    if not conn:
+        raise DeploymentError('No Available Connection')
+
     node_list = [_nd for _nd in conn.list_nodes()]
     LOG.debug('Nodes to Delete %s' % nucleus['uuids'])
     LOG.debug('All nodes in the customer API ==> %s' % node_list)
@@ -178,12 +181,10 @@ def bob_builder(nucleus):
 
 
 def node_post(info, atom):
-    ins = Instances(instance_id=str(info.uuid),
-                    public_ip=str(info.public_ips),
-                    private_ip=str(info.private_ips),
-                    server_name=str(info.name),
-                    zone_id=atom.get('zone_id'))
-    _DB.session.add(ins)
-    _DB.session.flush()
-    _DB.session.commit()
+    from tribble.appsetup.start import _DB
+    from tribble.purveyors import db_proc
+    sess = _DB.session
+    sess = db_proc.add_item(session=sess,
+                            item=db_proc.put_instance(ins=info, put=atom))
+    db_proc.commit_session(session=sess)
     LOG.info('Instance posted ID:%s NAME:%s' % (info.uuid, info.name))
