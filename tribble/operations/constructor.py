@@ -117,6 +117,7 @@ def bob_builder(nucleus):
     time.sleep(stupid_hack())
     node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
                           utils.rand_string())
+    nucleus['node_name'] = node_name
     specs = {'name': node_name,
              'image': image,
              'size': size,
@@ -128,8 +129,8 @@ def bob_builder(nucleus):
                        nucleus.get('config_validation_key'),
                        nucleus.get('config_clientname'),
                        nucleus.get('schematic_runlist'))
-
-    LOG.debug(specs)
+    LOG.debug('Checking for CHEF config ==> %s' % str(config_settings))
+    LOG.debug('Here are the specs for the build ==> %s' % specs)
 
     if nucleus['cloud_provider'].upper() in ('AMAZON',
                                              'OPENSTACK',
@@ -143,19 +144,10 @@ def bob_builder(nucleus):
 
         if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
             specs['ex_keyname'] = nucleus.get('key_name')
-            if not ('cloud_init' in nucleus or
-                    nucleus.get('cloud_init') is None):
-                if all(config_settings):
-                    from tribble.purveyors import cloudinit_chefbs as ccfi
-                    import yaml
-                    nucleus['node_name'] = node_name
-                    _chef_init = ccfi.input_cloudinit(nucleus=nucleus)
-                    chef_init = yaml.dump(_chef_init,
-                                          default_flow_style=False,
-                                          allow_unicode=False) % nucleus
-                    specs['ex_userdata'] = str(chef_init)
-                else:
-                    specs['ex_userdata'] = nucleus.get('cloud_init')
+            if all(config_settings):
+                chefinit = init_chefserver(nucleus=nucleus)
+                LOG.debug(chefinit)
+                specs['ex_userdata'] = chefinit
             else:
                 specs['ex_userdata'] = nucleus.get('cloud_init')
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
@@ -180,7 +172,7 @@ def bob_builder(nucleus):
             if 'deploy' in specs:
                 _nd = conn.deploy_node(**specs)
                 if all(config_settings):
-                    chefserver(nucleus=nucleus, ins=_nd)
+                    ssh_chefserver(nucleus=nucleus, ins=_nd)
             else:
                 _nd = conn.create_node(**specs)
                 wait_active(_nd)
@@ -238,7 +230,18 @@ def node_update(info, atom):
     LOG.info('Instance updated ID:%s NAME:%s' % (info.uuid, info.name))
 
 
-def chefserver(nucleus, ins):
+def init_chefserver(nucleus):
+    from tribble.purveyors import cloudinit_chefbs as ccfi
+    import yaml
+    _chef_init = ccfi.input_cloudinit(nucleus=nucleus)
+    chef_init = yaml.dump(_chef_init,
+                          default_flow_style=False,
+                          allow_unicode=False) % nucleus
+    LOG.debug(chef_init)
+    return str(chef_init)
+
+
+def ssh_chefserver(nucleus, ins):
     from tribble.purveyors import chef_server
     LOG.info('Begining Cheferization via SSH for %s' % ins.uuid)
     chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
