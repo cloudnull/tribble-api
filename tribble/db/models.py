@@ -104,12 +104,13 @@ class ConfigManager(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, config_key, config_server, config_username,
+    def __init__(self, config_key, config_env, config_server, config_username,
                  config_clientname, config_validation_key):
         """
         All Config Management is stored here.
         """
         self.config_key = config_key
+        self.config_env = config_env
         self.config_server = config_server
         self.config_username = config_username
         self.config_clientname = config_clientname

@@ -1,4 +1,5 @@
 from tribble.webapp import schematics_rest, zones_rest, redeploy_rest
+from tribble.webapp import narciss_rest
 from tribble.appsetup.start import LOG
 
 
@@ -21,3 +22,16 @@ def routes(api):
         LOG.debug(endpoint)
         met, uri = endpoint
         api.add_resource(met, uri)
+
+    api.add_resource(narciss_rest.BluePrints,
+                     '/v1/blue_prints')
+    api.add_resource(narciss_rest.BluePrints,
+                     '/v1/blue_prints/<_sid>')
+    api.add_resource(narciss_rest.ServerMaps,
+                     '/v1/blue_prints/<_sid>/server_maps')
+    api.add_resource(narciss_rest.ServerMaps,
+                     '/v1/blue_prints/<_sid>/server_maps/<_zid>')
+    api.add_resource(narciss_rest.Instances,
+                     '/v1/blue_prints/<_sid>/server_maps/<_zid>/instances')
+    api.add_resource(narciss_rest.Instances,
+                     '/v1/blue_prints/<_sid>/instances')

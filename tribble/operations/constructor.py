@@ -122,6 +122,13 @@ def bob_builder(nucleus):
              'size': size,
              'max_tries': 15,
              'timeout': 1200}
+
+    config_settings = (nucleus.get('config_key'),
+                       nucleus.get('config_server'),
+                       nucleus.get('config_validation_key'),
+                       nucleus.get('config_clientname'),
+                       nucleus.get('schematic_runlist'))
+
     LOG.debug(specs)
 
     if nucleus['cloud_provider'].upper() in ('AMAZON',
@@ -136,7 +143,21 @@ def bob_builder(nucleus):
 
         if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
             specs['ex_keyname'] = nucleus.get('key_name')
-            specs['ex_userdata'] = nucleus.get('cloud_init')
+            if not ('cloud_init' in nucleus or
+                    nucleus.get('cloud_init') is None):
+                if all(config_settings):
+                    from tribble.purveyors import cloudinit_chefbs as ccfi
+                    import yaml
+                    nucleus['node_name'] = node_name
+                    _chef_init = ccfi.input_cloudinit(nucleus=nucleus)
+                    chef_init = yaml.dump(_chef_init,
+                                          default_flow_style=False,
+                                          allow_unicode=False) % nucleus
+                    specs['ex_userdata'] = str(chef_init)
+                else:
+                    specs['ex_userdata'] = nucleus.get('cloud_init')
+            else:
+                specs['ex_userdata'] = nucleus.get('cloud_init')
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
             specs['ssh_username'] = nucleus.get('ssh_username')
 
@@ -158,6 +179,8 @@ def bob_builder(nucleus):
             time.sleep(stupid_hack())
             if 'deploy' in specs:
                 _nd = conn.deploy_node(**specs)
+                if all(config_settings):
+                    chefserver(nucleus=nucleus, ins=_nd)
             else:
                 _nd = conn.create_node(**specs)
                 wait_active(_nd)
@@ -173,7 +196,11 @@ def bob_builder(nucleus):
                     for node in dead_node:
                         LOG.warn('Removing Node that failed to Build ==> %s'
                                  % node)
-                        conn.destroy_node(node)
+                        try:
+                            _nd = conn.destroy_node(node)
+                        except Exception, exp:
+                            LOG.error('Node was not removed an error occured'
+                                      ' ==> %s' % exp)
                 retry()
             except utils.RetryError:
                 LOG.error(traceback.format_exc())
@@ -188,6 +215,31 @@ def node_post(info, atom):
     from tribble.purveyors import db_proc
     sess = _DB.session
     sess = db_proc.add_item(session=sess,
-                            item=db_proc.put_instance(ins=info, put=atom))
+                            item=db_proc.post_instance(ins=info, put=atom))
     db_proc.commit_session(session=sess)
     LOG.info('Instance posted ID:%s NAME:%s' % (info.uuid, info.name))
+
+
+def node_update(info, atom):
+    """
+    Put an update for a node and its information
+    """
+    from tribble.appsetup.start import _DB
+    from tribble.purveyors import db_proc
+    sess = _DB.session
+    instance = db_proc.get_instance_id(zid=atom.get('zone_id'),
+                                       iid=info.uuid)
+    up_instance = db_proc.put_instance(session=sess,
+                                       inst=instance,
+                                       put=info.__dict__)
+    sess = db_proc.add_item(session=sess,
+                            item=up_instance)
+    db_proc.commit_session(session=sess)
+    LOG.info('Instance updated ID:%s NAME:%s' % (info.uuid, info.name))
+
+
+def chefserver(nucleus, ins):
+    from tribble.purveyors import chef_server
+    LOG.info('Begining Cheferization via SSH for %s' % ins.uuid)
+    chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
+    chef.fab_chef_client(instance=ins.__dict__)

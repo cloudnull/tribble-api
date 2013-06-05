@@ -168,7 +168,7 @@ class MainDisptach(object):
         from tribble.operations import constructor, utils
         try:
             cells = queue.get(timeout=2)
-            self.logger.info(cells)
+            self.logger.debug(cells)
             for cell in cells:
                 if cell['job'] == 'build':
                     job = constructor.bob_builder
@@ -178,7 +178,7 @@ class MainDisptach(object):
                     raise NoJobToDo('No Job has been provided')
 
                 qnty = int(cell.get('quantity', 1))
-                LOG.info('Quantity of Nodes to build == %s' % qnty)
+                self.logger.info('Quantity of Nodes to build == %s' % qnty)
                 utils.worker_proc(job_action=job,
                                   t_args=cell,
                                   num_jobs=qnty)

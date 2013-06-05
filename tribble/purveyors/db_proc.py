@@ -1,10 +1,13 @@
 from sqlalchemy import and_
-from tribble.operations import utils
 from tribble.db.models import CloudAuth, Schematics, ConfigManager
 from tribble.db.models import Instances, InstancesKeys, Zones
 
 
 def post_zones(skm, zon, ssh):
+    """
+    post a new row for a zone
+    """
+    from tribble.operations import utils
     return Zones(schematic_id=skm.id,
                  schematic_runlist=zon.get('schematic_runlist'),
                  schematic_script=zon.get('schematic_script'),
@@ -21,6 +24,9 @@ def post_zones(skm, zon, ssh):
 
 
 def post_instanceskeys(pri, pub, sshu, key_data):
+    """
+    post a new row for a set of keys to an instance
+    """
     return InstancesKeys(ssh_user=sshu,
                          ssh_key_pri=pri,
                          ssh_key_pub=pub,
@@ -28,6 +34,9 @@ def post_instanceskeys(pri, pub, sshu, key_data):
 
 
 def post_schematic(session, con, uid, post):
+    """
+    post a new row for a schematic
+    """
     return Schematics(auth_id=uid,
                       config_id=con.id,
                       cloud_key=post.get('cloud_key'),
@@ -41,7 +50,11 @@ def post_schematic(session, con, uid, post):
 
 
 def post_configmanager(session, post):
+    """
+    post a new row for configuration management
+    """
     return ConfigManager(
+        config_env=post.get('config_env'),
         config_key=post.get('config_key'),
         config_server=post.get('config_server'),
         config_username=post.get('config_username'),
@@ -49,7 +62,33 @@ def post_configmanager(session, post):
         config_validation_key=post.get('config_validation_key'))
 
 
+def post_instance(ins, put):
+    """
+    Post information on an Instnace
+    """
+    return Instances(instance_id=str(ins.uuid),
+                     public_ip=str(ins.public_ips),
+                     private_ip=str(ins.private_ips),
+                     server_name=str(ins.name),
+                     zone_id=put.get('zone_id'))
+
+
+def put_instance(session, inst, put):
+    """
+    Post information on an Instnace
+    """
+    inst.public_ip = put.get('public_ip', inst.public_ip)
+    inst.private_ip = put.get('private_ip', inst.private_ip)
+    inst.server_name = put.get('server_name', inst.server_name)
+    session.add(inst)
+    session.flush()
+    return session
+
+
 def put_zone(session, zon, put, zput):
+    """
+    Put an update to the system for a zone
+    """
     zon.quantity = zput.get('quantity', zon.quantity)
     zon.image_id = zput.get('image_id', zon.image_id)
     zon.name_convention = zput.get('name_convention', zon.name_convention)
@@ -60,20 +99,23 @@ def put_zone(session, zon, put, zput):
     zon.quantity = zput.get('quantity', zon.quantity)
     zon.schematic_runlist = zput.get('schematic_runlist', zon.schematic_runlist)
     zon.schematic_script = zput.get('schematic_script', zon.schematic_script)
-    zon.zone_name = zput.get('zone_name', utils.rand_string(length=20))
+    zon.zone_name = zput.get('zone_name', zon.zone_name)
     zon.size_id = zput.get('size_id', zon.size_id)
     session.add(zon)
     session.flush()
     return session
 
 
-def put_configmanager(session, con, skm, put):
-    con.config_env = put.get('config_env', skm.config_env)
-    con.config_key = put.get('config_key', skm.config_key)
-    con.config_server = put.get('config_server', skm.config_server)
-    con.config_username = put.get('config_username', skm.config_username)
+def put_configmanager(session, con, put):
+    """
+    put an update to the system for a set of config management
+    """
+    con.config_env = put.get('config_env', con.config_env)
+    con.config_key = put.get('config_key', con.config_key)
+    con.config_server = put.get('config_server', con.config_server)
+    con.config_username = put.get('config_username', con.config_username)
     con.config_clientname = put.get('config_clientname',
-                                    con.config_validation_clientname)
+                                    con.config_clientname)
     con.config_validation_key = put.get('config_validation_key',
                                         con.config_validation_key)
     session.add(con)
@@ -97,12 +139,17 @@ def put_schematic_id(session, skm, put):
     return session
 
 
-def put_instance(ins, put):
-    return Instances(instance_id=str(ins.uuid),
-                     public_ip=str(ins.public_ips),
-                     private_ip=str(ins.private_ips),
-                     server_name=str(ins.name),
-                     zone_id=put.get('zone_id'))
+def put_instanceskeys(session, ssh, put):
+    """
+    Post information on an Instnace
+    """
+    ssh.ssh_user = put.get('ssh_user', ssh.ssh_user)
+    ssh.ssh_key_pri = put.get('ssh_key_pri', ssh.ssh_key_pri)
+    ssh.ssh_key_pub = put.get('private_ip', ssh.ssh_key_pub)
+    ssh.key_name = put.get('key_name', ssh.key_name)
+    session.add(ssh)
+    session.flush()
+    return session
 
 
 def get_schematic_id(sid, uid):
@@ -157,6 +204,14 @@ def get_instances(zon):
     return Instances.query.filter(Instances.zone_id == zon.id).all()
 
 
+def get_instance_id(zon, iid):
+    """
+    Look up schematics from Schematic ID and auth ID and return it
+    """
+    return Instances.query.filter(Instances.zone_id == zon.id,
+                                  Instances.id == iid).first()
+
+
 def get_instanceskeys(zon):
     """
     Look up keys for a zone and return them
@@ -175,10 +230,16 @@ def delete_item(session, item):
 
 
 def add_item(session, item):
+    """
+    Add something to a session and return the session
+    """
     session.add(item)
     session.flush()
     return session
 
 
 def commit_session(session):
+    """
+    Commit an active session
+    """
     return session.commit()

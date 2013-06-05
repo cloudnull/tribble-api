@@ -80,55 +80,6 @@ class SchematicsRest(Resource):
             db_proc.commit_session(session=sess)
             return {'response': "Deletes Recieved"}, 203
 
-    def put(self, _sid):
-        """
-        Update Cluster
-        """
-        if not _sid:
-            return {'response': 'Missing Information'}, 400
-
-        auth = auth_mech(hdata=request.data,
-                         rdata=request.headers)
-        if not auth:
-            return {'response': 'Missing Information'}, 400
-        else:
-            user_id, _hd = auth
-        try:
-            if not all([user_id, _hd]):
-                return {'response': 'Request Not Valid'}, 400
-            else:
-                _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
-                sess = _DB.session
-
-            if _skm:
-                sess = db_proc.put_schematic_id(session=sess, skm=_skm, put=_hd)
-                _con = db_proc.get_configmanager(skm=_skm)
-
-                if _con:
-                    sess = db_proc.put_configmanager(session=sess,
-                                                     con=_con,
-                                                     skm=_skm,
-                                                     put=_hd)
-
-                if 'zones' in _hd:
-                    zon_ids = [_zn['id'] for _zn in _hd['zones'] if 'id' in _zn]
-                    zon = db_proc.get_zones_by_ids(skm=_skm, zon_ids=zon_ids)
-                    for _zon in zon:
-                        for zone in _hd['zones']:
-                            if zone['id'] == _zon.id:
-                                sess = db_proc.put_zone(session=sess,
-                                                        zon=_zon,
-                                                        put=_hd,
-                                                        zput=zone)
-            else:
-                return {'response': 'No Schematic Found'}, 400
-        except Exception:
-            LOG.error(traceback.format_exc())
-            return {'response': 'Unexpected Error'}, 500
-        else:
-            db_proc.commit_session(session=sess)
-            return {'response': "Updates Recieved"}, 201
-
     def post(self):
         """
         Post a Cluster
@@ -148,6 +99,7 @@ class SchematicsRest(Resource):
             sess = _DB.session
             con = db_proc.post_configmanager(session=sess, post=_hd)
             sess = db_proc.add_item(session=sess, item=con)
+
             skm = db_proc.post_schematic(session=sess,
                                          con=con,
                                          uid=user_id,

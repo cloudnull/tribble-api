@@ -79,6 +79,8 @@ def build_cell(job, schematic=None, zone=None,
             packet['config_username'] = config.config_username
         if config.config_clientname:
             packet['config_clientname'] = config.config_clientname
+        if config.config_env:
+            packet['config_env'] = config.config_env
 
     if not schematic is None:
         if schematic.cloud_tenant:
@@ -130,3 +132,41 @@ def build_cell(job, schematic=None, zone=None,
 
     LOG.debug('Sent Packet for Work ==> \n\n%s\n\n' % packet)
     return packet
+
+
+def blueprint_validation(jtv):
+    """
+    Takes json to validate, the validation map will be a list of keys
+    that should Be present
+    """
+    import json
+    from flask import jsonify
+    from tribble.appsetup.start import LOG
+
+    blue_print = json.loads(jtv)
+    LOG.warn(jtv)
+    if not 'blue_print' in blue_print:
+        error_json = {"error_text": "no blue_print tag detected in json"}
+        return jsonify(error_json), 400
+
+    if not 'server_map' in blue_print['blue_print']:
+        error_json = {"error_text": "no server_map tag detected in json"}
+        return jsonify(error_json), 400
+
+    for server_map in blue_print['blue_print']['server_map']:
+        chk = {'name_convention': "You must specify a name convention",
+               'quantity': "You must specify a quantity of nodes to build",
+               'image_ref': "Please specify an image reference",
+               'flavor': "Please specify a valid flavor"}
+
+        for _chk in chk.keys():
+            if not _chk in server_map:
+                LOG.warn(chk[_chk])
+                return jsonify(error_text=chk[_chk]), 400
+
+        if not type(server_map['quantity']) is int:
+            not_int = "Please specify quantity as a whole number"
+            LOG.warn(not_int)
+            return jsonify(error_text=(not_int)), 400
+    LOG.debug('Narciss BluePrint for Work ==> \n\n%s\n\n' % blue_print)
+    return blue_print

@@ -152,6 +152,7 @@ class ZonesRest(Resource):
                     sess = _DB.session
             if 'zones' in _hd:
                 jobs = []
+                _con = db_proc.get_configmanager(skm=_skm)
                 for _zn in _hd['zones']:
                     key_data = _zn['instances_keys']
                     _ssh_user = key_data.get('ssh_user')
@@ -162,23 +163,24 @@ class ZonesRest(Resource):
                         pub, pri = fabrics.KeyGen().build_ssh_key()
 
                     _ssh = db_proc.post_instanceskeys(pri=pri,
-                                                     pub=pub,
-                                                     sshu=_ssh_user,
-                                                     key_data=key_data)
+                                                      pub=pub,
+                                                      sshu=_ssh_user,
+                                                      key_data=key_data)
                     sess = db_proc.add_item(session=sess, item=_ssh)
 
                     _zon = db_proc.post_zones(skm=_skm,
-                                             zon=_zn,
-                                             ssh=_ssh)
+                                              zon=_zn,
+                                              ssh=_ssh)
                     sess = db_proc.add_item(session=sess, item=_zon)
 
                     packet = build_cell(job='build',
                                         schematic=_skm,
                                         zone=_zon,
-                                        sshkey=_ssh)
+                                        sshkey=_ssh,
+                                        config=_con)
                     jobs.append(packet)
                     LOG.debug(packet)
-                QUEUE.put(packet)
+                QUEUE.put(jobs)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
