@@ -26,6 +26,7 @@ def bob_destroyer(nucleus):
                'cloud_region': skm.cloud_region,
                'provider': skm.cloud_provider}
     """
+    from tribble.operations import cheferizer
     conn = ret_conn(nucleus=nucleus)
     if not conn:
         raise DeploymentError('No Available Connection')
@@ -43,6 +44,10 @@ def bob_destroyer(nucleus):
                     conn.destroy_node(dim)
                 except Exception, exp:
                     LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
+                cheferizer.ChefMe(nucleus=nucleus,
+                                  name=dim.name,
+                                  function='chefer_remove_all',
+                                  logger=LOG)
 
 
 def bob_builder(nucleus):
