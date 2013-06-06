@@ -136,8 +136,7 @@ def bob_builder(nucleus):
 
         if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
             specs['ex_keyname'] = nucleus.get('key_name')
-            if nucleus.get('config_type'):
-                specs['ex_userdata'] = check_configmanager(nucleus=nucleus)
+            specs['ex_userdata'] = check_configmanager(nucleus=nucleus)
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
             specs['ssh_username'] = nucleus.get('ssh_username')
 
@@ -246,12 +245,15 @@ def ssh_chefserver(nucleus, ins):
 
 def check_configmanager(nucleus, ssh=None, instance=None):
     try:
-        if nucleus.get('config_type').upper() == 'CHEF_SERVER':
+        LOG.info('Looking for config management')
+        if nucleus.get('config_type', 'unknown').upper() == 'CHEF_SERVER':
+            LOG.info('Chef Server has been set for config management')
             if all([nucleus.get('config_key'),
                     nucleus.get('config_server'),
                     nucleus.get('config_validation_key'),
                     nucleus.get('config_clientname'),
                     nucleus.get('schematic_runlist')]):
+                LOG.info('Chef Server is confirmed as the config management')
                 if ssh:
                     ssh_chefserver(nucleus=nucleus,
                                    ins=instance)
@@ -261,5 +263,8 @@ def check_configmanager(nucleus, ssh=None, instance=None):
             else:
                 configinit = nucleus.get('cloud_init')
                 return configinit
+        else:
+            configinit = nucleus.get('cloud_init')
+            return configinit
     except Exception:
         LOG.error(traceback.format_exc())

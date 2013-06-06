@@ -79,6 +79,8 @@ def build_cell(job, schematic=None, zone=None,
             packet['config_username'] = config.config_username
         if config.config_clientname:
             packet['config_clientname'] = config.config_clientname
+        if config.config_type:
+            packet['config_type'] = config.config_type
         if config.config_env:
             packet['config_env'] = config.config_env
 

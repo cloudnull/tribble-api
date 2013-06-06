@@ -152,8 +152,7 @@ class Strapper(object):
                     put(StringIO('%s' % _sd),
                         remote_path='/tmp/cloud_chef.py',
                         use_sudo=True)
-                    self.logger.info('Using OPSCode Omnibus Installer'
-                                     ' for Chef Client')
+                    self.logger.info('Using Omnibus Installer for chef-client')
                     run("sudo bash /tmp/cloud_chef.py")
                     self.logger.info('Host "%s" is ready for action'
                                      % host)
