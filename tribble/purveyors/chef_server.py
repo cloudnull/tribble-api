@@ -18,6 +18,43 @@ node_name               '%(node_name)s'
 """
 
 
+PLACESH = """#!/usr/bin/env python
+# The cloud-init-er via Python
+import os
+import subprocess
+SCRIPT = \"\"\"%(script)s\"\"\"
+CLIENT = \"\"\"%(client)s\"\"\"
+VALID = \"\"\"%(valid)s\"\"\"
+FIRST = \"\"\"%(first_bt)s\"\"\"
+
+open('%(script_loc)s', 'w').write(SCRIPT)
+subprocess.call(['/bin/bash', '%(script_loc)s'])
+
+try:
+    os.remove('%(script_loc)s')
+except Exception:
+    print('File Not Found')
+
+try:
+    os.mkdir('%(dirname)s')
+except Exception:
+    print('Directory Exists')
+
+open('%(client_loc)s', 'w').write(CLIENT)
+open('%(valid_loc)s', 'w').write(VALID)
+open('%(first_bt_loc)s', 'w').write(FIRST)
+subprocess.call(['/usr/bin/chef-client',
+                 '-j',
+                 '%(first_bt_loc)s',
+                 '-c',
+                 '%(client_loc)s',
+                 '-E',
+                 '%(config_env)s',
+                 '-L',
+                 '/var/log/chef-client.log'])
+"""
+
+
 class ChefClientStartError(Exception):
     pass
 
@@ -37,7 +74,7 @@ class Strapper(object):
             _keyfile.write(self.nucleus['ssh_key_pri'])
         return keyfile
 
-    def chef_system(self, instance):
+    def chef_system(self):
         """
         Get ready to chef
         """
@@ -50,7 +87,7 @@ class Strapper(object):
         self.logger.info('Making Temp File for client.rb')
         build_crb = {'config_server': self.nucleus.get('config_server'),
                      'config_clientname': self.nucleus.get('config_clientname'),
-                     'node_name': instance.get('name')}
+                     'node_name': self.nucleus.get('node_name')}
         c_file = (CLIENTRB % build_crb)
         c_file_loc = '%s%sclient.rb' % (chef_dir, os.sep)
 
@@ -62,7 +99,7 @@ class Strapper(object):
         resp = conn.getresponse()
         r_r = resp.read()
         s_file = r_r
-        s_file_loc = '/tmp/install.sh'
+        s_file_loc = '/install.sh'
 
         LOG.info('Making my First Run JSON')
         run_list_args = self.nucleus['schematic_runlist'].split(',')
@@ -81,11 +118,17 @@ class Strapper(object):
         self.logger.debug('CHEF PREP ==> %s' % bs_system)
         return bs_system
 
+    def chef_cloudinit(self, nucleus):
+        _sd = self.chef_system()
+        _sd['config_env'] = nucleus.get('config_env')
+        chef_init = PLACESH % _sd
+        return chef_init
+
     def fab_chef_client(self, instance):
         """
         Bootstrap Chef Client on an instance using The omibus Installer
         """
-        _sd = self.chef_system(instance)
+        _sd = self.chef_system()
         self.logger.debug('recieved instance ==> %s' % instance)
         for host in ipsopenport(log=self.logger,
                                 instance=instance,
@@ -112,7 +155,7 @@ class Strapper(object):
                         use_sudo=True)
                     self.logger.info('Using OPSCode Omnibus Installer'
                                      ' for Chef Client')
-                    run("sudo bash /tmp/install.sh")
+                    run("sudo bash /install.sh")
 
                     self.logger.info('Creating CHEF dir')
                     run("if [ ! -d '%(dirname)s' ]; then sudo mkdir -p"
@@ -150,6 +193,9 @@ class Strapper(object):
                         % (_sd['first_bt_loc'],
                            _sd['client_loc'],
                            self.nucleus['config_env']))
+                    self.logger.info('Removing OPSCode Omnibus Installer'
+                                     ' for Chef Client')
+                    run("sudo rm /install.sh")
 
                     # Log that the host is online
                     self.logger.info('Host "%s" is ready for action'

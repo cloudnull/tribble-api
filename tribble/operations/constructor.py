@@ -231,14 +231,10 @@ def node_update(info, atom):
 
 
 def init_chefserver(nucleus):
-    from tribble.purveyors import cloudinit_chefbs as ccfi
-    import yaml
-    _chef_init = ccfi.input_cloudinit(nucleus=nucleus)
-    chef_init = yaml.dump(_chef_init,
-                          default_flow_style=False,
-                          allow_unicode=False) % nucleus
-    LOG.debug(chef_init)
-    return str(chef_init)
+    from tribble.purveyors import chef_server
+    chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
+    chef_init = chef.chef_cloudinit(nucleus=nucleus)
+    return chef_init
 
 
 def ssh_chefserver(nucleus, ins):
