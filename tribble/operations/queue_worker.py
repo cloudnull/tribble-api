@@ -104,7 +104,6 @@ class MainDisptach(object):
         while self.system:
             try:
                 _qs = self.queue.qsize()
-                self.logger.debug('queue size %s' % _qs)
                 if (_qs == 0):
                     time.sleep(3)
                 elif (_qs >= self.amq):

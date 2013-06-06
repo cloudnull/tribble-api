@@ -81,8 +81,8 @@ def bob_builder(nucleus):
                     raise DeploymentError('ID:%s NAME:%s was Never Active'
                                           % (_nd.id, _nd.name))
                 else:
-                    return _nd
                     LOG.debug(_nd.__dict__)
+                    return _nd
 
     def ssh_deploy(nucleus):
         """
@@ -95,11 +95,13 @@ def bob_builder(nucleus):
             ssh = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
 
             user_script = str(nucleus.get('schematic_script'))
+            LOG.debug(user_script)
             scr = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
                                          % utils.rand_string()),
                                    script=user_script)
 
-            conf_init = check_configmanager(nucleus=nucleus, ssh=True)
+            conf_init = str(check_configmanager(nucleus=nucleus, ssh=True))
+            LOG.debug(conf_init)
             con = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
                                          % utils.rand_string()),
                                    script=conf_init)
