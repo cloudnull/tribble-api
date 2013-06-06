@@ -64,6 +64,7 @@ def bob_builder(nucleus):
                'ssh_key_pub': ssh.ssh_key_pub,
                'key_name': ssh.key_name}
     """
+
     def wait_active(_nd):
         """
         Wait for a node to go active
@@ -74,15 +75,15 @@ def bob_builder(nucleus):
                 try:
                     ins = inst[0]
                     if not ins.state == NodeState.RUNNING:
+                        LOG.info('Waiting for active ==> %s' % ins)
                         _retry()
                     else:
-                        _nd = ins
+                        LOG.info('Waiting for active ==> %s' % ins)
+                        return ins
                 except utils.RetryError:
+                    LOG.debug(inst)
                     raise DeploymentError('ID:%s NAME:%s was Never Active'
                                           % (_nd.id, _nd.name))
-                else:
-                    LOG.debug(_nd.__dict__)
-                    return _nd
 
     def ssh_deploy(nucleus):
         """
