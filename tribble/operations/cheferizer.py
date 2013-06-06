@@ -14,7 +14,7 @@ class ChefMe(object):
         self.env = nucleus.get('config_env')
         self.url = nucleus.get('config_server')
         self.user = nucleus.get('config_username')
-        self.temp_f = StringIO('%s' % nucleus.get('config_validation_key'))
+        self.temp_f = StringIO('%s' % nucleus.get('config_key'))
         self.logger = logger
         try:
             # Running CHEF Function
