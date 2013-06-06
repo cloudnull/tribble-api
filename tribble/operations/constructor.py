@@ -81,6 +81,7 @@ def bob_builder(nucleus):
                     raise DeploymentError('ID:%s NAME:%s was Never Active'
                                           % (_nd.id, _nd.name))
                 else:
+                    return _nd
                     LOG.debug(_nd.__dict__)
 
     def ssh_deploy(nucleus):
@@ -92,11 +93,18 @@ def bob_builder(nucleus):
         from libcloud.compute.deployment import ScriptDeployment
         if nucleus.get('schematic_script'):
             ssh = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
+
             user_script = str(nucleus.get('schematic_script'))
             scr = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
                                          % utils.rand_string()),
                                    script=user_script)
-            dep = MultiStepDeployment([ssh, scr])
+
+            conf_init = check_configmanager(nucleus=nucleus, ssh=True)
+            con = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
+                                         % utils.rand_string()),
+                                   script=conf_init)
+
+            dep = MultiStepDeployment([ssh, con, scr])
         else:
             dep = SSHKeyDeployment(key=nucleus.get('ssh_key_pub'))
         specs['deploy'] = dep
@@ -158,12 +166,9 @@ def bob_builder(nucleus):
             time.sleep(stupid_hack())
             if 'deploy' in specs:
                 _nd = conn.deploy_node(**specs)
-                check_configmanager(nucleus=nucleus,
-                                    ssh=True,
-                                    instance=_nd)
             else:
                 _nd = conn.create_node(**specs)
-                wait_active(_nd)
+                _nd = wait_active(_nd)
 
         except DeploymentError, exp:
             LOG.critical('Exception while Building Instance ==> %s' % exp)
@@ -218,13 +223,13 @@ def node_update(info, atom):
     LOG.info('Instance updated ID:%s NAME:%s' % (info.uuid, info.name))
 
 
-def init_chefserver(nucleus):
+def init_chefserver(nucleus, ssh=None):
     from tribble.purveyors import chef_server
     chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
     chef_init = chef.chef_cloudinit()
     script = nucleus.get('schematic_script')
-    if script:
-        _op = {'op_script': script,
+    if (script and not ssh):
+        _op = {'op_script': str(script),
                'op_script_loc': '/tmp/schematic_script.sh'}
         sop = ('try:\n'
                '    OP_SCRIPT = \"\"\"%(op_script)s\"\"\"\n'
@@ -236,14 +241,7 @@ def init_chefserver(nucleus):
     return chef_init
 
 
-def ssh_chefserver(nucleus, ins):
-    from tribble.purveyors import chef_server
-    LOG.info('Begining Cheferization via SSH for %s' % ins.uuid)
-    chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
-    chef.fab_chef_client(instance=ins.__dict__)
-
-
-def check_configmanager(nucleus, ssh=None, instance=None):
+def check_configmanager(nucleus, ssh=None):
     try:
         LOG.info('Looking for config management')
         if nucleus.get('config_type', 'unknown').upper() == 'CHEF_SERVER':
@@ -254,17 +252,10 @@ def check_configmanager(nucleus, ssh=None, instance=None):
                     nucleus.get('config_clientname'),
                     nucleus.get('schematic_runlist')]):
                 LOG.info('Chef Server is confirmed as the config management')
-                if ssh:
-                    ssh_chefserver(nucleus=nucleus,
-                                   ins=instance)
-                else:
-                    configinit = init_chefserver(nucleus=nucleus)
-                    return configinit
+                return init_chefserver(nucleus=nucleus, ssh=ssh)
             else:
-                configinit = nucleus.get('cloud_init')
-                return configinit
+                return nucleus.get('cloud_init')
         else:
-            configinit = nucleus.get('cloud_init')
-            return configinit
+            return nucleus.get('cloud_init')
     except Exception:
         LOG.error(traceback.format_exc())
