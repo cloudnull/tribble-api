@@ -2,9 +2,10 @@
     "config_key": "",
     "config_server": "",
     "config_env": "",
-    "config_user": "",
-    "config_validation_clientname": "",
+    "config_username": "",
+    "config_clientname": "",
     "config_validation_key": "",
+    "config_type": "",
     "cloud_key": "",
     "cloud_url": "",
     "cloud_provider": "",
@@ -15,6 +16,10 @@
         {
             "schematic_runlist": "",
             "schematic_script": "",
+            "security_groups": "",
+            "inject_files": "",
+            "cloud_networks": "",
+            "cloud_init": "",
             "zone_name": "",
             "size_id": "",
             "image_id": "",
@@ -22,6 +27,9 @@
             "quantity": "",
             "instances_keys": {
                 "ssh_user": "root",
+                "ssh_key_pri": "",
+                "ssh_key_pub": "",
+                "key_name": ""
             }
         }
     ]
