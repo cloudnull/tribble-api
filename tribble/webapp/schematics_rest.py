@@ -31,7 +31,8 @@ class SchematicsRest(Resource):
                     con = db_proc.get_configmanager(skm=_skm)
                     if con:
                         dskm['config_manager'] = pop_ts(temp=con.__dict__)
-                retskms.append(dskm)
+                if dskm:
+                    retskms.append(dskm)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
