@@ -80,6 +80,8 @@ class ConfigManager(_DB.Model):
     config_server = _DB.Column('config_server',
                                _DB.VARCHAR(length=200),
                                nullable=True)
+    config_type = _DB.Column('config_type',
+                             _DB.VARCHAR(length=30))
     config_env = _DB.Column('config_env',
                             _DB.VARCHAR(length=30))
     config_username = _DB.Column('config_username',
@@ -104,13 +106,14 @@ class ConfigManager(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, config_key, config_env, config_server, config_username,
-                 config_clientname, config_validation_key):
+    def __init__(self, config_key, config_env, config_type, config_server,
+                 config_username, config_clientname, config_validation_key):
         """
         All Config Management is stored here.
         """
         self.config_key = config_key
         self.config_env = config_env
+        self.config_type = config_type
         self.config_server = config_server
         self.config_username = config_username
         self.config_clientname = config_clientname

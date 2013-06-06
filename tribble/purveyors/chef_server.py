@@ -118,9 +118,9 @@ class Strapper(object):
         self.logger.debug('CHEF PREP ==> %s' % bs_system)
         return bs_system
 
-    def chef_cloudinit(self, nucleus):
+    def chef_cloudinit(self):
         _sd = self.chef_system()
-        _sd['config_env'] = nucleus.get('config_env')
+        _sd['config_env'] = self.nucleus.get('config_env')
         chef_init = PLACESH % _sd
         return chef_init
 
@@ -128,7 +128,7 @@ class Strapper(object):
         """
         Bootstrap Chef Client on an instance using The omibus Installer
         """
-        _sd = self.chef_system()
+        _sd = self.chef_cloudinit()
         self.logger.debug('recieved instance ==> %s' % instance)
         for host in ipsopenport(log=self.logger,
                                 instance=instance,
@@ -148,56 +148,13 @@ class Strapper(object):
                               user=self.nucleus.get('ssh_user', 'root'),
                               port=self.nucleus.get('port', '22'),
                               host_string=host):
-
                     self.logger.info('Connecting to Host "%s"' % host)
-                    put(StringIO('%s' % _sd['script']),
-                        remote_path=_sd['script_loc'],
+                    put(StringIO('%s' % _sd),
+                        remote_path='/tmp/cloud_chef.py',
                         use_sudo=True)
                     self.logger.info('Using OPSCode Omnibus Installer'
                                      ' for Chef Client')
-                    run("sudo bash /install.sh")
-
-                    self.logger.info('Creating CHEF dir')
-                    run("if [ ! -d '%(dirname)s' ]; then sudo mkdir -p"
-                        " %(dirname)s 2>&1; else echo '%(dirname)s exists'; fi"
-                        % _sd)
-
-                    self.logger.info('Putting Validation Pem in place')
-                    put(StringIO('%s' % _sd['valid']),
-                        remote_path=_sd['valid_loc'],
-                        use_sudo=True)
-
-                    self.logger.info('Putting Client.rb in place')
-                    put(StringIO('%s' % _sd['client']),
-                        remote_path=_sd['client_loc'],
-                        use_sudo=True)
-
-                    self.logger.info('Backup Client.rb')
-                    b_c = ("if [ ! -f '/etc/chef/client.rb.orig' ]; then sudo"
-                           " cp /etc/chef/client.rb /etc/chef/client.rb.orig;"
-                           " else echo 'backup found'; fi > /dev/null")
-                    run(b_c)
-
-                    self.logger.info('Setting the first boot JSON file')
-                    put(StringIO('%s' % _sd['first_bt']),
-                        remote_path=_sd['first_bt_loc'],
-                        use_sudo=True)
-
-                    self.logger.info('Making sure the log directory is present')
-                    run("if [ ! -d '/var/log/chef' ]; then sudo mkdir"
-                        " -p /var/log/chef; fi")
-
-                    self.logger.info('Starting Chef')
-                    run("sudo chef-client -j %s -c %s -E %s -L"
-                        " /var/log/chef/chef-client.log"
-                        % (_sd['first_bt_loc'],
-                           _sd['client_loc'],
-                           self.nucleus['config_env']))
-                    self.logger.info('Removing OPSCode Omnibus Installer'
-                                     ' for Chef Client')
-                    run("sudo rm /install.sh")
-
-                    # Log that the host is online
+                    run("sudo bash /tmp/cloud_chef.py")
                     self.logger.info('Host "%s" is ready for action'
                                      % host)
                 disconnect_all()

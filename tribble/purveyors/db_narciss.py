@@ -20,7 +20,8 @@ def post_configmanager(session, post):
     Look up schematics from Schematic ID and auth ID and return it as a
     Narciss Blueprint
     """
-    return ConfigManager(config_env=post.get('chef_env'),
+    return ConfigManager(config_type=post.get('config_type', 'chef_server'),
+                         config_env=post.get('chef_env'),
                          config_key=post.get('chef_key'),
                          config_server=post.get('chef_server'),
                          config_username=post.get('chef_username'),
@@ -92,6 +93,7 @@ def put_configmanager(session, con, put):
     """
     put an update to the system for a set of config management
     """
+    con.config_type = put.get('config_type', 'chef_server')
     con.config_env = put.get('chef_env', con.config_env)
     con.config_key = put.get('chef_key', con.config_key)
     con.config_server = put.get('chef_server', con.config_server)

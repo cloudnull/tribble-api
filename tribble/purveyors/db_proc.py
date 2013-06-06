@@ -54,6 +54,7 @@ def post_configmanager(session, post):
     post a new row for configuration management
     """
     return ConfigManager(
+        config_type=post.get('config_type'),
         config_env=post.get('config_env'),
         config_key=post.get('config_key'),
         config_server=post.get('config_server'),
@@ -66,7 +67,7 @@ def post_instance(ins, put):
     """
     Post information on an Instnace
     """
-    return Instances(instance_id=str(ins.uuid),
+    return Instances(instance_id=str(ins.id),
                      public_ip=str(ins.public_ips),
                      private_ip=str(ins.private_ips),
                      server_name=str(ins.name),
@@ -110,6 +111,7 @@ def put_configmanager(session, con, put):
     """
     put an update to the system for a set of config management
     """
+    con.config_type = put.get('config_type', con.config_type)
     con.config_env = put.get('config_env', con.config_env)
     con.config_key = put.get('config_key', con.config_key)
     con.config_server = put.get('config_server', con.config_server)

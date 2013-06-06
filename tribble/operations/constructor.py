@@ -34,9 +34,9 @@ def bob_destroyer(nucleus):
     LOG.debug('Nodes to Delete %s' % nucleus['uuids'])
     LOG.debug('All nodes in the customer API ==> %s' % node_list)
     for dim in node_list:
-        LOG.debug(dim.uuid)
+        LOG.debug(dim.id)
         for uuid in nucleus['uuids']:
-            if str(uuid) == dim.uuid:
+            if str(uuid) == dim.id:
                 LOG.info('DELETING %s' % dim.id)
                 time.sleep(stupid_hack())
                 try:
@@ -123,15 +123,7 @@ def bob_builder(nucleus):
              'size': size,
              'max_tries': 15,
              'timeout': 1200}
-
-    config_settings = (nucleus.get('config_key'),
-                       nucleus.get('config_server'),
-                       nucleus.get('config_validation_key'),
-                       nucleus.get('config_clientname'),
-                       nucleus.get('schematic_runlist'))
-    LOG.debug('Checking for CHEF config ==> %s' % str(config_settings))
     LOG.debug('Here are the specs for the build ==> %s' % specs)
-
     if nucleus['cloud_provider'].upper() in ('AMAZON',
                                              'OPENSTACK',
                                              'RACKSPACE'):
@@ -144,12 +136,8 @@ def bob_builder(nucleus):
 
         if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
             specs['ex_keyname'] = nucleus.get('key_name')
-            if all(config_settings):
-                chefinit = init_chefserver(nucleus=nucleus)
-                LOG.debug(chefinit)
-                specs['ex_userdata'] = chefinit
-            else:
-                specs['ex_userdata'] = nucleus.get('cloud_init')
+            if nucleus.get('config_type'):
+                specs['ex_userdata'] = check_configmanager(nucleus=nucleus)
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
             specs['ssh_username'] = nucleus.get('ssh_username')
 
@@ -171,8 +159,9 @@ def bob_builder(nucleus):
             time.sleep(stupid_hack())
             if 'deploy' in specs:
                 _nd = conn.deploy_node(**specs)
-                if all(config_settings):
-                    ssh_chefserver(nucleus=nucleus, ins=_nd)
+                check_configmanager(nucleus=nucleus,
+                                    ssh=True,
+                                    instance=_nd)
             else:
                 _nd = conn.create_node(**specs)
                 wait_active(_nd)
@@ -209,7 +198,7 @@ def node_post(info, atom):
     sess = db_proc.add_item(session=sess,
                             item=db_proc.post_instance(ins=info, put=atom))
     db_proc.commit_session(session=sess)
-    LOG.info('Instance posted ID:%s NAME:%s' % (info.uuid, info.name))
+    LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))
 
 
 def node_update(info, atom):
@@ -233,7 +222,18 @@ def node_update(info, atom):
 def init_chefserver(nucleus):
     from tribble.purveyors import chef_server
     chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
-    chef_init = chef.chef_cloudinit(nucleus=nucleus)
+    chef_init = chef.chef_cloudinit()
+    script = nucleus.get('schematic_script')
+    if script:
+        _op = {'op_script': script,
+               'op_script_loc': '/tmp/schematic_script.sh'}
+        sop = ('try:\n'
+               '    OP_SCRIPT = \"\"\"%(op_script)s\"\"\"\n'
+               '    open(\'%(op_script_loc)s\', \'w\').write(OP_SCRIPT)\n'
+               '    subprocess.call([\'/bin/bash\', \'%(op_script_loc)s\'])\n'
+               'except Exception:\n'
+               '    print("Error When Running User Script")\n')
+        chef_init = chef_init + sop % _op
     return chef_init
 
 
@@ -242,3 +242,24 @@ def ssh_chefserver(nucleus, ins):
     LOG.info('Begining Cheferization via SSH for %s' % ins.uuid)
     chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
     chef.fab_chef_client(instance=ins.__dict__)
+
+
+def check_configmanager(nucleus, ssh=None, instance=None):
+    try:
+        if nucleus.get('config_type').upper() == 'CHEF_SERVER':
+            if all([nucleus.get('config_key'),
+                    nucleus.get('config_server'),
+                    nucleus.get('config_validation_key'),
+                    nucleus.get('config_clientname'),
+                    nucleus.get('schematic_runlist')]):
+                if ssh:
+                    ssh_chefserver(nucleus=nucleus,
+                                   ins=instance)
+                else:
+                    configinit = init_chefserver(nucleus=nucleus)
+                    return configinit
+            else:
+                configinit = nucleus.get('cloud_init')
+                return configinit
+    except Exception:
+        LOG.error(traceback.format_exc())
