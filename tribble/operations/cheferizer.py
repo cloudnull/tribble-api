@@ -1,3 +1,4 @@
+import traceback
 import chef.exceptions as chefexp
 import chef
 from StringIO import StringIO
@@ -29,9 +30,10 @@ class ChefMe(object):
             if function == 'chefer_remove_all':
                 self.chefer_remover(node_name=name, node=True)
                 self.chefer_remover(node_name=name)
-        except Exception:
-            self.logger.error('Fatal ERROR Happened with Cheferizing'
-                              'the node %s' % name)
+        except Exception, exp:
+            self.logger.warn('Fatal ERROR Happened with Cheferizing'
+                             'the node %s ==> %s' % (name, exp))
+            self.logger.error(traceback.format_exc())
 
     def chefer_setup(self, node_name):
         # Prep the Chef API
@@ -106,5 +108,7 @@ class ChefMe(object):
                               ' version Check you Chef Server and try again')
         except ChefSearchError:
             self.logger.warn('The Node %s was not found' % name)
-        except Exception:
-            self.logger.error('CHEF Failure when working on "%s"' % node_name)
+        except Exception, exp:
+            self.logger.warn('CHEF Failure when working on "%s" ==> %s'
+                             % (node_name, exp))
+            self.logger.error(traceback.format_exc())

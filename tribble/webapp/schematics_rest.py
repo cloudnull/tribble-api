@@ -65,7 +65,8 @@ class SchematicsRest(Resource):
                             sess = db_proc.delete_item(session=sess, item=ins)
                         cell = build_cell(job='delete',
                                           schematic=_skm,
-                                          zone=zone)
+                                          zone=zone,
+                                          config=_con)
                         cell['uuids'] = [ins.instance_id for ins in ints]
                         jobs.append(cell)
                     sess = db_proc.delete_item(session=sess, item=zone)

@@ -35,7 +35,6 @@ def bob_destroyer(nucleus):
     LOG.debug('Nodes to Delete %s' % nucleus['uuids'])
     LOG.debug('All nodes in the customer API ==> %s' % node_list)
     for dim in node_list:
-        LOG.debug(dim.id)
         for uuid in nucleus['uuids']:
             if str(uuid) == dim.id:
                 LOG.info('DELETING %s' % dim.id)
