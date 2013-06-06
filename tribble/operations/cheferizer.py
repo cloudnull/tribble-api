@@ -14,8 +14,10 @@ class ChefMe(object):
         self.env = nucleus.get('config_env')
         self.url = nucleus.get('config_server')
         self.user = nucleus.get('config_username')
-        self.temp_f = StringIO('%s' % nucleus.get('config_key'))
+        self.temp_f = str(nucleus.get('config_key'))
         self.logger = logger
+
+        self.logger.debug(self.temp_f)
         try:
             # Running CHEF Function
             if function == 'chefer_setup':
@@ -37,7 +39,7 @@ class ChefMe(object):
 
     def chefer_setup(self, node_name):
         # Prep the Chef API
-        with chef.ChefAPI(self.url, self.temp_f, self.user):
+        with chef.ChefAPI(url=self.url, key=self.temp_f, client=self.user):
             # Search for the node
             chef_s = chef.Search('node', q='name:*%s*' % node_name)
             if chef_s:
@@ -62,7 +64,7 @@ class ChefMe(object):
 
     def chefer_remover(self, node_name, node=False):
         try:
-            with chef.ChefAPI(self.url, self.temp_f, self.user):
+            with chef.ChefAPI(url=self.url, key=self.temp_f, client=self.user):
                 if node:
                     self.logger.info('Removing "%s" from CHEF Nodes'
                                      % node_name)

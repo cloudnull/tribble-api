@@ -35,18 +35,17 @@ def bob_destroyer(nucleus):
     LOG.debug('Nodes to Delete %s' % nucleus['uuids'])
     LOG.debug('All nodes in the customer API ==> %s' % node_list)
     for dim in node_list:
-        for uuid in nucleus['uuids']:
-            if str(uuid) == dim.id:
-                LOG.info('DELETING %s' % dim.id)
-                time.sleep(stupid_hack())
-                try:
-                    conn.destroy_node(dim)
-                except Exception, exp:
-                    LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
-                cheferizer.ChefMe(nucleus=nucleus,
-                                  name=dim.name.lower(),
-                                  function='chefer_remove_all',
-                                  logger=LOG)
+        if dim.id in nucleus['uuids']:
+            LOG.info('DELETING %s' % dim.id)
+            time.sleep(stupid_hack())
+            try:
+                conn.destroy_node(dim)
+            except Exception, exp:
+                LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
+            cheferizer.ChefMe(nucleus=nucleus,
+                              name=dim.name.lower(),
+                              function='chefer_remove_all',
+                              logger=LOG)
 
 
 def bob_builder(nucleus):
