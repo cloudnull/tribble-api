@@ -131,8 +131,9 @@ def bob_builder(nucleus):
         raise DeploymentError('No Size ID Found')
 
     time.sleep(stupid_hack())
-    node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
-                          utils.rand_string()).lower()
+    _node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
+                           utils.rand_string())
+    node_name = _node_name.lower()
     nucleus['node_name'] = node_name
     specs = {'name': node_name,
              'image': image,
