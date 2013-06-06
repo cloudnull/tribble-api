@@ -45,7 +45,7 @@ def bob_destroyer(nucleus):
                 except Exception, exp:
                     LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
                 cheferizer.ChefMe(nucleus=nucleus,
-                                  name=dim.name,
+                                  name=dim.name.lower(),
                                   function='chefer_remove_all',
                                   logger=LOG)
 
