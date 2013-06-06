@@ -132,7 +132,7 @@ def bob_builder(nucleus):
 
     time.sleep(stupid_hack())
     node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
-                          utils.rand_string())
+                          utils.rand_string()).lower()
     nucleus['node_name'] = node_name
     specs = {'name': node_name,
              'image': image,
