@@ -67,6 +67,7 @@ def bob_builder(nucleus):
                'ssh_key_pub': ssh.ssh_key_pub,
                'key_name': ssh.key_name}
     """
+    from tribble.operations import config_manager as _cm
 
     def wait_active(_nd):
         """
@@ -104,7 +105,7 @@ def bob_builder(nucleus):
                                          % utils.rand_string()),
                                    script=user_script)
 
-            conf_init = str(check_configmanager(nucleus=nucleus, ssh=True))
+            conf_init = str(_cm.check_configmanager(nucleus=nucleus, ssh=True))
             LOG.debug(conf_init)
             con = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
                                          % utils.rand_string()),
@@ -151,7 +152,7 @@ def bob_builder(nucleus):
 
         if nucleus['cloud_provider'].upper() in ('OPENSTACK', 'AMAZON'):
             specs['ex_keyname'] = nucleus.get('key_name')
-            specs['ex_userdata'] = check_configmanager(nucleus=nucleus)
+            specs['ex_userdata'] = _cm.check_configmanager(nucleus=nucleus)
             specs['ssh_key'] = nucleus.get('ssh_key_pri')
             specs['ssh_username'] = nucleus.get('ssh_username')
 
@@ -228,41 +229,3 @@ def node_update(info, atom):
                             item=up_instance)
     db_proc.commit_session(session=sess)
     LOG.info('Instance updated ID:%s NAME:%s' % (info.uuid, info.name))
-
-
-def init_chefserver(nucleus, ssh=None):
-    from tribble.purveyors import chef_server
-    chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
-    chef_init = chef.chef_cloudinit()
-    script = nucleus.get('schematic_script')
-    if (script and not ssh):
-        _op = {'op_script': str(script),
-               'op_script_loc': '/tmp/schematic_script.sh'}
-        sop = ('try:\n'
-               '    OP_SCRIPT = \"\"\"%(op_script)s\"\"\"\n'
-               '    open(\'%(op_script_loc)s\', \'w\').write(OP_SCRIPT)\n'
-               '    subprocess.call([\'/bin/bash\', \'%(op_script_loc)s\'])\n'
-               'except Exception:\n'
-               '    print("Error When Running User Script")\n')
-        chef_init = chef_init + sop % _op
-    return chef_init
-
-
-def check_configmanager(nucleus, ssh=None):
-    try:
-        LOG.info('Looking for config management')
-        if nucleus.get('config_type', 'unknown').upper() == 'CHEF_SERVER':
-            LOG.info('Chef Server has been set for config management')
-            if all([nucleus.get('config_key'),
-                    nucleus.get('config_server'),
-                    nucleus.get('config_validation_key'),
-                    nucleus.get('config_clientname'),
-                    nucleus.get('schematic_runlist')]):
-                LOG.info('Chef Server is confirmed as the config management')
-                return init_chefserver(nucleus=nucleus, ssh=ssh)
-            else:
-                return nucleus.get('cloud_init')
-        else:
-            return nucleus.get('cloud_init')
-    except Exception:
-        LOG.error(traceback.format_exc())
