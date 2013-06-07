@@ -57,8 +57,11 @@ class ChefMe(object):
             n_s = chef.Node(name)
 
             # Append the Runlist/Roles
-            for _rl in self.run_list:
-                n_s.run_list.append(_rl)
+            if self.run_list is None:
+                n_s.run_list = []
+            else:
+                for _rl in self.run_list:
+                    n_s.run_list.append(_rl)
 
             # Add the environment variables
             n_s.chef_environment = self.env
