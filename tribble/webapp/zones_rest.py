@@ -66,6 +66,7 @@ class ZonesRest(Resource):
                 return {'response': 'No Zone Found'}, 404
             else:
                 sess = _DB.session
+                _con = db_proc.get_configmanager(skm=_skm)
                 ints = db_proc.get_instances(zon=_zon)
                 if ints:
                     jobs = []
@@ -73,7 +74,8 @@ class ZonesRest(Resource):
                         sess = db_proc.delete_item(session=sess, item=ins)
                         cell = build_cell(job='delete',
                                           schematic=_skm,
-                                          zone=_zon)
+                                          zone=_zon,
+                                          config=_con)
                     cell['uuids'] = [ins.instance_id for ins in ints]
                     jobs.append(cell)
                 key = db_proc.get_instanceskeys(zon=_zon)

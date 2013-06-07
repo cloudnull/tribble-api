@@ -156,7 +156,7 @@ class MainDisptach(object):
         if os.path.isfile(pid):
             os.remove(pid)
 
-    def work_doer(self, queue):
+    def work_doer(self, queue, qnty=1):
         """
         This is the "doing part of the work thread. Once an Item is taken out of
         the queue, it is processed. The first action of the process is to
@@ -170,6 +170,7 @@ class MainDisptach(object):
             self.logger.debug(cells)
             for cell in cells:
                 if cell['job'] == 'build':
+                    qnty = int(cell.get('quantity', 1))
                     job = constructor.bob_builder
                 elif cell['job'] == 'delete':
                     job = constructor.bob_destroyer
@@ -178,7 +179,6 @@ class MainDisptach(object):
                 else:
                     raise NoJobToDo('No Job has been provided')
 
-                qnty = int(cell.get('quantity', 1))
                 self.logger.info('Quantity of Nodes to build == %s' % qnty)
                 utils.worker_proc(job_action=job,
                                   t_args=cell,
