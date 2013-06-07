@@ -57,8 +57,8 @@ def bob_builder(nucleus):
                'cloud_region': skm.cloud_region,
                'quantity': zon.quantity,
                'name': '%s%s' % (zon.name_convention, rand_string()),
-               'image': zon.image_id,
-               'size': zon.size_id,
+               'image_id': zon.image_id,
+               'size_id': zon.size_id,
                'credential_id': ssh.id,
                'schematic_script': zon.schematic_script,
                'provider': skm.cloud_provider,
@@ -121,22 +121,22 @@ def bob_builder(nucleus):
     if not conn:
         raise DeploymentError('No Available Connection')
 
-    image = ret_image(conn=conn, nucleus=nucleus)
-    if not image:
-        raise DeploymentError('No Image found')
+    image_id = ret_image(conn=conn, nucleus=nucleus)
+    if not image_id:
+        raise DeploymentError('No image_id found')
 
-    size = ret_size(conn=conn, nucleus=nucleus)
-    if not size:
-        raise DeploymentError('No Size ID Found')
+    size_id = ret_size(conn=conn, nucleus=nucleus)
+    if not size_id:
+        raise DeploymentError('No size_id Found')
 
     time.sleep(stupid_hack())
-    _node_name = '%s%s' % (nucleus.get('name', utils.rand_string()),
+    _node_name = '%s%s' % (nucleus.get('name_convention', utils.rand_string()),
                            utils.rand_string())
     node_name = _node_name.lower()
     nucleus['node_name'] = node_name
     specs = {'name': node_name,
-             'image': image,
-             'size': size,
+             'image': image_id,
+             'size': size_id,
              'max_tries': 15,
              'timeout': 1200}
     LOG.debug('Here are the specs for the build ==> %s' % specs)
