@@ -27,7 +27,7 @@ class ChefMe(object):
                 self.chefer_remover(node_name=name, node=True)
 
             if function == 'chefer_client_remove':
-                self.chefer_remover(node_name=name, client=True)
+                self.chefer_remover(node_name=name)
 
             if function == 'chefer_remove_all':
                 self.chefer_remover(node_name=name, node=True)

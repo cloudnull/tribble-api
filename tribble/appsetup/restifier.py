@@ -13,9 +13,9 @@ def routes(api):
            'ssizs': (zones_rest.ZonesRest, '/v1/schematics/<_sid>/zones'),
            'ssizsi': (zones_rest.ZonesRest,
                       '/v1/schematics/<_sid>/zones/<_zid>'),
-           'ssir': (redeploy_rest.SchematicsRedeploy,
+           'ssir': (redeploy_rest.RedeployRestRdp,
                     '/v1/schematics/<_sid>/redeploy'),
-           'ssizsir': (redeploy_rest.SchematicsRedeploy,
+           'ssizsir': (redeploy_rest.RedeployRestRdp,
                        '/v1/schematics/<_sid>/zones/<_zid>/redeploy')}
 
     for endpoint in uri.values():

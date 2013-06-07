@@ -164,7 +164,7 @@ class MainDisptach(object):
         authentication is bad, then the method will log the authentication
         failure, or raise an exception.
         """
-        from tribble.operations import constructor, utils
+        from tribble.operations import constructor, utils, config_manager
         try:
             cells = queue.get(timeout=2)
             self.logger.debug(cells)
@@ -173,6 +173,8 @@ class MainDisptach(object):
                     job = constructor.bob_builder
                 elif cell['job'] == 'delete':
                     job = constructor.bob_destroyer
+                elif cell['job'] == 'reconfig':
+                    job = config_manager.chef_update_instances
                 else:
                     raise NoJobToDo('No Job has been provided')
 
