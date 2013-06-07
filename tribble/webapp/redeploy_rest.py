@@ -43,6 +43,7 @@ class RedeployRestRdp(Resource):
                                         sshkey=key,
                                         config=con)
                     packet['quantity'] = difference
+                    LOG.debug(packet)
                     jobs.append(packet)
                     msg = ('Building %s Instances for Zone %s'
                            % (difference, zon.id))
@@ -54,8 +55,13 @@ class RedeployRestRdp(Resource):
                                         zone=zon,
                                         sshkey=key,
                                         config=con)
-                    avail_ints = [ins.instance_id for ins in ints]
-                    packet['uuids'] = avail_ints[:difference]
+                    aints = [ins.instance_id for ins in ints]
+                    removing = aints[:difference]
+                    packet['uuids'] = removing
+                    for ins in removing:
+                        aints.pop(removing.index(ins))
+                    ints = [ins for ins in ints if ins.instance_id in aints]
+                    LOG.debug(packet)
                     jobs.append(packet)
                     msg = ('Removing %s Instances for Zone %s'
                            % (difference, zon.id))
@@ -70,6 +76,7 @@ class RedeployRestRdp(Resource):
                         num_inst = len(ints)
                         packet['quantity'] = num_inst
                         packet['db_instances'] = ints
+                        LOG.debug(packet)
                         jobs.append(packet)
                         msg = ('Reconfiguring %s Instances for Zone %s'
                                % (num_inst, zon.id))
