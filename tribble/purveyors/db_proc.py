@@ -90,7 +90,6 @@ def put_zone(session, zon, put, zput):
     """
     Put an update to the system for a zone
     """
-    zon.quantity = zput.get('quantity', zon.quantity)
     zon.image_id = zput.get('image_id', zon.image_id)
     zon.name_convention = zput.get('name_convention', zon.name_convention)
     zon.security_groups = put.get('security_groups', zon.security_groups)
