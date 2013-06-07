@@ -83,6 +83,16 @@ Example usage for using POST with the API
     curl -X POST --insecure -T /path/to/json.file -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>/zones
 
 
+Example usage for POST to redploy after an update
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    curl -X POST --insecure -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>
+    curl -X POST --insecure -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>/zones/<zone_id>
+
+
+
 Please see the example directory for an example of a valid JSON schematic with all available options. *NOTE* not all options are needed or other wise required.
 
 
