@@ -66,7 +66,7 @@ def ret_conn(nucleus):
 
 def ret_size(conn, nucleus):
     _size = [_sz for _sz in conn.list_sizes()
-             if _sz.id == nucleus.get('size')]
+             if _sz.id == nucleus.get('size_id')]
     if not _size:
         raise NoSizeFound('Size not found')
     else:
@@ -75,7 +75,7 @@ def ret_size(conn, nucleus):
 
 def ret_image(conn, nucleus):
     _image = [_im for _im in conn.list_images()
-              if _im.id == nucleus.get('image')]
+              if _im.id == nucleus.get('size_id')]
     if not _image:
         raise NoImageFound('Image not found')
     else:

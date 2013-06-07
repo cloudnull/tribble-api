@@ -56,8 +56,7 @@ def auth_mech(rdata, hdata=None):
         LOG.error(traceback.format_exc())
 
 
-def build_cell(job, schematic=None, zone=None,
-               sshkey=None, config=None):
+def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
     """
     Craft the packet that we need to perform actions
     """
