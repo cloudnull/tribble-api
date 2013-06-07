@@ -6,7 +6,7 @@ def pop_ts(temp):
     stamps from the provided data set. This is to assist when processing raw
     data through Queues, "datetime.datetime is not pickleble.
     """
-    poper = ['_sa_instance_state', 'heal_at', 'created_at', 'updated_at']
+    poper = ['_sa_instance_state', 'created_at', 'updated_at']
     for _ts in poper:
         if _ts in temp:
             temp.pop(_ts)
