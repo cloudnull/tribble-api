@@ -31,6 +31,11 @@ class SchematicsRest(Resource):
                     con = db_proc.get_configmanager(skm=_skm)
                     if con:
                         dskm['config_manager'] = pop_ts(temp=con.__dict__)
+                        _con = dskm['config_manager']
+                        if 'config_key' in _con:
+                            _con['config_key'] = 'KEY FOUND'
+                        if 'config_validation_key' in _con:
+                            _con['config_validation_key'] = 'KEY FOUND'
                 if dskm:
                     retskms.append(dskm)
         except Exception:
