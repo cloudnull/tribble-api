@@ -112,11 +112,11 @@ def build_cell(job, schematic=None, zone=None,
         if zone.quantity:
             packet['quantity'] = zone.quantity
         if zone.name_convention:
-            packet['name'] = zone.name_convention
+            packet['name_convention'] = zone.name_convention
         if zone.image_id:
-            packet['image'] = zone.image_id
+            packet['image_id'] = zone.image_id
         if zone.size_id:
-            packet['size'] = zone.size_id
+            packet['size_id'] = zone.size_id
         if zone.id:
             packet['zone_id'] = zone.id
         if zone.schematic_runlist:
@@ -124,7 +124,7 @@ def build_cell(job, schematic=None, zone=None,
         if zone.schematic_script:
             packet['schematic_script'] = zone.schematic_script
         if zone.cloud_networks:
-            packet['cloud_networks'] = zone.networks
+            packet['cloud_networks'] = zone.cloud_networks
         if zone.security_groups:
             packet['security_groups'] = zone.security_groups
         if zone.inject_files:
