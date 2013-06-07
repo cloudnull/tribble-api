@@ -77,9 +77,9 @@ class SchematicsRest(Resource):
                     sess = db_proc.delete_item(session=sess, item=zone)
                     key = db_proc.get_instanceskeys(zon=zone)
                     sess = db_proc.delete_item(session=sess, item=key)
+                QUEUE.put(jobs)
             sess = db_proc.delete_item(session=sess, item=_skm)
             sess = db_proc.delete_item(session=sess, item=_con)
-            QUEUE.put(jobs)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500

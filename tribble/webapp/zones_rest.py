@@ -114,8 +114,7 @@ class ZonesRest(Resource):
                     sess = _DB.session
                     sess = db_proc.put_zone(session=sess,
                                             zon=_zon,
-                                            put=_hd,
-                                            zput=_zon)
+                                            put=_hd)
                 else:
                     return {'response': 'No Zone Found'}, 404
             else:

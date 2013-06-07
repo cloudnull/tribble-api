@@ -47,6 +47,6 @@ def chef_update_instances(nucleus):
     if node_list:
         for dim in node_list:
             cheferizer.ChefMe(nucleus=nucleus,
-                              name=dim.name.lower(),
+                              name=dim.server_name.lower(),
                               function='chefer_setup',
                               logger=LOG)

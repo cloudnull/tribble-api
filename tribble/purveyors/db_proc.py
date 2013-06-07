@@ -86,21 +86,21 @@ def put_instance(session, inst, put):
     return session
 
 
-def put_zone(session, zon, put, zput):
+def put_zone(session, zon, put):
     """
     Put an update to the system for a zone
     """
-    zon.image_id = zput.get('image_id', zon.image_id)
-    zon.name_convention = zput.get('name_convention', zon.name_convention)
+    zon.image_id = put.get('image_id', zon.image_id)
+    zon.name_convention = put.get('name_convention', zon.name_convention)
     zon.security_groups = put.get('security_groups', zon.security_groups)
     zon.inject_files = put.get('inject_files', zon.inject_files)
     zon.cloud_networks = put.get('cloud_networks', zon.cloud_networks)
     zon.cloud_init = put.get('cloud_init', zon.cloud_init)
-    zon.quantity = zput.get('quantity', zon.quantity)
-    zon.schematic_runlist = zput.get('schematic_runlist', zon.schematic_runlist)
-    zon.schematic_script = zput.get('schematic_script', zon.schematic_script)
-    zon.zone_name = zput.get('zone_name', zon.zone_name)
-    zon.size_id = zput.get('size_id', zon.size_id)
+    zon.quantity = put.get('quantity', zon.quantity)
+    zon.schematic_runlist = put.get('schematic_runlist', zon.schematic_runlist)
+    zon.schematic_script = put.get('schematic_script', zon.schematic_script)
+    zon.zone_name = put.get('zone_name', zon.zone_name)
+    zon.size_id = put.get('size_id', zon.size_id)
     session.add(zon)
     session.flush()
     return session
