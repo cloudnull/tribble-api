@@ -45,6 +45,7 @@ class ChefMe(object):
         with chef.ChefAPI(url=self.url, key=self.temp_f, client=self.user):
             # Search for the node
             chef_s = chef.Search('node', q='name:*%s*' % node_name)
+            self.logger.debug('Nodes found in chef ==> %s' % chef_s)
             if chef_s:
                 chef_n = chef_s[0]['name']
                 if chef_n:

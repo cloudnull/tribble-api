@@ -35,6 +35,7 @@ class RedeployRestRdp(Resource):
                 ints = db_proc.get_instances(zon=zon)
                 base_qty = int(zon.quantity)
                 numr_qty = len(ints)
+
                 if base_qty > numr_qty:
                     difference = (base_qty - numr_qty)
                     packet = build_cell(job='build',
@@ -56,16 +57,24 @@ class RedeployRestRdp(Resource):
                                         sshkey=key,
                                         config=con)
                     aints = [ins.instance_id for ins in ints]
-                    removing = aints[:difference]
-                    packet['uuids'] = removing
-                    for ins in removing:
-                        aints.pop(removing.index(ins))
-                    ints = [ins for ins in ints if ins.instance_id in aints]
+                    remos = aints[:difference]
+                    packet['uuids'] = remos
+                    rems = [ins for ins in ints if ins.instance_id in remos]
+                    sess = _DB.session
+                    for ins in rems:
+                        sess = db_proc.delete_item(session=sess, item=ins)
+                    db_proc.commit_session(session=sess)
+
                     LOG.debug(packet)
                     jobs.append(packet)
                     msg = ('Removing %s Instances for Zone %s'
                            % (difference, zon.id))
                     retskms.append(msg)
+
+                    for ins in remos:
+                        aints.pop(aints.index(ins))
+                    ints = [ins for ins in ints if ins.instance_id in aints]
+
                 if con.config_type:
                     if ints:
                         packet = build_cell(job='reconfig',
