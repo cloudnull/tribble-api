@@ -87,6 +87,47 @@ class SchematicsRest(Resource):
             db_proc.commit_session(session=sess)
             return {'response': "Deletes Recieved"}, 203
 
+    def put(self, _sid):
+        """
+        Update Cluster
+        """
+        if not _sid:
+            return {'response': 'No Schematic specified'}, 400
+        auth = auth_mech(hdata=request.data,
+                         rdata=request.headers)
+        if not auth:
+            return {'response': 'Authentication or Data Type Failure'}, 401
+        else:
+            user_id, _hd = auth
+        try:
+            if not all([user_id, _hd]):
+                return {'response': 'Request Not Valid'}, 400
+            else:
+                _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
+                if not _skm:
+                    return {'response': 'No Schematic Found'}, 404
+                else:
+                    _con = db_proc.get_configmanager(skm=_skm)
+                    _zons = db_proc.get_zones(skm=_skm)
+                    sess = _DB.session
+                sess = db_proc.put_schematic_id(session=sess,
+                                                skm=_skm,
+                                                put=_hd)
+                sess = db_proc.put_configmanager(session=sess,
+                                                 con=_con,
+                                                 put=_hd)
+                if _zons:
+                    for _zon in _zons:
+                        sess = db_proc.put_zone(session=sess,
+                                                zon=_zon,
+                                                put=_hd)
+        except Exception:
+            LOG.error(traceback.format_exc())
+            return {'response': 'Unexpected Error'}, 500
+        else:
+            db_proc.commit_session(session=sess)
+            return {'response': "Updates Recieved"}, 201
+
     def post(self):
         """
         Post a Cluster
