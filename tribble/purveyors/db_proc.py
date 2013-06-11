@@ -11,6 +11,8 @@ def post_zones(skm, zon, ssh):
     return Zones(schematic_id=skm.id,
                  schematic_runlist=zon.get('schematic_runlist'),
                  schematic_script=zon.get('schematic_script'),
+                 zone_state=zon.get('zone_state', 'BUILT'),
+                 zone_msg=zon.get('zone_msg', 'Nothing to Report'),
                  zone_name=zon.get('zone_name', utils.rand_string(length=20)),
                  security_groups=zon.get('security_groups'),
                  inject_files=zon.get('inject_files'),
@@ -23,12 +25,11 @@ def post_zones(skm, zon, ssh):
                  credential_id=ssh.id)
 
 
-def post_instanceskeys(pri, pub, sshu, key_data):
+def post_instanceskeys(pub, sshu, key_data):
     """
     post a new row for a set of keys to an instance
     """
     return InstancesKeys(ssh_user=sshu,
-                         ssh_key_pri=pri,
                          ssh_key_pub=pub,
                          key_name=key_data.get('key_name'))
 
@@ -99,6 +100,8 @@ def put_zone(session, zon, put):
     zon.quantity = put.get('quantity', zon.quantity)
     zon.schematic_runlist = put.get('schematic_runlist', zon.schematic_runlist)
     zon.schematic_script = put.get('schematic_script', zon.schematic_script)
+    zon.zone_state = put.get('zone_state', zon.zone_state)
+    zon.zone_msg = put.get('zone_msg', zon.zone_msg)
     zon.zone_name = put.get('zone_name', zon.zone_name)
     zon.size_id = put.get('size_id', zon.size_id)
     session.add(zon)

@@ -41,8 +41,8 @@ def apiauth(packet):
                      'api_version': packet.get('cloud_version', '1.5')}
         elif provider.upper() == 'AMAZON':
             if packet.get('cloud_region').upper() in endpoints:
-                region = packet.get('cloud_region').upper()
-                driver = get_driver(endpoints[region])
+                region = packet.get('cloud_region')
+                driver = get_driver(endpoints[region.upper()])
                 specs = {'ex_force_auth_url': packet.get('cloud_url'),
                          'ex_force_auth_version': packet.get('cloud_version')}
             else:

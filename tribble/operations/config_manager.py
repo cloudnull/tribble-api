@@ -24,7 +24,7 @@ def check_configmanager(nucleus, ssh=False):
 
 
 def init_chefserver(nucleus, ssh=False):
-    from tribble.purveyors import chef_server
+    from tribble.purveyors.chef import chef_server
     chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
     chef_init = chef.chef_cloudinit()
     script = nucleus.get('schematic_script')
@@ -42,7 +42,7 @@ def init_chefserver(nucleus, ssh=False):
 
 
 def chef_update_instances(nucleus):
-    from tribble.operations import cheferizer
+    from tribble.purveyors.chef import cheferizer
     node_list = nucleus.get('db_instances')
     if node_list:
         for dim in node_list:

@@ -39,9 +39,6 @@ class InstancesKeys(_DB.Model):
     __tablename__ = 'instances_keys'
     ssh_user = _DB.Column('ssh_user',
                           _DB.VARCHAR(length=20))
-    ssh_key_pri = _DB.Column('ssh_key_pri',
-                             _DB.TEXT(length=4000),
-                             nullable=True)
     ssh_key_pub = _DB.Column('ssh_key_pub',
                              _DB.TEXT(length=4000),
                              nullable=True)
@@ -61,13 +58,12 @@ class InstancesKeys(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, ssh_user, ssh_key_pri, ssh_key_pub, key_name):
+    def __init__(self, ssh_user, ssh_key_pub, key_name):
         """
         The Keys are used to interface with an instance. This is used for
         instance bootstrap and or interfacing with an instance,
         """
         self.ssh_user = ssh_user
-        self.ssh_key_pri = ssh_key_pri
         self.ssh_key_pub = ssh_key_pub
         self.key_name = key_name
 
@@ -212,14 +208,20 @@ class Zones(_DB.Model):
     cloud_init = _DB.Column('cloud_init',
                             _DB.TEXT(length=4000),
                             nullable=True)
+    zone_msg = _DB.Column('zone_msg',
+                           _DB.VARCHAR(length=250),
+                           nullable=False)
+    zone_state = _DB.Column('zone_state',
+                           _DB.VARCHAR(length=15),
+                           nullable=False)
     zone_name = _DB.Column('zone_name',
                            _DB.VARCHAR(length=200),
                            nullable=False)
     size_id = _DB.Column('size_id',
-                         _DB.INTEGER(),
+                         _DB.VARCHAR(length=150),
                          nullable=False)
     image_id = _DB.Column('image_id',
-                          _DB.VARCHAR(length=50),
+                          _DB.VARCHAR(length=150),
                           nullable=False)
     name_convention = _DB.Column('name_convention',
                                  _DB.VARCHAR(length=30),
@@ -248,8 +250,8 @@ class Zones(_DB.Model):
 
     def __init__(self, security_groups, inject_files, cloud_networks,
                  cloud_init, schematic_id, schematic_runlist, schematic_script,
-                 zone_name, size_id, image_id, name_convention, quantity,
-                 credential_id):
+                 zone_msg, zone_state, zone_name, size_id, image_id,
+                 name_convention, quantity, credential_id):
         """
         Zones provide a specific setup for a collection of instances.
         """
@@ -260,6 +262,8 @@ class Zones(_DB.Model):
         self.schematic_runlist = schematic_runlist
         self.schematic_id = schematic_id
         self.schematic_script = schematic_script
+        self.zone_msg = zone_msg
+        self.zone_state = zone_state
         self.zone_name = zone_name
         self.size_id = size_id
         self.image_id = image_id

@@ -102,6 +102,25 @@ def process_threads(processes):
         _pp.join()
 
 
+def manager_dict(b_d=None):
+    """
+    OPTIONAL Variable :
+    b_d = 'Base Dictionary'
+
+    Create a shared dictionary using multiprocessing Managers
+    If you use the "bd" variable you can specify a prebuilt dict
+    the default is that bd=None
+    """
+    import multiprocessing
+    manager = multiprocessing.Manager()
+    if b_d:
+        managed_dictionary = manager.dict(b_d)
+    else:
+        managed_dictionary = manager.dict()
+    return managed_dictionary
+
+
+
 # ACTIVE STATE retry loop
 # http://code.activestate.com/recipes/578163-retry-loop/
 def retryloop(attempts, timeout=None, delay=None, backoff=1):

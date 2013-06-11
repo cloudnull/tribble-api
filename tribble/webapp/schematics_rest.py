@@ -20,7 +20,7 @@ class SchematicsRest(Resource):
             else:
                 skms = db_proc.get_schematics(uid=user_id)
             if not skms:
-                return {'response': 'No Schematics found'}, 400
+                return {'response': 'No Schematic(s) Found'}, 404
             retskms = []
             for _skm in skms:
                 if _skm:
@@ -36,8 +36,10 @@ class SchematicsRest(Resource):
                             _con['config_key'] = 'KEY FOUND'
                         if _con.get('config_validation_key'):
                             _con['config_validation_key'] = 'KEY FOUND'
-                if dskm:
-                    retskms.append(dskm)
+                    if dskm:
+                        retskms.append(dskm)
+            if not retskms:
+                return {'response': 'No Schematic(s) Found'}, 404
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
@@ -130,7 +132,7 @@ class SchematicsRest(Resource):
 
     def post(self):
         """
-        Post a Cluster
+        Post a Schematic, if a zone is present in the POST, then post a zone.
         """
         auth = auth_mech(hdata=request.data,
                          rdata=request.headers)
@@ -159,13 +161,8 @@ class SchematicsRest(Resource):
                 for _zn in _hd['zones']:
                     key_data = _zn['instances_keys']
                     _ssh_user = key_data.get('ssh_user')
-                    pri = key_data.get('ssh_key_pri')
                     pub = key_data.get('ssh_key_pub')
-                    if not pri:
-                        from tribble.operations import fabrics
-                        pub, pri = fabrics.KeyGen().build_ssh_key()
-                    ssh = db_proc.post_instanceskeys(pri=pri,
-                                                     pub=pub,
+                    ssh = db_proc.post_instanceskeys(pub=pub,
                                                      sshu=_ssh_user,
                                                      key_data=key_data)
                     sess = db_proc.add_item(session=sess, item=ssh)

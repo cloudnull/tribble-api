@@ -157,14 +157,8 @@ class ZonesRest(Resource):
                 for _zn in _hd['zones']:
                     key_data = _zn['instances_keys']
                     _ssh_user = key_data.get('ssh_user')
-                    pri = key_data.get('ssh_key_pri')
                     pub = key_data.get('ssh_key_pub')
-                    if not pri:
-                        from tribble.operations import fabrics
-                        pub, pri = fabrics.KeyGen().build_ssh_key()
-
-                    _ssh = db_proc.post_instanceskeys(pri=pri,
-                                                      pub=pub,
+                    _ssh = db_proc.post_instanceskeys(pub=pub,
                                                       sshu=_ssh_user,
                                                       key_data=key_data)
                     sess = db_proc.add_item(session=sess, item=_ssh)

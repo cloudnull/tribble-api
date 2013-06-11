@@ -43,10 +43,9 @@ def post_schematic(session, post, con, uid):
 
 
 def post_instanceskeys(session, post):
-    from tribble.operations import fabrics
+    from tribble.purveyors.fabric import ssh_keygen
     pub, pri = fabrics.KeyGen().build_ssh_key()
     return InstancesKeys(ssh_user=post.get('ssh_user'),
-                         ssh_key_pri=pri,
                          ssh_key_pub=pub,
                          key_name=post.get('key_name'))
 

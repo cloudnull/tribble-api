@@ -1,5 +1,4 @@
 from multiprocessing import Process, cpu_count, active_children
-from signal import SIGKILL
 import os
 import traceback
 import time
@@ -7,6 +6,7 @@ from daemon import pidfile
 
 from tribble.appsetup.start import LOG, QUEUE
 from tribble import info
+from tribble.purveyors import zone_status as _zs
 
 
 class NoJobToDo(Exception):
@@ -156,7 +156,7 @@ class MainDisptach(object):
         if os.path.isfile(pid):
             os.remove(pid)
 
-    def work_doer(self, queue, qnty=1):
+    def work_doer(self, queue):
         """
         This is the "doing part of the work thread. Once an Item is taken out of
         the queue, it is processed. The first action of the process is to
@@ -168,22 +168,33 @@ class MainDisptach(object):
         try:
             cells = queue.get(timeout=2)
             self.logger.debug(cells)
-            for cell in cells:
-                if cell['job'] == 'build':
-                    qnty = int(cell.get('quantity', 1))
-                    job = constructor.bob_builder
-                elif cell['job'] == 'delete':
-                    job = constructor.bob_destroyer
-                elif cell['job'] == 'reconfig':
-                    job = config_manager.chef_update_instances
-                else:
-                    raise NoJobToDo('No Job has been provided')
-
-                self.logger.info('Quantity of Nodes to build == %s' % qnty)
-                utils.worker_proc(job_action=job,
-                                  t_args=cell,
-                                  num_jobs=qnty)
+            for _cell in cells:
+                try:
+                    cell = utils.manager_dict(b_d=_cell)
+                    state = _zs.ZoneState(cell=cell)
+                    if cell['job'] == 'build':
+                        state._build()
+                        bobs = constructor.MainOffice(nucleus=cell)
+                        bobs.api_setup()
+                        state._active()
+                    elif cell['job'] == 'delete':
+                        state._delete()
+                        bobs = constructor.MainOffice(nucleus=cell)
+                        bobs.bob_destroyer()
+                    elif cell['job'] == 'reconfig':
+                        state._reconfig()
+                        config_manager.chef_update_instances(nucleus=cell)
+                        state._active()
+                    else:
+                        raise NoJobToDo('No Job has been provided')
+                except Exception, exp:
+                    self.logger.error(traceback.format_exc())
+                    cell['zone_msg'] = ('Issues are happening while performing'
+                                        ' actions. MESSAGE : "%s"' % exp)
+                    state._active()
+                finally:
+                    del cell
         except Exception:
             self.logger.debug('Nothing to pull from Queue')
         finally:
-            os.kill(os.getpid(), SIGKILL)
+            del cells

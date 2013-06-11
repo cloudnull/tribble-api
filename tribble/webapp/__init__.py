@@ -1,5 +1,3 @@
-
-
 def pop_ts(temp):
     """
     From a dictionary that has been result provided by SQLA remove the time
@@ -68,6 +66,8 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
               'job': job}
 
     if not config is None:
+        if config.id:
+            packet['config_id'] = config.id
         if config.config_key:
             packet['config_key'] = config.config_key
         if config.config_server:
@@ -84,6 +84,8 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
             packet['config_env'] = config.config_env
 
     if not schematic is None:
+        if schematic.auth_id:
+            packet['auth_id'] = schematic.auth_id
         if schematic.cloud_tenant:
             packet['cloud_tenant'] = schematic.cloud_tenant
         if schematic.cloud_url:
@@ -93,15 +95,13 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
         if schematic.cloud_provider:
             packet['cloud_provider'] = schematic.cloud_provider
         if schematic.id:
-            packet['id'] = schematic.id
+            packet['schematic_id'] = schematic.id
 
     if not sshkey is None:
         if sshkey.id:
             packet['credential_id'] = sshkey.id
         if sshkey.ssh_user:
             packet['ssh_username'] = sshkey.ssh_user
-        if sshkey.ssh_key_pri:
-            packet['ssh_key_pri'] = sshkey.ssh_key_pri
         if sshkey.ssh_key_pub:
             packet['ssh_key_pub'] = sshkey.ssh_key_pub
         if sshkey.key_name:
@@ -118,6 +118,10 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
             packet['size_id'] = zone.size_id
         if zone.id:
             packet['zone_id'] = zone.id
+        if zone.zone_msg:
+            packet['zone_msg'] = zone.zone_msg
+        if zone.zone_state:
+            packet['zone_state'] = zone.zone_state
         if zone.schematic_runlist:
             packet['schematic_runlist'] = zone.schematic_runlist
         if zone.schematic_script:
@@ -133,41 +137,3 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
 
     LOG.debug('Sent Packet for Work ==> \n\n%s\n\n' % packet)
     return packet
-
-
-def blueprint_validation(jtv):
-    """
-    Takes json to validate, the validation map will be a list of keys
-    that should Be present
-    """
-    import json
-    from flask import jsonify
-    from tribble.appsetup.start import LOG
-
-    blue_print = json.loads(jtv)
-    LOG.warn(jtv)
-    if not 'blue_print' in blue_print:
-        error_json = {"error_text": "no blue_print tag detected in json"}
-        return jsonify(error_json), 400
-
-    if not 'server_map' in blue_print['blue_print']:
-        error_json = {"error_text": "no server_map tag detected in json"}
-        return jsonify(error_json), 400
-
-    for server_map in blue_print['blue_print']['server_map']:
-        chk = {'name_convention': "You must specify a name convention",
-               'quantity': "You must specify a quantity of nodes to build",
-               'image_ref': "Please specify an image reference",
-               'flavor': "Please specify a valid flavor"}
-
-        for _chk in chk.keys():
-            if not _chk in server_map:
-                LOG.warn(chk[_chk])
-                return jsonify(error_text=chk[_chk]), 400
-
-        if not type(server_map['quantity']) is int:
-            not_int = "Please specify quantity as a whole number"
-            LOG.warn(not_int)
-            return jsonify(error_text=(not_int)), 400
-    LOG.debug('Narciss BluePrint for Work ==> \n\n%s\n\n' % blue_print)
-    return blue_print
