@@ -6,9 +6,9 @@ from tribble.appsetup.start import LOG, _DB
 class ZoneState(object):
     def __init__(self, cell):
         self.cell = cell
-        schematic = db.get_schematic_id(sid=self.cell['schematic_id'],
+        self.schematic = db.get_schematic_id(sid=self.cell['schematic_id'],
                                         uid=self.cell['auth_id'])
-        self.zone = db.get_zones_by_id(skm=schematic,
+        self.zone = db.get_zones_by_id(skm=self.schematic,
                                        zid=self.cell['zone_id'])
 
     def _build(self):
@@ -24,8 +24,18 @@ class ZoneState(object):
         self.state_update()
 
     def _delete(self):
-        pass
-        #self.state_update()
+        self.cell['zone_state'] = 'DELETING'
+        self.state_update()
+
+    def _schematic_delete(self):
+        key = db.get_instanceskeys(zon=self.zone)
+        _con = db.get_configmanager(skm=self.schematic)
+        sess = _DB.session
+        sess = db.delete_item(session=sess, item=self.zone)
+        sess = db.delete_item(session=sess, item=key)
+        sess = db.delete_item(session=sess, item=self.schematic)
+        sess = db.delete_item(session=sess, item=_con)
+        db.commit_session(session=sess)
 
     def state_update(self):
         try:

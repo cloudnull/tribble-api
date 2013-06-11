@@ -1,5 +1,4 @@
 from tribble.webapp import schematics_rest, zones_rest, redeploy_rest
-from tribble.webapp import narciss_rest
 from tribble.appsetup.start import LOG
 
 

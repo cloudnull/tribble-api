@@ -62,31 +62,22 @@ class SchematicsRest(Resource):
                 return {'response': 'No Schematic Found'}, 404
             _con = db_proc.get_configmanager(skm=_skm)
             _zons = db_proc.get_zones(skm=_skm)
-            sess = _DB.session
             if _zons:
                 jobs = []
                 for zone in _zons:
                     ints = db_proc.get_instances(zon=zone)
                     if ints:
-                        for ins in ints:
-                            sess = db_proc.delete_item(session=sess, item=ins)
-                        cell = build_cell(job='delete',
+                        cell = build_cell(job='schematic_delete',
                                           schematic=_skm,
                                           zone=zone,
                                           config=_con)
                         cell['uuids'] = [ins.instance_id for ins in ints]
                         jobs.append(cell)
-                    sess = db_proc.delete_item(session=sess, item=zone)
-                    key = db_proc.get_instanceskeys(zon=zone)
-                    sess = db_proc.delete_item(session=sess, item=key)
                 QUEUE.put(jobs)
-            sess = db_proc.delete_item(session=sess, item=_skm)
-            sess = db_proc.delete_item(session=sess, item=_con)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
-            db_proc.commit_session(session=sess)
             return {'response': "Deletes Recieved"}, 203
 
     def put(self, _sid):

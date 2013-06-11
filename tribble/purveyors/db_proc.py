@@ -210,10 +210,18 @@ def get_instances(zon):
 
 def get_instance_id(zon, iid):
     """
-    Look up schematics from Schematic ID and auth ID and return it
+    Look up an instance from a zone and the Instance ID
     """
     return Instances.query.filter(Instances.zone_id == zon.id,
                                   Instances.id == iid).first()
+
+
+def get_instance_ids(zon, ids):
+    """
+    Look up a bunch of instances from a zone by a list of ID's
+    """
+    return Instances.query.filter(and_(Instances.zone_id == zon.id,
+                                       Instances.instance_id.in_(ids))).all()
 
 
 def get_instanceskeys(zon):

@@ -4,10 +4,11 @@ import random
 from libcloud.compute.base import DeploymentError
 from libcloud.compute.types import NodeState
 from tribble.db.models import Instances
-from tribble.appsetup.start import LOG
+from tribble.appsetup.start import LOG, _DB
 from tribble.operations import utils
 from tribble.operations import ret_conn, ret_image, ret_size
 from tribble.operations import config_manager as _cm
+from tribble.purveyors import db_proc
 
 
 def stupid_hack():
@@ -49,6 +50,7 @@ class MainOffice(object):
                                   name=dim.name.lower(),
                                   function='chefer_remove_all',
                                   logger=LOG)
+        self._node_remove(ids=self.nucleus['uuids'])
 
     def api_setup(self):
         self.conn = ret_conn(nucleus=self.nucleus)
@@ -147,41 +149,12 @@ class MainOffice(object):
                     specs['ex_files'] = files
         else:
             specs['deploy'] = self.vm_ssh_deploy()
-        self.constructor(specs=specs)
+        self.vm_constructor(specs=specs)
 
-    def constructor(self, specs):
+    def vm_constructor(self, specs):
         """
         Build VMs
         """
-        def node_post(info):
-            from tribble.appsetup.start import _DB
-            from tribble.purveyors import db_proc
-            atom = self.nucleus
-            sess = _DB.session
-            sess = db_proc.add_item(session=sess,
-                                    item=db_proc.post_instance(ins=info,
-                                                               put=atom))
-            db_proc.commit_session(session=sess)
-            LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))
-
-        def node_update(info):
-            """
-            Put an update for a node and its information
-            """
-            from tribble.appsetup.start import _DB
-            from tribble.purveyors import db_proc
-            atom = self.nucleus
-            sess = _DB.session
-            instance = db_proc.get_instance_id(zid=atom.get('zone_id'),
-                                               iid=info.uuid)
-            up_instance = db_proc.put_instance(session=sess,
-                                               inst=instance,
-                                               put=info.__dict__)
-            sess = db_proc.add_item(session=sess,
-                                    item=up_instance)
-            db_proc.commit_session(session=sess)
-            LOG.info('Instance updated ID:%s NAME:%s' % (info.uuid, info.name))
-
         LOG.debug(specs)
         LOG.info('Building Node Based on %s' % specs)
         for retry in utils.retryloop(attempts=5, timeout=900, delay=10):
@@ -214,7 +187,7 @@ class MainOffice(object):
             except Exception:
                 LOG.error(traceback.format_exc())
             else:
-                node_post(info=_nd)
+                self._node_post(info=_nd)
 
     def state_wait(self, node):
         """
@@ -271,3 +244,44 @@ class MainOffice(object):
                     LOG.critical(exp)
                     raise DeploymentError('ID:%s NAME:%s was Never Active'
                                           % (node.id, node.name))
+
+    def _node_remove(self, ids):
+        sess = _DB.session
+        schematic = db_proc.get_schematic_id(sid=self.nucleus['schematic_id'],
+                                             uid=self.nucleus['auth_id'])
+        LOG.info('SCHEMATIC ==> %s' % schematic)
+        zone = db_proc.get_zones_by_id(skm=schematic,
+                                       zid=self.nucleus['zone_id'])
+        LOG.info('ZONE ==> %s' % zone)
+        LOG.info('INSTANCES ==> %s' % ids)
+        inss = db_proc.get_instance_ids(zon=zone,
+                                        ids=ids)
+        LOG.info('INSTANCES ==> %s' % inss)
+        for ins in inss:
+            sess = db_proc.delete_item(session=sess, item=ins)
+        db_proc.commit_session(session=sess)
+
+    def _node_post(self, info):
+        atom = self.nucleus
+        sess = _DB.session
+        sess = db_proc.add_item(session=sess,
+                                item=db_proc.post_instance(ins=info,
+                                                           put=atom))
+        db_proc.commit_session(session=sess)
+        LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))
+
+    def _node_update(self, info):
+        """
+        Put an update for a node and its information
+        """
+        atom = self.nucleus
+        sess = _DB.session
+        instance = db_proc.get_instance_id(zid=atom.get('zone_id'),
+                                           iid=info.uuid)
+        up_instance = db_proc.put_instance(session=sess,
+                                           inst=instance,
+                                           put=info.__dict__)
+        sess = db_proc.add_item(session=sess,
+                                item=up_instance)
+        db_proc.commit_session(session=sess)
+        LOG.info('Instance updated ID:%s NAME:%s' % (info.uuid, info.name))

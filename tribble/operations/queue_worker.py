@@ -4,7 +4,7 @@ import traceback
 import time
 from daemon import pidfile
 
-from tribble.appsetup.start import LOG, QUEUE
+from tribble.appsetup.start import LOG, QUEUE, _DB
 from tribble import info
 from tribble.purveyors import zone_status as _zs
 
@@ -177,10 +177,11 @@ class MainDisptach(object):
                         bobs = constructor.MainOffice(nucleus=cell)
                         bobs.api_setup()
                         state._active()
-                    elif cell['job'] == 'delete':
+                    elif cell['job'] == 'schematic_delete':
                         state._delete()
                         bobs = constructor.MainOffice(nucleus=cell)
                         bobs.bob_destroyer()
+                        state._schematic_delete()
                     elif cell['job'] == 'reconfig':
                         state._reconfig()
                         config_manager.chef_update_instances(nucleus=cell)
@@ -196,5 +197,3 @@ class MainDisptach(object):
                     del cell
         except Exception:
             self.logger.debug('Nothing to pull from Queue')
-        finally:
-            del cells
