@@ -5,8 +5,12 @@ from tribble.appsetup.start import _DB
 
 class CloudAuth(_DB.Model):
     __tablename__ = 'cloudauth'
+    user_type = _DB.Column('user_type',
+                           _DB.VARCHAR(length=10),
+                           default=0,
+                           nullable=False)
     dcuser = _DB.Column('dcuser',
-                        _DB.VARCHAR(length=20),
+                        _DB.VARCHAR(length=25),
                         unique=True)
     dcsecret = _DB.Column('dcsecret',
                           _DB.TEXT(length=4000))
@@ -22,13 +26,14 @@ class CloudAuth(_DB.Model):
                     primary_key=True,
                     nullable=False)
 
-    def __init__(self, dcuser, dcsecret, created_at, updated_at):
+    def __init__(self, user_type, dcuser, dcsecret, created_at, updated_at):
         """
         This table represents the users that are allowed to post / use the
         system. Note that the "secret" field is plain text. It is up to the user
         to place encrypted passwords into the system, else they will be stored
         in plane text.
         """
+        self.user_type = user_type
         self.dcuser = dcuser
         self.dcsecret = dcsecret
         self.created_at = created_at

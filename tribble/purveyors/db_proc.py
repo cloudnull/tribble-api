@@ -1,5 +1,5 @@
 from sqlalchemy import and_
-from tribble.db.models import CloudAuth, Schematics, ConfigManager
+from tribble.db.models import Schematics, ConfigManager
 from tribble.db.models import Instances, InstancesKeys, Zones
 
 

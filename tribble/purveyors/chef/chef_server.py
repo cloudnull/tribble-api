@@ -70,6 +70,10 @@ class Strapper(object):
         self.nucleus = nucleus
         self.logger = LOG
 
+    def escape_quote(self, item):
+        return dict([(_cx[0], _cx[1].replace('"', '\\"'))
+                     for _cx in item.items()])
+
     def temp_file(self):
         from tempfile import mktemp
         keyfile = mktemp()
@@ -92,8 +96,7 @@ class Strapper(object):
                      'config_clientname': self.nucleus.get('config_clientname'),
                      'node_name': self.nucleus.get('node_name')}
         # removes a possible point of injection if string replacement has """
-        c_file = CLIENTRB % dict([(_cx[0], _cx[1].replace('"', '\\"'))
-                                   for _cx in build_crb.items()])
+        c_file = CLIENTRB % self.escape_quote(item=build_crb)
         c_file_loc = '%s%sclient.rb' % (chef_dir, os.sep)
 
         self.logger.info('Getting the installation script')
@@ -122,6 +125,5 @@ class Strapper(object):
         _sd = self.chef_system()
         _sd['config_env'] = self.nucleus.get('config_env')
         # removes a possible point of injection if string replacement has """
-        chef_init = PLACESH % dict([(_cx[0], _cx[1].replace('"', '\\"'))
-                                    for _cx in _sd.items()])
+        chef_init = PLACESH % self.escape_quote(item=_sd)
         return chef_init

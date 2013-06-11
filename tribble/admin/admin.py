@@ -25,46 +25,70 @@ def admin_args():
         argument_default=None,
         epilog=info.__copyright__)
 
+    source_args = argparse.ArgumentParser(add_help=False)
+    source_args.add_argument('-u',
+                             '--username',
+                             required=True,
+                             default=None,
+                             help='Set a Username')
+
+    pw_args = argparse.ArgumentParser(add_help=False)
+    pw_args.add_argument('-k',
+                         '--key',
+                         required=True,
+                         default=None,
+                         help='Set a Decryption Key')
+
+    pw_args.add_argument('-p',
+                         '--password',
+                         required=True,
+                         default=None,
+                         help='Set Password For User')
+
     # Setup for the positional Arguments
-    subparser = parser.add_subparsers(title='Infrastructure Spawner',
+    subparser = parser.add_subparsers(title='Create Tribble System Users',
                                       metavar='<Commands>\n')
 
     # All of the positional Arguments
-    usersactions = subparser.add_parser('users',
-                                        help=('interact with all users'))
-    usersactions.set_defaults(users=True,
-                              user=None)
-    useractions = subparser.add_parser('user',
-                                       help=('interact with a user'))
-    useractions.set_defaults(user=True,
-                             users=None)
+    users = subparser.add_parser('users', help=('interact with all users'))
+    users.set_defaults(users=True,
+                       user_create=None,
+                       user_reset=None,
+                       user_delete=None)
+    users.add_argument('--list',
+                       action='store_true',
+                       default=None,
+                       help='list all users')
 
-    usersactions.add_argument('--list',
+    user_create = subparser.add_parser('user-create',
+                                       parents=[source_args, pw_args],
+                                       help='Create a User')
+    user_create.set_defaults(user=None,
+                             user_create=True,
+                             user_reset=None,
+                             user_delete=None)
+
+    user_reset = subparser.add_parser('user-reset',
+                                      parents=[source_args, pw_args],
+                                       help='Reset a User')
+    user_reset.set_defaults(user=None,
+                            user_create=None,
+                            user_reset=True,
+                            user_delete=None)
+
+    user_delete = subparser.add_parser('user-delete',
+                                       parents=[source_args],
+                                       help='Delete a User')
+    user_delete.set_defaults(user=None,
+                             user_create=None,
+                             user_reset=None,
+                             user_delete=True)
+
+    user_create.add_argument('--admin',
                              action='store_true',
                              default=None,
-                             help='list all users')
-
-    useractions.add_argument('--info',
-                             nargs=3,
-                             default=None,
-                             required=True,
-                             metavar='[X]',
-                             help='<username> <password> <key>')
-
-    useractions.add_argument('--create',
-                             action='store_true',
-                             default=None,
-                             help='create user credentials')
-
-    useractions.add_argument('--delete',
-                             action='store_true',
-                             default=None,
-                             help='Delete a User')
-
-    useractions.add_argument('--reset',
-                             action='store_true',
-                             default=None,
-                             help='reset user credentials')
+                             help=('Make the User a System Admin. *** WARNING!,'
+                                   ' Admins have access to EVERYTHING ***'))
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -79,7 +103,7 @@ def admin_args():
 
 
 def admin_executable():
-    def delete_user(user, psw, key):
+    def delete_user(user):
         try:
             usr = CloudAuth.query.filter(CloudAuth.dcuser == user).first()
             start._DB.session.delete(usr)
@@ -89,7 +113,8 @@ def admin_executable():
 
     def create_user(user, psw, key):
         try:
-            usr = CloudAuth(dcuser=user,
+            usr = CloudAuth(user_type=args.get('admin', 0),
+                            dcuser=user,
                             created_at=datetime.datetime.utcnow(),
                             updated_at=0,
                             dcsecret=rosetta.encrypt(password=key,
@@ -117,9 +142,9 @@ def admin_executable():
     def users_list():
         import prettytable
         try:
-            table = prettytable.PrettyTable(['User', 'Date Created'])
+            table = prettytable.PrettyTable(['Type', 'User', 'Date Created'])
             for user in CloudAuth.query.order_by(CloudAuth.dcuser):
-                table.add_row([user.dcuser, user.created_at])
+                table.add_row([user.user_type, user.dcuser, user.created_at])
             print table
         except Exception:
             print traceback.format_exc()
@@ -127,20 +152,17 @@ def admin_executable():
     args = admin_args()
     start.setup_system(logger=verbose_logger.load_in())
     from tribble.db.models import CloudAuth, Instances
-
-    if args.get('user'):
-        if any([args.get('create'), args.get('reset'), args.get('delete')]):
-            user, psw, key = args['info']
-            if args.get('create'):
-                create_user(user, psw, key)
-            elif args.get('reset'):
-                reset_user(user, psw, key)
-            elif args.get('delete'):
-                delete_user(user, psw, key)
-            else:
-                raise NoKnownMethod('Method Not specified')
+    if any([args.get('user_create'), args.get('user_reset')]):
+        user = args.get('username')
+        psw = args.get('password')
+        key = args.get('key')
+        if args.get('user_create'):
+            create_user(user, psw, key)
         else:
-            print 'No [--create], [--reset], or [--delete] method specified...'
+            reset_user(user, psw, key)
+    elif args.get('user_delete'):
+        user = args.get('username')
+        delete_user(user)
     elif args.get('users'):
         if args.get('list'):
             users_list()

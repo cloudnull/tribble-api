@@ -26,7 +26,9 @@ class ZonesRest(Resource):
             else:
                 retskmss = []
                 if _zid:
-                    zon = [db_proc.get_zones_by_id(skm=_skm, zid=_zid)]
+                    zon = db_proc.get_zones_by_id(skm=_skm, zid=_zid)
+                    if zon:
+                        zon = [zon]
                 else:
                     zon = db_proc.get_zones(skm=_skm)
                 if not zon:
@@ -62,31 +64,27 @@ class ZonesRest(Resource):
             if not _skm:
                 return {'response': 'No Schematic Found'}, 404
             _zon = db_proc.get_zones_by_id(skm=_skm, zid=_zid)
+            if _zon.zone_state == 'BUILDING':
+                return {'response': ("Zone Delete can not be"
+                                     " performed because Zone %s has a"
+                                     " Pending Status" % _zon.id)}, 200
             if not _zon:
                 return {'response': 'No Zone Found'}, 404
             else:
-                sess = _DB.session
                 _con = db_proc.get_configmanager(skm=_skm)
                 ints = db_proc.get_instances(zon=_zon)
-                if ints:
-                    jobs = []
-                    for ins in ints:
-                        sess = db_proc.delete_item(session=sess, item=ins)
-                        cell = build_cell(job='delete',
-                                          schematic=_skm,
-                                          zone=_zon,
-                                          config=_con)
-                    cell['uuids'] = [ins.instance_id for ins in ints]
-                    jobs.append(cell)
-                key = db_proc.get_instanceskeys(zon=_zon)
-                sess = db_proc.delete_item(session=sess, item=_zon)
-                sess = db_proc.delete_item(session=sess, item=key)
+                jobs = []
+                cell = build_cell(job='zone_delete',
+                                  schematic=_skm,
+                                  zone=_zon,
+                                  config=_con)
+                cell['uuids'] = [ins.instance_id for ins in ints]
+                jobs.append(cell)
                 QUEUE.put(jobs)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
-            db_proc.commit_session(session=sess)
             return {'response': "Deletes Recieved"}, 203
 
     def put(self, _sid=None, _zid=None):

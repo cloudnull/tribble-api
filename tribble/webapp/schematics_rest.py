@@ -16,7 +16,9 @@ class SchematicsRest(Resource):
             return {'response': 'Missing Information'}, 400
         try:
             if _sid:
-                skms = [db_proc.get_schematic_id(sid=_sid, uid=user_id)]
+                skms = db_proc.get_schematic_id(sid=_sid, uid=user_id)
+                if skms:
+                    skms = [skms]
             else:
                 skms = db_proc.get_schematics(uid=user_id)
             if not skms:
@@ -62,18 +64,27 @@ class SchematicsRest(Resource):
                 return {'response': 'No Schematic Found'}, 404
             _con = db_proc.get_configmanager(skm=_skm)
             _zons = db_proc.get_zones(skm=_skm)
+            LOG.info(_zons)
+            jobs = []
             if _zons:
-                jobs = []
                 for zone in _zons:
-                    ints = db_proc.get_instances(zon=zone)
-                    if ints:
-                        cell = build_cell(job='schematic_delete',
+                    if zone.zone_state == 'BUILDING':
+                        return {'response': ("Schematic Delete can not be"
+                                             " performed because Zone %s has a"
+                                             " Pending Status" % zone.id)}, 200
+                    else:
+                        ints = db_proc.get_instances(zon=zone)
+                        cell = build_cell(job='zone_delete',
                                           schematic=_skm,
                                           zone=zone,
                                           config=_con)
                         cell['uuids'] = [ins.instance_id for ins in ints]
                         jobs.append(cell)
-                QUEUE.put(jobs)
+            cell = build_cell(job='schematic_delete',
+                              schematic=_skm,
+                              config=_con)
+            jobs.append(cell)
+            QUEUE.put(jobs)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500

@@ -177,11 +177,15 @@ class MainDisptach(object):
                         bobs = constructor.MainOffice(nucleus=cell)
                         bobs.api_setup()
                         state._active()
-                    elif cell['job'] == 'schematic_delete':
-                        state._delete()
-                        bobs = constructor.MainOffice(nucleus=cell)
-                        bobs.bob_destroyer()
-                        state._schematic_delete()
+                    elif cell['job'] in ('schematic_delete', 'zone_delete'):
+                        if cell.get('zone_id'):
+                            state._delete()
+                            bobs = constructor.MainOffice(nucleus=cell)
+                            bobs.bob_destroyer()
+                        if cell['job'] == 'schematic_delete':
+                            state._delete_resource(skm=True)
+                        else:
+                            state._delete_resource()
                     elif cell['job'] == 'reconfig':
                         state._reconfig()
                         config_manager.chef_update_instances(nucleus=cell)
