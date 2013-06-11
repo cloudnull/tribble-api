@@ -91,7 +91,7 @@ class SchematicsRest(Resource):
         else:
             return {'response': "Deletes Recieved"}, 203
 
-    def put(self, _sid):
+    def put(self, _sid=None):
         """
         Update Cluster
         """
@@ -132,12 +132,14 @@ class SchematicsRest(Resource):
             db_proc.commit_session(session=sess)
             return {'response': "Updates Recieved"}, 201
 
-    def post(self):
+    def post(self, _sid=None):
         """
         Post a Schematic, if a zone is present in the POST, then post a zone.
         """
         auth = auth_mech(hdata=request.data,
                          rdata=request.headers)
+        if _sid:
+            return {'response': 'Failure, Method does not take arguments'}, 400
         if not auth:
             return {'response':
                 'Failure on Authentication and or Validation'}, 401

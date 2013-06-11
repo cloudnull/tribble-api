@@ -126,10 +126,12 @@ class ZonesRest(Resource):
             db_proc.commit_session(session=sess)
             return {'response': "Updates Recieved"}, 201
 
-    def post(self, _sid=None):
+    def post(self, _sid=None, _zid=None):
         """
         Post a Zone
         """
+        if _zid:
+            return {'response': 'Failure, Method does not take arguments'}, 400
         if not _sid:
             return {'response': 'No Schematic specified'}, 400
         auth = auth_mech(hdata=request.data,
