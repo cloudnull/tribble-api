@@ -7,16 +7,20 @@ def routes(api):
     Load all available routes.
     """
     LOG.info('Routes Loading')
-    uri = {'ss': (schematics_rest.SchematicsRest, '/v1/schematics'),
-           'ssi': (schematics_rest.SchematicsRest, '/v1/schematics/<_sid>'),
-           'ssizs': (zones_rest.ZonesRest, '/v1/schematics/<_sid>/zones'),
-           'ssizsi': (zones_rest.ZonesRest,
-                      '/v1/schematics/<_sid>/zones/<_zid>'),
-           'ssir': (redeploy_rest.RedeployRestRdp,
-                    '/v1/schematics/<_sid>/redeploy'),
-           'ssizsir': (redeploy_rest.RedeployRestRdp,
-                       '/v1/schematics/<_sid>/zones/<_zid>/redeploy')}
-    for endpoint in uri.values():
+    uri = [(schematics_rest.SchematicsRest,
+            '/v1/schematics'),
+           (schematics_rest.SchematicsRest,
+            '/v1/schematics/<_sid>'),
+           (zones_rest.ZonesRest,
+            '/v1/schematics/<_sid>/zones'),
+           (zones_rest.ZonesRest,
+            '/v1/schematics/<_sid>/zones/<_zid>'),
+           (redeploy_rest.RedeployRestRdp,
+            '/v1/schematics/<_sid>/redeploy'),
+           (redeploy_rest.RedeployRestRdp,
+            '/v1/schematics/<_sid>/zones/<_zid>/redeploy')]
+
+    for endpoint in uri:
         LOG.debug(endpoint)
         met, uri = endpoint
         api.add_resource(met, uri)
