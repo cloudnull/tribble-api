@@ -3,7 +3,6 @@ import time
 import random
 from libcloud.compute.base import DeploymentError
 from libcloud.compute.types import NodeState
-from tribble.db.models import Instances
 from tribble.appsetup.start import LOG, _DB, STATS
 from tribble.operations import utils
 from tribble.operations import ret_conn, ret_image, ret_size
@@ -260,7 +259,8 @@ class MainOffice(object):
         for ins in inss:
             sess = db_proc.delete_item(session=sess, item=ins)
         db_proc.commit_session(session=sess)
-        STATS.gauge('Instances', -1, delta=True)
+        for _ in ids:
+            STATS.gauge('Instances', -1, delta=True)
 
     def _node_post(self, info):
         atom = self.nucleus
@@ -271,19 +271,3 @@ class MainOffice(object):
         db_proc.commit_session(session=sess)
         STATS.gauge('Instances', 1, delta=True)
         LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))
-
-    def _node_update(self, info):
-        """
-        Put an update for a node and its information
-        """
-        atom = self.nucleus
-        sess = _DB.session
-        instance = db_proc.get_instance_id(zid=atom.get('zone_id'),
-                                           iid=info.uuid)
-        up_instance = db_proc.put_instance(session=sess,
-                                           inst=instance,
-                                           put=info.__dict__)
-        sess = db_proc.add_item(session=sess,
-                                item=up_instance)
-        db_proc.commit_session(session=sess)
-        LOG.info('Instance updated ID:%s NAME:%s' % (info.uuid, info.name))
