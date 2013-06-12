@@ -25,7 +25,9 @@ def cloudauth():
             return True
         else:
             return False
-
+    if request.method == 'HEAD':
+        msg = 'Method Not Implemented'
+        return not_found(message=msg, error=400)
     _rh = request.headers
     if not all([('x-user' in _rh),
                 ('x-secretkey' in _rh),

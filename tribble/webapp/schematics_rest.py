@@ -7,6 +7,9 @@ from tribble.webapp import pop_ts, auth_mech, build_cell
 
 
 class SchematicsRest(Resource):
+    def head(self, _sid=None):
+        return {'response': 'Unexpected Error'}, 500
+
     def get(self, _sid=None):
         """
         get method
