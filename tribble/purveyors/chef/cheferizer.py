@@ -1,7 +1,6 @@
 import traceback
 import chef.exceptions as chefexp
 import chef
-from StringIO import StringIO
 
 
 class ChefSearchError(Exception):
