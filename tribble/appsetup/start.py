@@ -4,6 +4,15 @@ LOG = None
 APP = None
 _DB = None
 API = None
+STATS = None
+
+
+def statsd_conn():
+    """
+    Create a StatsD Counter
+    """
+    from statsd import StatsClient
+    return StatsClient()
 
 
 def setup_system(logger):
@@ -11,12 +20,13 @@ def setup_system(logger):
     Take all of our globals and modify them such that they can be imported in
     other modules as preconfigured standalone variables.
     """
-    global CONFIG, QUEUE, LOG, APP, _DB, API
+    global CONFIG, QUEUE, LOG, APP, _DB, API, STATS
     CONFIG = config_var()
     QUEUE = config_queue()
     LOG = logger
     APP = application(conf=CONFIG, eng=engine_config(conf=CONFIG))
     _DB, API = dbmod_apiset()
+    STATS = statsd_conn()
 
 
 def start_worker():
@@ -39,17 +49,15 @@ def config_var():
     """
     from tribble.appsetup import system_config
     _config = system_config.ConfigureationSetup()
-    config = _config.config_args()
-    return config
+    return _config.config_args()
 
 
 def engine_config(conf):
     """
     Setup Engine URI
     """
-    _eng = ('%(DB_ENGINE)s://%(DB_USERNAME)s:%(DB_PASSWORD)s'
+    return ('%(DB_ENGINE)s://%(DB_USERNAME)s:%(DB_PASSWORD)s'
             '@%(DB_HOST)s:%(DB_PORT)s/%(DB_NAME)s' % conf)
-    return _eng
 
 
 def application(conf, eng):

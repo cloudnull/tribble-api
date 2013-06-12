@@ -1,7 +1,7 @@
 import traceback
 from flask import request
 from flask.ext.restful import Resource
-from tribble.appsetup.start import LOG, QUEUE, _DB
+from tribble.appsetup.start import LOG, QUEUE, _DB, STATS
 from tribble.purveyors import db_proc
 from tribble.webapp import pop_ts, auth_mech, build_cell
 
@@ -190,6 +190,8 @@ class SchematicsRest(Resource):
             return {'response': 'Unexpected Error'}, 500
         else:
             db_proc.commit_session(session=sess)
+            STATS.gauge('Schematics', 1, delta=True)
+            STATS.gauge('Zones', 1, delta=True)
             return {'response': ('Application requests have been recieved'
                                  ' and Schematic %s has been built'
                                  % skm.id)}, 200

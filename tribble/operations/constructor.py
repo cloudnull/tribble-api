@@ -4,7 +4,7 @@ import random
 from libcloud.compute.base import DeploymentError
 from libcloud.compute.types import NodeState
 from tribble.db.models import Instances
-from tribble.appsetup.start import LOG, _DB
+from tribble.appsetup.start import LOG, _DB, STATS
 from tribble.operations import utils
 from tribble.operations import ret_conn, ret_image, ret_size
 from tribble.operations import config_manager as _cm
@@ -260,6 +260,7 @@ class MainOffice(object):
         for ins in inss:
             sess = db_proc.delete_item(session=sess, item=ins)
         db_proc.commit_session(session=sess)
+        STATS.gauge('Instances', -1, delta=True)
 
     def _node_post(self, info):
         atom = self.nucleus
@@ -268,6 +269,7 @@ class MainOffice(object):
                                 item=db_proc.post_instance(ins=info,
                                                            put=atom))
         db_proc.commit_session(session=sess)
+        STATS.gauge('Instances', 1, delta=True)
         LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))
 
     def _node_update(self, info):

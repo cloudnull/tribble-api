@@ -1,7 +1,7 @@
 from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 from libcloud import security
-from tribble.appsetup.start import LOG
+from tribble.appsetup.start import LOG, STATS
 
 
 class CantContinue(Exception):
@@ -25,21 +25,25 @@ def apiauth(packet):
     provider = packet.get('cloud_provider', Provider.DUMMY)
     try:
         if provider.upper() == 'OPENSTACK':
+            STATS.incr('Provider_Openstack')
             driver = get_driver(Provider.OPENSTACK)
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version',
                                                          '2.0_password'),
                      'ex_tenant_name': packet.get('cloud_username')}
         elif provider.upper() == 'RACKSPACE':
+            STATS.incr('Provider_Rackspace')
             driver = get_driver(Provider.RACKSPACE)
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version'),
                      'datacenter': packet.get('cloud_region').lower()}
         elif provider.upper() == 'VMWARE':
+            STATS.incr('Provider_VMWARE')
             driver = get_driver(Provider.VCLOUD)
             specs = {'host': packet.get('cloud_url'),
                      'api_version': packet.get('cloud_version', '1.5')}
         elif provider.upper() == 'AMAZON':
+            STATS.incr('Provider_Amazon')
             if packet.get('cloud_region').upper() in endpoints:
                 region = packet.get('cloud_region')
                 driver = get_driver(endpoints[region.upper()])

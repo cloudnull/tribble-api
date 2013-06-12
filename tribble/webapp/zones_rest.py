@@ -1,7 +1,7 @@
 import traceback
 from flask import request
 from flask.ext.restful import Resource
-from tribble.appsetup.start import _DB, LOG, QUEUE
+from tribble.appsetup.start import _DB, LOG, QUEUE, STATS
 from tribble.operations import utils
 from tribble.purveyors import db_proc
 from tribble.webapp import pop_ts, parse_dict_list, auth_mech, build_cell
@@ -181,6 +181,7 @@ class ZonesRest(Resource):
             return {'response': 'Unexpected Error'}, 500
         else:
             db_proc.commit_session(session=sess)
+            STATS.gauge('Zones', 1, delta=True)
             return {'response': ('Application requests have been recieved'
                                  ' for Schematic %s'
                                  % _sid)}, 200

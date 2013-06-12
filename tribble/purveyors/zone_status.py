@@ -1,6 +1,6 @@
 import traceback
 from tribble.purveyors import db_proc as db
-from tribble.appsetup.start import LOG, _DB
+from tribble.appsetup.start import LOG, _DB, STATS
 
 
 class ZoneState(object):
