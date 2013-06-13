@@ -105,7 +105,7 @@ class Strapper(object):
         LOG.info('Making my First Run JSON')
         _run_list = self.nucleus.get('schematic_runlist')
         if _run_list:
-            _run_list = _run_list.split(',')
+            _run_list = ''.join(_run_list.split()).split(',')
         run_list_args = _run_list
         fj_file = json.dumps({"run_list": list(run_list_args)})
         fj_file_loc = '/etc/chef/first-boot.json'
