@@ -103,7 +103,7 @@ class Strapper(object):
         s_file_loc = 'omnibus_install.sh'
 
         LOG.info('Making my First Run JSON')
-        _run_list = self.nucleus.get('schematic_runlist')
+        _run_list = self.nucleus.get('config_runlist')
         if _run_list:
             _run_list = ''.join(_run_list.split()).split(',')
         run_list_args = _run_list

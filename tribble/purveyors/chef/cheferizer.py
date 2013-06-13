@@ -9,7 +9,7 @@ class ChefSearchError(Exception):
 
 class ChefMe(object):
     def __init__(self, nucleus, name, function, logger):
-        _run_list = nucleus.get('schematic_runlist')
+        _run_list = nucleus.get('config_runlist')
         if _run_list:
             _run_list = _run_list.split(',')
         self.run_list = _run_list

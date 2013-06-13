@@ -80,8 +80,6 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
             packet['config_clientname'] = config.config_clientname
         if config.config_type:
             packet['config_type'] = config.config_type
-        if config.config_env:
-            packet['config_env'] = config.config_env
 
     if not schematic is None:
         if schematic.auth_id:
@@ -122,10 +120,12 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
             packet['zone_msg'] = zone.zone_msg
         if zone.zone_state:
             packet['zone_state'] = zone.zone_state
-        if zone.schematic_runlist:
-            packet['schematic_runlist'] = zone.schematic_runlist
-        if zone.schematic_script:
-            packet['schematic_script'] = zone.schematic_script
+        if zone.config_runlist:
+            packet['config_runlist'] = zone.config_runlist
+        if zone.config_script:
+            packet['config_script'] = zone.config_script
+        if zone.config_env:
+            packet['config_env'] = zone.config_env
         if zone.cloud_networks:
             packet['cloud_networks'] = zone.cloud_networks
         if zone.security_groups:
