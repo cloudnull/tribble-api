@@ -26,7 +26,7 @@ class ResetStateRestRdp(Resource):
                 if not zon:
                     return {'response': 'No Zone Found'}, 404
 
-            cell = {'zone_state': 'ACTIVE (RESET)'}
+            cell = {'zone_state': 'ACTIVE RESET'}
             try:
                 sess = _DB.session
                 db_proc.put_zone(session=sess,
@@ -40,7 +40,7 @@ class ResetStateRestRdp(Resource):
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
-            return {'response': ('Zone State for "%s"'
+            return {'response': ('Zone State for %s'
                                  ' has been Reset' % _zid)}, 200
 
 
