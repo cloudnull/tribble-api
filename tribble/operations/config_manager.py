@@ -9,10 +9,11 @@ def check_configmanager(nucleus, ssh=False):
         if config_type == 'CHEF_SERVER':
             LOG.info('Chef Server has been set for config management')
             if all([nucleus.get('config_key'),
+                    nucleus.get('config_env'),
                     nucleus.get('config_server'),
                     nucleus.get('config_validation_key'),
                     nucleus.get('config_clientname'),
-                    nucleus.get('schematic_runlist')]):
+                    nucleus.get('config_runlist')]):
                 LOG.info('Chef Server is confirmed as the config management')
                 return init_chefserver(nucleus=nucleus, ssh=ssh)
             else:
@@ -27,10 +28,10 @@ def init_chefserver(nucleus, ssh=False):
     from tribble.purveyors.chef import chef_server
     chef = chef_server.Strapper(nucleus=nucleus, logger=LOG)
     chef_init = chef.chef_cloudinit()
-    script = nucleus.get('schematic_script')
+    script = nucleus.get('config_script')
     if (script and not ssh):
         _op = {'op_script': str(script),
-               'op_script_loc': '/tmp/schematic_script.sh'}
+               'op_script_loc': '/tmp/config_script.sh'}
         sop = ('try:\n'
                '    OP_SCRIPT = \"\"\"%(op_script)s\"\"\"\n'
                '    open(\'%(op_script_loc)s\', \'w\').write(OP_SCRIPT)\n'
