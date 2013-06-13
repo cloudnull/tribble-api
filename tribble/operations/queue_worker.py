@@ -172,18 +172,28 @@ class MainDisptach(object):
                 try:
                     cell = utils.manager_dict(b_d=_cell)
                     state = _zs.ZoneState(cell=cell)
-                    if cell['job'] == 'build':
+                    if cell['job'] in ('build', 'redeploy_build'):
                         state._build()
-                        with STATS.timer('ZoneCreate'):
+                        if cell['job'] == 'redeploy_build':
                             bobs = constructor.MainOffice(nucleus=cell)
                             bobs.api_setup()
+                        else:
+                            with STATS.timer('ZoneCreate'):
+                                bobs = constructor.MainOffice(nucleus=cell)
+                                bobs.api_setup()
                         state._active()
-                    elif cell['job'] in ('schematic_delete', 'zone_delete'):
+                    elif cell['job'] in ('schematic_delete',
+                                         'zone_delete',
+                                         'redeploy_delete'):
                         if cell.get('zone_id'):
                             state._delete()
-                            with STATS.timer('ZoneDelete'):
+                            if cell['job'] == 'redeploy_delete':
                                 bobs = constructor.MainOffice(nucleus=cell)
                                 bobs.bob_destroyer()
+                            else:
+                                with STATS.timer('ZoneDelete'):
+                                    bobs = constructor.MainOffice(nucleus=cell)
+                                    bobs.bob_destroyer()
                         if cell['job'] == 'schematic_delete':
                             STATS.gauge('Schematics', -1, delta=True)
                             state._delete_resource(skm=True)
