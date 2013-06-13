@@ -14,8 +14,9 @@
     "cloud_tenant": "",
     "zones": [
         {
-            "schematic_runlist": "",
-            "schematic_script": "",
+            "config_runlist": "",
+            "config_script": "",
+            "config_env": "",
             "security_groups": "",
             "inject_files": "",
             "cloud_networks": "",
