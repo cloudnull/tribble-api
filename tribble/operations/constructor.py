@@ -54,14 +54,17 @@ class MainOffice(object):
     def api_setup(self):
         self.conn = ret_conn(nucleus=self.nucleus)
         if not self.conn:
+            self.nucleus['zone_msg'] = 'No Available Connection'
             raise DeploymentError('No Available Connection')
 
         self.image_id = ret_image(conn=self.conn, nucleus=self.nucleus)
         if not self.image_id:
+            self.nucleus['zone_msg'] = 'No image_id found'
             raise DeploymentError('No image_id found')
 
         self.size_id = ret_size(conn=self.conn, nucleus=self.nucleus)
         if not self.size_id:
+            self.nucleus['zone_msg'] = 'No size_id Found'
             raise DeploymentError('No size_id Found')
 
         utils.worker_proc(job_action=self.bob_vm_builder,
@@ -89,8 +92,8 @@ class MainOffice(object):
                                    script=_conf_init)
             dep_action.append(con)
 
-        if self.nucleus.get('schematic_script'):
-            user_script = str(self.nucleus.get('schematic_script'))
+        if self.nucleus.get('config_script'):
+            user_script = str(self.nucleus.get('config_script'))
             LOG.debug(user_script)
             scr = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
                                          % utils.rand_string()),
@@ -123,12 +126,30 @@ class MainOffice(object):
         if self.nucleus['cloud_provider'].upper() in ('AMAZON',
                                                       'OPENSTACK',
                                                       'RACKSPACE'):
-            if self.nucleus.get('security_groups'):
-                sec_groups = self.nucleus.get('security_groups').split(',')
-                specs['ex_security_groups'] = sec_groups
 
             if self.nucleus['cloud_provider'].upper() == 'RACKSPACE':
                 specs['deploy'] = self.vm_ssh_deploy()
+
+            if self.nucleus['cloud_provider'].upper() == 'AMAZON':
+                if self.nucleus.get('security_groups'):
+                    _sg = self.nucleus.get('security_groups')
+                    specs['ex_securitygroup'] = _sg
+
+            if self.nucleus['cloud_provider'].upper() == 'OPENSTACK':
+                if self.nucleus.get('security_groups'):
+                    _sec_groups = self.nucleus.get('security_groups')
+                    _sgns = ''.join(_sec_groups.split()).split(',')
+                    try:
+                        _asg = self.conn.ex_list_security_groups()
+                        if _asg:
+                            sgns = [_sg for _sg in _asg if _sg.name in _sgns]
+                        else:
+                            sgns = None
+                    except Exception, exp:
+                        self.nucleus['zone_msg'] = exp
+                        raise DeploymentError('No Security Group Found')
+                    else:
+                        specs['ex_security_groups'] = sgns
 
             if self.nucleus['cloud_provider'].upper() in ('OPENSTACK',
                                                           'AMAZON'):
@@ -178,8 +199,8 @@ class MainOffice(object):
                             try:
                                 _nd = self.conn.destroy_node(node)
                             except Exception, exp:
-                                LOG.error('Node was not removed an error occured'
-                                          ' ==> %s' % exp)
+                                LOG.error('Node was not removed an error'
+                                          ' occured ==> %s' % exp)
                     retry()
                 except utils.RetryError:
                     LOG.error(traceback.format_exc())
@@ -196,15 +217,16 @@ class MainOffice(object):
         from httplib import BadStatusLine
         for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
             try:
-                inst = [_nd for _nd in self.conn.list_nodes() if _nd.id == node.id]
+                inst = [_nd for _nd in self.conn.list_nodes()
+                        if _nd.id == node.id]
                 if inst:
                     ins = inst[0]
                     if ins.state == NodeState.PENDING:
                         LOG.info('Waiting for active ==> %s' % ins)
                         _retry()
                     elif ins.state == NodeState.TERMINATED:
-                        raise DeploymentError('ID:%s NAME:%s was Never Active and'
-                                              ' has since been Terminated'
+                        raise DeploymentError('ID:%s NAME:%s was Never Active'
+                                              ' and has since been Terminated'
                                               % (node.id, node.name))
                     elif ins.state == NodeState.UNKNOWN:
                         LOG.info('State Unknown for the instance will retry'
