@@ -83,8 +83,6 @@ class ConfigManager(_DB.Model):
                                nullable=True)
     config_type = _DB.Column('config_type',
                              _DB.VARCHAR(length=30))
-    config_env = _DB.Column('config_env',
-                            _DB.VARCHAR(length=30))
     config_username = _DB.Column('config_username',
                                  _DB.VARCHAR(length=150),
                                  nullable=True)
@@ -113,7 +111,6 @@ class ConfigManager(_DB.Model):
         All Config Management is stored here.
         """
         self.config_key = config_key
-        self.config_env = config_env
         self.config_type = config_type
         self.config_server = config_server
         self.config_username = config_username
@@ -195,12 +192,14 @@ class Zones(_DB.Model):
                               nullable=False)
     schematic_constraint = relation(
         'Schematics', primaryjoin='Zones.schematic_id==Schematics.id')
-    schematic_runlist = _DB.Column('schematic_runlist',
-                                   _DB.TEXT(),
-                                   nullable=True)
-    schematic_script = _DB.Column('schematic_script',
-                                  _DB.TEXT(),
-                                  nullable=True)
+    config_runlist = _DB.Column('config_runlist',
+                                _DB.TEXT(),
+                                nullable=True)
+    config_env = _DB.Column('config_env',
+                            _DB.VARCHAR(length=30))
+    config_script = _DB.Column('config_script',
+                               _DB.TEXT(),
+                               nullable=True)
     security_groups = _DB.Column('security_groups',
                                  _DB.TEXT(length=200),
                                  nullable=True)
@@ -238,7 +237,7 @@ class Zones(_DB.Model):
                                _DB.VARCHAR(length=200),
                                _DB.ForeignKey('instances_keys.id'),
                                nullable=False)
-    schematic_constraint = relation(
+    zone_constraint = relation(
         'InstancesKeys', primaryjoin='Zones.credential_id==InstancesKeys.id')
     created_at = _DB.Column('created_at',
                             _DB.TIMESTAMP(),
@@ -254,8 +253,8 @@ class Zones(_DB.Model):
                     autoincrement=True)
 
     def __init__(self, security_groups, inject_files, cloud_networks,
-                 cloud_init, schematic_id, schematic_runlist, schematic_script,
-                 zone_msg, zone_state, zone_name, size_id, image_id,
+                 cloud_init, schematic_id, config_runlist, config_script,
+                 config_env, zone_msg, zone_state, zone_name, size_id, image_id,
                  name_convention, quantity, credential_id):
         """
         Zones provide a specific setup for a collection of instances.
@@ -264,9 +263,10 @@ class Zones(_DB.Model):
         self.inject_files = inject_files
         self.cloud_networks = cloud_networks
         self.cloud_init = cloud_init
-        self.schematic_runlist = schematic_runlist
+        self.config_runlist = config_runlist
         self.schematic_id = schematic_id
-        self.schematic_script = schematic_script
+        self.config_script = config_script
+        self.config_env = config_env
         self.zone_msg = zone_msg
         self.zone_state = zone_state
         self.zone_name = zone_name
