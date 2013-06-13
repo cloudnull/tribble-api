@@ -6,6 +6,44 @@ from tribble.purveyors import db_proc
 from tribble.webapp import pop_ts, auth_mech, build_cell
 
 
+class ResetStateRestRdp(Resource):
+    def post(self, _sid=None, _zid=None):
+        user_id = auth_mech(rdata=request.headers)
+        if not user_id:
+            return {'response': 'Missing Information'}, 400
+        try:
+            if not _sid:
+                return {'response': 'No Schematic specified'}, 400
+            else:
+                skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
+                if not skm:
+                    return {'response': 'No Schematic Found'}, 404
+
+            if not _zid:
+                return {'response': 'No Zone ID provided'}, 404
+            else:
+                zon = db_proc.get_zones_by_id(skm=skm, zid=_zid)
+                if not zon:
+                    return {'response': 'No Zone Found'}, 404
+
+            cell = {'zone_state': 'ACTIVE (RESET)'}
+            try:
+                sess = _DB.session
+                db_proc.put_zone(session=sess,
+                                 zon=zon,
+                                 put=cell)
+            except Exception:
+                LOG.error(traceback.format_exc())
+            else:
+                db_proc.commit_session(session=sess)
+        except Exception:
+            LOG.error(traceback.format_exc())
+            return {'response': 'Unexpected Error'}, 500
+        else:
+            return {'response': ('Zone State for "%s"'
+                                 ' has been Reset' % _zid)}, 200
+
+
 class RedeployRestRdp(Resource):
     def post(self, _sid=None, _zid=None):
         user_id = auth_mech(rdata=request.headers)
