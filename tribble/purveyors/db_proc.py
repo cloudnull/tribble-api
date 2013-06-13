@@ -9,8 +9,9 @@ def post_zones(skm, zon, ssh):
     """
     from tribble.operations import utils
     return Zones(schematic_id=skm.id,
-                 schematic_runlist=zon.get('schematic_runlist'),
-                 schematic_script=zon.get('schematic_script'),
+                 config_runlist=zon.get('config_runlist'),
+                 config_script=zon.get('config_script'),
+                 config_env=zon.get('config_env'),
                  zone_state=zon.get('zone_state', 'BUILT'),
                  zone_msg=zon.get('zone_msg', 'Nothing to Report'),
                  zone_name=zon.get('zone_name', utils.rand_string(length=20)),
@@ -56,7 +57,6 @@ def post_configmanager(session, post):
     """
     return ConfigManager(
         config_type=post.get('config_type'),
-        config_env=post.get('config_env'),
         config_key=post.get('config_key'),
         config_server=post.get('config_server'),
         config_username=post.get('config_username'),
@@ -98,8 +98,9 @@ def put_zone(session, zon, put):
     zon.cloud_networks = put.get('cloud_networks', zon.cloud_networks)
     zon.cloud_init = put.get('cloud_init', zon.cloud_init)
     zon.quantity = put.get('quantity', zon.quantity)
-    zon.schematic_runlist = put.get('schematic_runlist', zon.schematic_runlist)
-    zon.schematic_script = put.get('schematic_script', zon.schematic_script)
+    zon.config_runlist = put.get('config_runlist', zon.config_runlist)
+    zon.config_script = put.get('config_script', zon.config_script)
+    zon.config_env = put.get('config_env', zon.config_env)
     zon.zone_state = put.get('zone_state', zon.zone_state)
     zon.zone_msg = put.get('zone_msg', zon.zone_msg)
     zon.zone_name = put.get('zone_name', zon.zone_name)
@@ -114,7 +115,6 @@ def put_configmanager(session, con, put):
     put an update to the system for a set of config management
     """
     con.config_type = put.get('config_type', con.config_type)
-    con.config_env = put.get('config_env', con.config_env)
     con.config_key = put.get('config_key', con.config_key)
     con.config_server = put.get('config_server', con.config_server)
     con.config_username = put.get('config_username', con.config_username)
