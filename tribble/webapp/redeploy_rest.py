@@ -54,11 +54,15 @@ class RedeployRestRdp(Resource):
                 return {'response': 'No Schematic specified'}, 400
             else:
                 skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
-            if not skm:
-                return {'response': 'No Schematic Found'}, 404
+                if not skm:
+                    return {'response': 'No Schematic Found'}, 404
 
             if _zid:
-                zons = [db_proc.get_zones_by_id(skm=skm, zid=_zid)]
+                zons = db_proc.get_zones_by_id(skm=skm, zid=_zid)
+                if zons:
+                    zons = [zons]
+                else:
+                    return {'response': 'No Zone Found'}, 404
             else:
                 zons = db_proc.get_zones(skm=skm)
             if not zons:
