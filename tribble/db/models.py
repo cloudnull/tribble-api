@@ -105,7 +105,7 @@ class ConfigManager(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, config_key, config_env, config_type, config_server,
+    def __init__(self, config_key, config_type, config_server,
                  config_username, config_clientname, config_validation_key):
         """
         All Config Management is stored here.
