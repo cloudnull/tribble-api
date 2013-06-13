@@ -54,8 +54,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 # What is the Name of this Script, and what are we starting
 PROGRAM="Tribble API"
 
-# What is the Directory to your server installation of HYPERIC
-AGENT_APP="/usr/local/bin/tribbleapi"
+# What is the Directory to your server installation
+AGENT_APP="/usr/local/bin/tribble-api"
 
 ### -------------------------------------------------------------- ###
 ###    DO NOT EDIT THIS AREA UNLESS YOU KNOW WHAT YOU ARE DOING    ###
@@ -69,11 +69,11 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 start() {
-    $AGENT_APP $CONFIG --start
+    $AGENT_APP --start
 }
 
 stop() {
-    $AGENT_APP $CONFIG --stop
+    $AGENT_APP --stop
 }
 
 case "$1" in
