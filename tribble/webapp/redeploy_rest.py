@@ -38,7 +38,7 @@ class RedeployRestRdp(Resource):
 
                 if base_qty > numr_qty:
                     difference = (base_qty - numr_qty)
-                    packet = build_cell(job='build',
+                    packet = build_cell(job='redeploy_build',
                                         schematic=skm,
                                         zone=zon,
                                         sshkey=key,
@@ -51,7 +51,7 @@ class RedeployRestRdp(Resource):
                     retskms.append(msg)
                 elif base_qty < numr_qty:
                     difference = (numr_qty - base_qty)
-                    packet = build_cell(job='delete',
+                    packet = build_cell(job='redeploy_delete',
                                         schematic=skm,
                                         zone=zon,
                                         sshkey=key,
