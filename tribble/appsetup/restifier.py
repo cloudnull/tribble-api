@@ -18,7 +18,9 @@ def routes(api):
            (redeploy_rest.RedeployRestRdp,
             '/v1/schematics/<_sid>/redeploy'),
            (redeploy_rest.RedeployRestRdp,
-            '/v1/schematics/<_sid>/zones/<_zid>/redeploy')]
+            '/v1/schematics/<_sid>/zones/<_zid>/redeploy'),
+           (redeploy_rest.ResetStateRestRdp,
+            '/v1/schematics/<_sid>/zones/<_zid>/resetstate')]
 
     for endpoint in uri:
         LOG.debug(endpoint)

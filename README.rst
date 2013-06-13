@@ -92,6 +92,14 @@ Example usage for POST to redploy after an update
     curl -X POST --insecure -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>/zones/<zone_id>/redeploy
 
 
+Example usage for POST to reset state on a zone needing it
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    curl -X POST --insecure -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>/zones/<zone_id>/resetstate
+
+
 
 Please see the example directory for an example of a valid JSON schematic with all available options. *NOTE* not all options are needed or other wise required.
 
