@@ -1,6 +1,5 @@
 import traceback
 import time
-import random
 from libcloud.compute.base import DeploymentError
 from libcloud.compute.types import NodeState
 from tribble.appsetup.start import LOG, _DB, STATS
@@ -8,14 +7,6 @@ from tribble.operations import utils
 from tribble.operations import ret_conn, ret_image, ret_size
 from tribble.operations import config_manager as _cm
 from tribble.purveyors import db_proc
-
-
-def stupid_hack():
-    # Stupid Hack For Public Cloud so that it is not
-    # overwhemled with instance creations
-    timer = random.randrange(1, 10)
-    LOG.debug('Resting for %s' % timer)
-    return timer
 
 
 class MainOffice(object):
@@ -41,7 +32,7 @@ class MainOffice(object):
             if dim.id in self.nucleus['uuids']:
                 LOG.info('DELETING %s' % dim.id)
                 try:
-                    time.sleep(stupid_hack())
+                    time.sleep(utils.stupid_hack())
                     with STATS.timer('InstanceDelete'):
                         conn.destroy_node(dim)
                 except Exception, exp:
@@ -111,7 +102,7 @@ class MainOffice(object):
         """
         Build an instance from values in our DB
         """
-        time.sleep(stupid_hack())
+        time.sleep(utils.stupid_hack())
         _node_name = '%s%s' % (self.nucleus.get('name_convention',
                                                 utils.rand_string()),
                                utils.rand_string())
@@ -179,7 +170,7 @@ class MainOffice(object):
         LOG.debug(specs)
         LOG.info('Building Node Based on %s' % specs)
         try:
-            time.sleep(stupid_hack())
+            time.sleep(utils.stupid_hack())
             with STATS.timer('InstanceCreate'):
                 if 'deploy' in specs:
                     _nd = self.conn.deploy_node(**specs)
@@ -190,7 +181,7 @@ class MainOffice(object):
             self.nucleus['zone_msg'] = 'Exception while Building an Instance'
             LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
-                time.sleep(stupid_hack())
+                time.sleep(utils.stupid_hack())
                 dead_node = [_nd for _nd in self.conn.list_nodes()
                              if _nd.name == specs['name']]
                 if dead_node:
@@ -202,7 +193,7 @@ class MainOffice(object):
                                 _nd = self.conn.destroy_node(node)
                                 if _nd:
                                     break
-                                time.sleep(stupid_hack())
+                                time.sleep(utils.stupid_hack())
                         except Exception, exp:
                             LOG.error('Node was not removed an error'
                                       ' occured ==> %s' % exp)
@@ -248,14 +239,14 @@ class MainOffice(object):
                                       % (node.id, node.name))
             except BadStatusLine, exp:
                 LOG.critical(exp)
-                time.sleep(stupid_hack())
+                time.sleep(utils.stupid_hack())
                 self.conn = ret_conn(nucleus=self.nucleus)
                 _retry()
             except Exception, exp:
                 LOG.critical(exp)
                 try:
                     if exp.errno in (errno.ECONNREFUSED, errno.ECONNRESET):
-                        time.sleep(stupid_hack())
+                        time.sleep(utils.stupid_hack())
                         self.conn = ret_conn(nucleus=self.nucleus)
                         if not self.conn:
                             raise DeploymentError('No Available Connection')
@@ -275,19 +266,16 @@ class MainOffice(object):
         sess = _DB.session
         schematic = db_proc.get_schematic_id(sid=self.nucleus['schematic_id'],
                                              uid=self.nucleus['auth_id'])
-        LOG.info('SCHEMATIC ==> %s' % schematic)
         zone = db_proc.get_zones_by_id(skm=schematic,
                                        zid=self.nucleus['zone_id'])
-        LOG.info('ZONE ==> %s' % zone)
-        LOG.info('INSTANCES ==> %s' % ids)
         inss = db_proc.get_instance_ids(zon=zone,
                                         ids=ids)
-        LOG.info('INSTANCES ==> %s' % inss)
         for ins in inss:
             sess = db_proc.delete_item(session=sess, item=ins)
         db_proc.commit_session(session=sess)
         for _ in ids:
             STATS.gauge('Instances', -1, delta=True)
+        LOG.info('Instance removed ID:%s' % inss)
 
     def _node_post(self, info):
         atom = self.nucleus

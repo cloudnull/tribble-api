@@ -155,3 +155,11 @@ def retryloop(attempts, timeout=None, delay=None, backoff=1):
             time.sleep(delay)
             delay = delay * backoff
     raise RetryError
+
+
+def stupid_hack():
+    import random
+    # Stupid Hack For Public Cloud so that it is not
+    # overwhemled with instance creations
+    timer = random.randrange(1, 10)
+    return timer
