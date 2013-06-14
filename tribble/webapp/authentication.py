@@ -25,14 +25,14 @@ def cloudauth():
             return True
         else:
             return False
-    if request.method == 'HEAD':
-        msg = 'Method Not Implemented'
-        return not_found(message=msg, error=400)
     _rh = request.headers
+    if not _rh:
+        msg = 'Go Away'
+        return not_found(message=msg, error=400)
     if not all([('x-user' in _rh),
                 ('x-secretkey' in _rh),
                 ('x-password' in _rh)]):
-        return not_found(message='No Credentials Provided'), 401
+        return not_found(message='No Credentials Provided', error=401)
     else:
         obj = CloudAuth.query.filter(CloudAuth.dcuser == _rh['x-user']).first()
         if obj:
@@ -45,7 +45,6 @@ def cloudauth():
         else:
             msg = ('Verify x-user, x-secret, and x-password headers are present'
                    ' and correct')
-            err = 401
             LOG.critical('Failed Authentication ==> Headers %s => Error Code %s'
                          % (_rh, err))
-            return not_found(message=msg, error=err)
+            return not_found(message=msg, error=401)
