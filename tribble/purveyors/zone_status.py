@@ -24,6 +24,7 @@ class ZoneState(object):
         ints = db.get_instances(zon=self.zone)
         if int(self.zone.quantity) == len(ints):
             self.cell['zone_state'] = 'ACTIVE'
+            self.cell['zone_msg'] = 'Zone is Active'
         else:
             self.cell['zone_state'] = 'DEGRADED'
         self.state_update()
