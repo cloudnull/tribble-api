@@ -178,41 +178,39 @@ class MainOffice(object):
         """
         LOG.debug(specs)
         LOG.info('Building Node Based on %s' % specs)
-        for retry in utils.retryloop(attempts=5, timeout=900, delay=10):
+        try:
+            time.sleep(stupid_hack())
+            with STATS.timer('InstanceCreate'):
+                if 'deploy' in specs:
+                    _nd = self.conn.deploy_node(**specs)
+                else:
+                    _nd = self.conn.create_node(**specs)
+                    _nd = self.state_wait(node=_nd)
+        except DeploymentError, exp:
+            LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
                 time.sleep(stupid_hack())
-                with STATS.timer('InstanceCreate'):
-                    if 'deploy' in specs:
-                        _nd = self.conn.deploy_node(**specs)
-                    else:
-                        _nd = self.conn.create_node(**specs)
-                        _nd = self.state_wait(node=_nd)
-            except DeploymentError, exp:
-                LOG.critical('Exception while Building Instance ==> %s' % exp)
-                try:
-                    time.sleep(stupid_hack())
-                    dead_node = [_nd for _nd in self.conn.list_nodes()
-                                 if _nd.name == specs['name']]
-                    if dead_node:
-                        for node in dead_node:
-                            LOG.warn('Removing Node that failed to Build ==> %s'
-                                     % node)
-                            try:
-                                for _ in xrange(3):
-                                    _nd = self.conn.destroy_node(node)
-                                    if _nd:
-                                        retry()
-                                    time.sleep(stupid_hack())
-                            except Exception, exp:
-                                LOG.error('Node was not removed an error'
-                                          ' occured ==> %s' % exp)
-                    retry()
-                except utils.RetryError:
-                    LOG.error(traceback.format_exc())
-            except Exception:
+                dead_node = [_nd for _nd in self.conn.list_nodes()
+                             if _nd.name == specs['name']]
+                if dead_node:
+                    for node in dead_node:
+                        LOG.warn('Removing Node that failed to Build ==> %s'
+                                 % node)
+                        try:
+                            for _ in xrange(3):
+                                _nd = self.conn.destroy_node(node)
+                                if _nd:
+                                    break
+                                time.sleep(stupid_hack())
+                        except Exception, exp:
+                            LOG.error('Node was not removed an error'
+                                      ' occured ==> %s' % exp)
+            except utils.RetryError:
                 LOG.error(traceback.format_exc())
-            else:
-                self._node_post(info=_nd)
+        except Exception:
+            LOG.error(traceback.format_exc())
+        else:
+            self._node_post(info=_nd)
 
     def state_wait(self, node):
         """
