@@ -187,6 +187,7 @@ class MainOffice(object):
                     _nd = self.conn.create_node(**specs)
                     _nd = self.state_wait(node=_nd)
         except DeploymentError, exp:
+            self.nucleus['zone_msg'] = 'Exception while Building an Instance'
             LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
                 time.sleep(stupid_hack())
@@ -266,6 +267,7 @@ class MainOffice(object):
                                           % (node.id, node.name))
                 except Exception, exp:
                     LOG.critical(exp)
+                    self.nucleus['zone_msg'] = exp
                     raise DeploymentError('ID:%s NAME:%s was Never Active'
                                           % (node.id, node.name))
 
