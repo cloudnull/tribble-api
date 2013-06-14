@@ -4,7 +4,7 @@ import traceback
 import time
 from daemon import pidfile
 
-from tribble.appsetup.start import LOG, QUEUE, _DB, STATS
+from tribble.appsetup.start import LOG, QUEUE, STATS
 from tribble import info
 from tribble.purveyors import zone_status as _zs
 
@@ -131,10 +131,10 @@ class MainDisptach(object):
                 else:
                     w_count = len(_aw)
                     workers = self.compute_workers(w_count)
-
-                    self.logger.info('queue size  %d' % _qs)
-                    self.logger.info('Active Jobs %d' % w_count)
-                    self.logger.info('num workers %d' % workers)
+                    STATS.gauge('AvailableWorkers', workers)
+                    self.logger.debug('queue size  %d' % _qs)
+                    self.logger.debug('Active Jobs %d' % w_count)
+                    self.logger.debug('num workers %d' % workers)
 
                     for _ in xrange(workers):
                         wthread = Process(target=self.work_doer,
@@ -167,6 +167,7 @@ class MainDisptach(object):
         from tribble.operations import constructor, utils, config_manager
         try:
             cells = queue.get(timeout=2)
+            STATS.gauge('ActiveThreads', 1, delta=True)
             self.logger.debug(cells)
             for _cell in cells:
                 try:
@@ -214,5 +215,7 @@ class MainDisptach(object):
                     state._active()
                 finally:
                     del cell
-        except Exception:
-            self.logger.debug('Nothing to pull from Queue')
+        except Exception, exp:
+            self.logger.debug('Nothing to pull from Queue %s' % exp)
+        else:
+            STATS.gauge('ActiveThreads', -1, delta=True)

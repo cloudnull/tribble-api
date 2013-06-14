@@ -42,7 +42,8 @@ class MainOffice(object):
                 LOG.info('DELETING %s' % dim.id)
                 try:
                     time.sleep(stupid_hack())
-                    conn.destroy_node(dim)
+                    with STATS.timer('InstanceDelete'):
+                        conn.destroy_node(dim)
                 except Exception, exp:
                     LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
                 cheferizer.ChefMe(nucleus=self.nucleus,
@@ -180,24 +181,28 @@ class MainOffice(object):
         for retry in utils.retryloop(attempts=5, timeout=900, delay=10):
             try:
                 time.sleep(stupid_hack())
-                if 'deploy' in specs:
-                    _nd = self.conn.deploy_node(**specs)
-                else:
-                    _nd = self.conn.create_node(**specs)
-                    _nd = self.state_wait(node=_nd)
+                with STATS.timer('InstanceCreate'):
+                    if 'deploy' in specs:
+                        _nd = self.conn.deploy_node(**specs)
+                    else:
+                        _nd = self.conn.create_node(**specs)
+                        _nd = self.state_wait(node=_nd)
             except DeploymentError, exp:
                 LOG.critical('Exception while Building Instance ==> %s' % exp)
                 try:
                     time.sleep(stupid_hack())
                     dead_node = [_nd for _nd in self.conn.list_nodes()
-                                 if (_nd.name == specs['name'] and
-                                     _nd.state == NodeState.UNKNOWN)]
+                                 if _nd.name == specs['name']]
                     if dead_node:
                         for node in dead_node:
                             LOG.warn('Removing Node that failed to Build ==> %s'
                                      % node)
                             try:
-                                _nd = self.conn.destroy_node(node)
+                                for _ in xrange(3):
+                                    _nd = self.conn.destroy_node(node)
+                                    if _nd:
+                                        retry()
+                                    time.sleep(stupid_hack())
                             except Exception, exp:
                                 LOG.error('Node was not removed an error'
                                           ' occured ==> %s' % exp)

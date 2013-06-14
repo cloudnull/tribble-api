@@ -82,6 +82,7 @@ def process_threads(processes):
     """
     Process the built actions
     """
+    from tribble.appsetup.start import STATS
     max_threads = compute_workers()
     post_process = []
     while processes:
@@ -92,13 +93,16 @@ def process_threads(processes):
             cpu = jobs
 
         for _ in xrange(cpu):
+            STATS.gauge('ActiveThreads', 1, delta=True)
             try:
                 _jb = processes.popleft()
                 post_process.append(_jb)
                 _jb.start()
             except IndexError:
                 break
+
     for _pp in reversed(post_process):
+        STATS.gauge('ActiveThreads', -1, delta=True)
         _pp.join()
 
 

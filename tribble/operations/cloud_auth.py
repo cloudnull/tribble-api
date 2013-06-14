@@ -52,12 +52,14 @@ def apiauth(packet):
             else:
                 raise CantContinue('No Region Found.')
         elif packet.get('cloud_provider') in Provider.__dict__:
+            STATS.incr('Provider_%s' % packet.get('cloud_provider'))
             region = packet.get('cloud_region').upper()
             _provider = Provider.__dict__[packet.get('cloud_provider')]
             driver = get_driver(_provider)
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version')}
         else:
+            STATS.incr('Provider_OTHER')
             driver = get_driver(provider)
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version')}
