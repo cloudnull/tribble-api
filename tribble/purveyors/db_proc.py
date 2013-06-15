@@ -26,13 +26,13 @@ def post_zones(skm, zon, ssh):
                  credential_id=ssh.id)
 
 
-def post_instanceskeys(pub, sshu, key_data):
+def post_instanceskeys(pub, sshu, key_name):
     """
     post a new row for a set of keys to an instance
     """
     return InstancesKeys(ssh_user=sshu,
                          ssh_key_pub=pub,
-                         key_name=key_data.get('key_name'))
+                         key_name=key_name)
 
 
 def post_schematic(session, con, uid, post):

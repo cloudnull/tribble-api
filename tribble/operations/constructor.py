@@ -1,6 +1,6 @@
 import traceback
 import time
-from libcloud.compute.base import DeploymentError
+from libcloud.compute.base import DeploymentError, LibcloudError
 from libcloud.compute.types import NodeState
 from tribble.appsetup.start import LOG, _DB, STATS
 from tribble.operations import utils
@@ -24,10 +24,15 @@ class MainOffice(object):
         conn = ret_conn(nucleus=self.nucleus)
         if not conn:
             raise DeploymentError('No Available Connection')
-
-        node_list = [_nd for _nd in conn.list_nodes()]
         LOG.debug('Nodes to Delete %s' % self.nucleus['uuids'])
-        LOG.debug('All nodes in the customer API ==> %s' % node_list)
+        try:
+            node_list = [_nd for _nd in conn.list_nodes()]
+        except LibcloudError, exp:
+            LOG.warn('Error When getting Node list for Deleting ==> %s'
+                     % exp)
+            return False
+        else:
+            LOG.debug('All nodes in the customer API ==> %s' % node_list)
         for dim in node_list:
             if dim.id in self.nucleus['uuids']:
                 LOG.info('DELETING %s' % dim.id)

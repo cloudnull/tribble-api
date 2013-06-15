@@ -26,12 +26,9 @@
             "image_id": "",
             "name_convention": "",
             "quantity": "",
-            "instances_keys": {
-                "ssh_user": "root",
-                "ssh_key_pri": "",
-                "ssh_key_pub": "",
-                "key_name": ""
-            }
+            "ssh_user": "root",
+            "ssh_key_pub": "",
+            "key_name": ""
         }
     ]
 }

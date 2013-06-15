@@ -42,6 +42,8 @@ class ZonesRest(Resource):
                             for inst in ints:
                                 _di.append(pop_ts(inst.__dict__))
                             dzone['num_instances'] = len(_di)
+                        else:
+                            dzone['num_instances'] = 0
                         retskmss.append(dzone)
         except Exception:
             LOG.error(traceback.format_exc())
@@ -64,6 +66,8 @@ class ZonesRest(Resource):
             if not _skm:
                 return {'response': 'No Schematic Found'}, 404
             _zon = db_proc.get_zones_by_id(skm=_skm, zid=_zid)
+            if not _zon:
+                return {'response': 'No Zone Found'}, 404
             if _zon.zone_state == 'BUILDING':
                 return {'response': ("Zone Delete can not be"
                                      " performed because Zone %s has a"
@@ -155,12 +159,12 @@ class ZonesRest(Resource):
                 jobs = []
                 _con = db_proc.get_configmanager(skm=_skm)
                 for _zn in _hd['zones']:
-                    key_data = _zn['instances_keys']
-                    _ssh_user = key_data.get('ssh_user')
-                    pub = key_data.get('ssh_key_pub')
+                    _ssh_user = _zn.get('ssh_user')
+                    pub = _zn.get('ssh_key_pub')
+                    key_name = _zn.get('key_name')
                     _ssh = db_proc.post_instanceskeys(pub=pub,
                                                       sshu=_ssh_user,
-                                                      key_data=key_data)
+                                                      key_name=key_name)
                     sess = db_proc.add_item(session=sess, item=_ssh)
 
                     _zon = db_proc.post_zones(skm=_skm,

@@ -33,6 +33,8 @@ class SchematicsRest(Resource):
                     zon = db_proc.get_zones(skm=_skm)
                     if zon:
                         _dz = dskm['num_zones'] = len(zon)
+                    else:
+                        _dz = dskm['num_zones'] = 0
                     con = db_proc.get_configmanager(skm=_skm)
                     if con:
                         dskm['config_manager'] = pop_ts(temp=con.__dict__)
@@ -166,12 +168,12 @@ class SchematicsRest(Resource):
             if 'zones' in _hd:
                 jobs = []
                 for _zn in _hd['zones']:
-                    key_data = _zn['instances_keys']
-                    _ssh_user = key_data.get('ssh_user')
-                    pub = key_data.get('ssh_key_pub')
+                    _ssh_user = _zn.get('ssh_user')
+                    pub = _zn.get('ssh_key_pub')
+                    key_name = _zn.get('key_name')
                     ssh = db_proc.post_instanceskeys(pub=pub,
                                                      sshu=_ssh_user,
-                                                     key_data=key_data)
+                                                     key_name=key_name)
                     sess = db_proc.add_item(session=sess, item=ssh)
                     zon = db_proc.post_zones(skm=skm,
                                              zon=_zn,

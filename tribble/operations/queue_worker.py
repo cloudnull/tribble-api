@@ -192,9 +192,10 @@ class MainDisptach(object):
                                 bobs = constructor.MainOffice(nucleus=cell)
                                 bobs.bob_destroyer()
                             else:
-                                with STATS.timer('ZoneDelete'):
+                                if 'uuids' in cell and cell['uuids']:
                                     bobs = constructor.MainOffice(nucleus=cell)
-                                    bobs.bob_destroyer()
+                                    with STATS.timer('ZoneDelete'):
+                                        bobs.bob_destroyer()
                         if cell['job'] == 'schematic_delete':
                             STATS.gauge('Schematics', -1, delta=True)
                             state._delete_resource(skm=True)
