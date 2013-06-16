@@ -30,6 +30,8 @@ class SchematicsRest(Resource):
             for _skm in skms:
                 if _skm:
                     dskm = pop_ts(temp=_skm.__dict__)
+                    if dskm.get('cloud_key'):
+                        dskm['cloud_key'] = 'CLOUD KEY FOUND'
                     zon = db_proc.get_zones(skm=_skm)
                     if zon:
                         _dz = dskm['num_zones'] = len(zon)
