@@ -3,7 +3,6 @@ import sys
 from tribble import info
 from tribble import daemonizer
 
-
 def executable():
     """
     Look for flags, these are all of the available start options.
