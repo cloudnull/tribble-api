@@ -197,10 +197,8 @@ class MainDisptach(object):
                                     with STATS.timer('ZoneDelete'):
                                         bobs.bob_destroyer()
                         if cell['job'] == 'schematic_delete':
-                            STATS.gauge('Schematics', -1, delta=True)
                             state._delete_resource(skm=True)
                         else:
-                            STATS.gauge('Zones', -1, delta=True)
                             state._delete_resource()
                     elif cell['job'] == 'reconfig':
                         STATS.incr('Reconfigurations')
