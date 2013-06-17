@@ -42,9 +42,11 @@ class ZoneState(object):
                 self.cell['zone_msg'] = ('Found Instance when they should'
                                          ' have all been deleted')
                 self.state_update()
+                return  False
             sess = db.delete_item(session=sess, item=self.zone)
             key = db.get_instanceskeys(zon=self.zone)
             sess = db.delete_item(session=sess, item=key)
+            STATS.gauge('Zones', -1, delta=True)
         except AttributeError, exp:
             LOG.info('No Zone To Delete as No Zone was Found ==> %s' % exp)
 
@@ -52,6 +54,7 @@ class ZoneState(object):
             _con = db.get_configmanager(skm=self.schematic)
             sess = db.delete_item(session=sess, item=self.schematic)
             sess = db.delete_item(session=sess, item=_con)
+            STATS.gauge('Schematics', -1, delta=True)
         db.commit_session(session=sess)
 
     def state_update(self):
