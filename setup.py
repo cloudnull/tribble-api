@@ -25,7 +25,7 @@ T_M = ['paramiko',
        'mysql-python',
        'statsd',
        'Flask-RESTful',
-       'Flask',
+       'Flask==0.9',
        'Flask-SQLAlchemy',
        'prettytable',
        'gevent']
