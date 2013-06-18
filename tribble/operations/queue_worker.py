@@ -187,7 +187,8 @@ class MainDisptach(object):
                                          'zone_delete',
                                          'redeploy_delete',
                                          'instance_delete'):
-                        if cell.get('zone_id'):
+                        if (cell.get('zone_id') and
+                            not cell['job'] == 'instance_delete'):
                             state._delete()
                             if cell['job'] == 'redeploy_delete':
                                 bobs = constructor.MainOffice(nucleus=cell)
@@ -195,15 +196,15 @@ class MainDisptach(object):
                             else:
                                 if 'uuids' in cell and cell['uuids']:
                                     bobs = constructor.MainOffice(nucleus=cell)
-                                    if cell['job'] == 'instance_delete':
-                                        bobs.bob_destroyer()
                                     with STATS.timer('ZoneDelete'):
                                         bobs.bob_destroyer()
-                        if cell['job'] == 'schematic_delete':
+                        if cell['job'] == 'instance_delete':
+                            bobs = constructor.MainOffice(nucleus=cell)
+                            bobs.bob_destroyer()
+                        elif cell['job'] == 'schematic_delete':
                             state._delete_resource(skm=True)
                         else:
-                            if not cell['job'] == 'instance_delete':
-                                state._delete_resource()
+                            state._delete_resource()
                     elif cell['job'] == 'reconfig':
                         STATS.incr('Reconfigurations')
                         state._reconfig()

@@ -72,6 +72,7 @@ Example usage for using DELETE with the API
 
     curl -X DELETE --insecure -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>
     curl -X DELETE --insecure -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>/zones/<zone_id>
+    curl -X DELETE --insecure -H "x-user: someusername" -H "x-secretkey: keyiused" -H "x-password: password" https://localhost:5150/v1/schematics/<schematic_id>/zones/<zone_id>/instances/<instance_id>
 
 
 Example usage for using POST with the API

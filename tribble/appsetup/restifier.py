@@ -1,4 +1,5 @@
-from tribble.webapp import schematics_rest, zones_rest, redeploy_rest
+from tribble.webapp import schematics_rest, zones_rest
+from tribble.webapp import redeploy_rest, instances_rest
 from tribble.appsetup.start import LOG
 
 
@@ -15,6 +16,8 @@ def routes(api):
             '/v1/schematics/<_sid>/zones'),
            (zones_rest.ZonesRest,
             '/v1/schematics/<_sid>/zones/<_zid>'),
+           (instances_rest.InstancesRest,
+            '/v1/schematics/<_sid>/zones/<_zid>/instances/<_iid>'),
            (redeploy_rest.RedeployRestRdp,
             '/v1/schematics/<_sid>/redeploy'),
            (redeploy_rest.RedeployRestRdp,

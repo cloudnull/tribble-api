@@ -273,14 +273,12 @@ class MainOffice(object):
                                              uid=self.nucleus['auth_id'])
         zone = db_proc.get_zones_by_id(skm=schematic,
                                        zid=self.nucleus['zone_id'])
-        inss = db_proc.get_instance_ids(zon=zone,
-                                        ids=ids)
+        inss = db_proc.get_instance_ids(zon=zone, ids=ids)
         for ins in inss:
             sess = db_proc.delete_item(session=sess, item=ins)
         db_proc.commit_session(session=sess)
         for _ in ids:
             STATS.gauge('Instances', -1, delta=True)
-        LOG.info('Instance removed ID:%s' % inss)
 
     def _node_post(self, info):
         atom = self.nucleus
