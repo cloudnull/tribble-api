@@ -30,7 +30,7 @@ def apiauth(packet):
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version',
                                                          '2.0_password'),
-                     'ex_tenant_name': packet.get('cloud_username')}
+                     'ex_tenant_name': packet.get('cloud_tenant')}
         elif provider.upper() == 'RACKSPACE':
             STATS.incr('Provider_Rackspace')
             driver = get_driver(Provider.RACKSPACE)
