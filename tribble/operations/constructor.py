@@ -28,6 +28,7 @@ class MainOffice(object):
         try:
             node_list = [_nd for _nd in conn.list_nodes()]
         except LibcloudError, exp:
+            self.nucleus['zone_msg'] = exp
             LOG.warn('Error When getting Node list for Deleting ==> %s'
                      % exp)
             return False
@@ -41,6 +42,7 @@ class MainOffice(object):
                     with STATS.timer('InstanceDelete'):
                         conn.destroy_node(dim)
                 except Exception, exp:
+                    self.nucleus['zone_msg'] = exp
                     LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
                 cheferizer.ChefMe(nucleus=self.nucleus,
                                   name=dim.name.lower(),
@@ -183,7 +185,7 @@ class MainOffice(object):
                     _nd = self.conn.create_node(**specs)
                     _nd = self.state_wait(node=_nd)
         except DeploymentError, exp:
-            self.nucleus['zone_msg'] = 'Exception while Building an Instance'
+            self.nucleus['zone_msg'] = exp
             LOG.critical('Exception while Building Instance ==> %s' % exp)
             try:
                 time.sleep(utils.stupid_hack())
@@ -238,16 +240,19 @@ class MainOffice(object):
                 else:
                     _retry()
             except utils.RetryError, exp:
+                self.nucleus['zone_msg'] = exp
                 LOG.critical(exp)
                 LOG.debug(inst)
                 raise DeploymentError('ID:%s NAME:%s was Never Active'
                                       % (node.id, node.name))
             except BadStatusLine, exp:
+                self.nucleus['zone_msg'] = exp
                 LOG.critical(exp)
                 time.sleep(utils.stupid_hack())
                 self.conn = ret_conn(nucleus=self.nucleus)
                 _retry()
             except Exception, exp:
+                self.nucleus['zone_msg'] = exp
                 LOG.critical(exp)
                 try:
                     if exp.errno in (errno.ECONNREFUSED, errno.ECONNRESET):
@@ -257,6 +262,7 @@ class MainOffice(object):
                             raise DeploymentError('No Available Connection')
                         _retry()
                 except utils.RetryError, exp:
+                    self.nucleus['zone_msg'] = exp
                     LOG.critical(exp)
                     LOG.debug(inst)
                     raise DeploymentError('ID:%s NAME:%s was Never Active'
