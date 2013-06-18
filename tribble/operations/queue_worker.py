@@ -165,9 +165,9 @@ class MainDisptach(object):
         failure, or raise an exception.
         """
         from tribble.operations import constructor, utils, config_manager
+        STATS.gauge('ActiveThreads', 1, delta=True)
         try:
             cells = queue.get(timeout=2)
-            STATS.gauge('ActiveThreads', 1, delta=True)
             self.logger.debug(cells)
             for _cell in cells:
                 try:
@@ -216,5 +216,5 @@ class MainDisptach(object):
                     del cell
         except Exception, exp:
             self.logger.debug('Nothing to pull from Queue %s' % exp)
-        else:
+        finally:
             STATS.gauge('ActiveThreads', -1, delta=True)
