@@ -9,12 +9,12 @@
     "cloud_key": "",
     "cloud_url": "",
     "cloud_provider": "",
-    "cloud_region": "",
     "cloud_username": "",
     "cloud_tenant": "",
     "zones": [
         {
             "config_runlist": "",
+            "cloud_region": "",
             "config_script": "",
             "config_env": "",
             "security_groups": "",
