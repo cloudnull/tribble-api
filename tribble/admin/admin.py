@@ -9,7 +9,6 @@ import subprocess
 import prettytable
 
 # Local Packages
-from tribble.appsetup import start
 from tribble.admin.basestrings import strings
 from tribble.admin import verbose_logger, key_setup
 from tribble import info
@@ -103,6 +102,8 @@ class AdministrativeTasks(object):
             subprocess.call(['/sbin/chkconfig', i_name, 'on'])
 
     def delete_user(self):
+        from tribble.appsetup import start
+        start.setup_system(logger=verbose_logger.load_in())
         try:
             usr = CloudAuth.query.filter(CloudAuth.dcuser == self.user).first()
             start._DB.session.delete(usr)
@@ -111,7 +112,9 @@ class AdministrativeTasks(object):
             print 'Failed to delete user\nERROR : %s' % exp
 
     def create_user(self):
+        from tribble.appsetup import start
         from tribble.db.models import CloudAuth
+        start.setup_system(logger=verbose_logger.load_in())
         try:
             usr = CloudAuth(user_type=self.args.get('admin', 0),
                             dcuser=self.user,
@@ -125,7 +128,9 @@ class AdministrativeTasks(object):
             print 'Failed to create user\nERROR : %s' % exp
 
     def reset_user(self):
+        from tribble.appsetup import start
         from tribble.db.models import CloudAuth
+        start.setup_system(logger=verbose_logger.load_in())
         try:
             user_info = CloudAuth.query.filter(
                 CloudAuth.dcuser == self.user).first()
@@ -141,7 +146,9 @@ class AdministrativeTasks(object):
             print traceback.format_exc()
 
     def users_list(self):
+        from tribble.appsetup import start
         from tribble.db.models import CloudAuth
+        start.setup_system(logger=verbose_logger.load_in())
         try:
             table = prettytable.PrettyTable(['Type', 'User', 'Date Created'])
             for user in CloudAuth.query.order_by(CloudAuth.dcuser):
@@ -247,7 +254,6 @@ def admin_args():
 
 
 def admin_executable():
-    start.setup_system(logger=verbose_logger.load_in())
     args = admin_args()
     admin = AdministrativeTasks(args=args)
     if args.get('user_create'):

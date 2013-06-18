@@ -40,6 +40,7 @@ setuptools.setup(
     license=info.__license__,
     packages=['tribble',
               'tribble.admin',
+              'tribble.admin.basestrings',
               'tribble.appsetup',
               'tribble.db',
               'tribble.dist',
