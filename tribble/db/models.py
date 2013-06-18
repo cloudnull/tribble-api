@@ -29,9 +29,9 @@ class CloudAuth(_DB.Model):
     def __init__(self, user_type, dcuser, dcsecret, created_at, updated_at):
         """
         This table represents the users that are allowed to post / use the
-        system. Note that the "secret" field is plain text. It is up to the user
-        to place encrypted passwords into the system, else they will be stored
-        in plane text.
+        system. Note that the "secret" field is plain text. It is up to the
+        user to place encrypted passwords into the system, else they will be
+        stored in plane text.
         """
         self.user_type = user_type
         self.dcuser = dcuser
@@ -144,9 +144,6 @@ class Schematics(_DB.Model):
     cloud_version = _DB.Column('cloud_version',
                                _DB.VARCHAR(length=10),
                                nullable=True)
-    cloud_region = _DB.Column('cloud_region',
-                              _DB.VARCHAR(length=30),
-                              nullable=True)
     cloud_username = _DB.Column('cloud_username',
                                 _DB.VARCHAR(length=150),
                                 nullable=False)
@@ -167,8 +164,7 @@ class Schematics(_DB.Model):
                     autoincrement=True)
 
     def __init__(self, config_id, cloud_key, cloud_url, cloud_username,
-                 cloud_provider, cloud_version, cloud_region, cloud_tenant,
-                 auth_id):
+                 cloud_provider, cloud_version, cloud_tenant, auth_id):
         """
         Schematics provide for the configuration which would peratine to a
         built Zone.
@@ -179,7 +175,6 @@ class Schematics(_DB.Model):
         self.cloud_url = cloud_url
         self.cloud_provider = cloud_provider
         self.cloud_version = cloud_version
-        self.cloud_region = cloud_region
         self.cloud_tenant = cloud_tenant
         self.cloud_username = cloud_username
 
@@ -192,6 +187,9 @@ class Zones(_DB.Model):
                               nullable=False)
     schematic_constraint = relation(
         'Schematics', primaryjoin='Zones.schematic_id==Schematics.id')
+    cloud_region = _DB.Column('cloud_region',
+                              _DB.VARCHAR(length=30),
+                              nullable=True)
     config_runlist = _DB.Column('config_runlist',
                                 _DB.TEXT(),
                                 nullable=True)
@@ -213,11 +211,11 @@ class Zones(_DB.Model):
                             _DB.TEXT(length=4000),
                             nullable=True)
     zone_msg = _DB.Column('zone_msg',
-                           _DB.VARCHAR(length=250),
-                           nullable=False)
+                          _DB.VARCHAR(length=250),
+                          nullable=False)
     zone_state = _DB.Column('zone_state',
-                           _DB.VARCHAR(length=15),
-                           nullable=False)
+                            _DB.VARCHAR(length=15),
+                            nullable=False)
     zone_name = _DB.Column('zone_name',
                            _DB.VARCHAR(length=200),
                            nullable=False)
@@ -252,13 +250,14 @@ class Zones(_DB.Model):
                     nullable=False,
                     autoincrement=True)
 
-    def __init__(self, security_groups, inject_files, cloud_networks,
-                 cloud_init, schematic_id, config_runlist, config_script,
-                 config_env, zone_msg, zone_state, zone_name, size_id, image_id,
-                 name_convention, quantity, credential_id):
+    def __init__(self, cloud_region, security_groups, inject_files,
+                 cloud_networks, cloud_init, schematic_id, config_runlist,
+                 config_script, config_env, zone_msg, zone_state, zone_name,
+                 size_id, image_id, name_convention, quantity, credential_id):
         """
         Zones provide a specific setup for a collection of instances.
         """
+        self.cloud_region = cloud_region
         self.security_groups = security_groups
         self.inject_files = inject_files
         self.cloud_networks = cloud_networks
