@@ -71,10 +71,10 @@ class SchematicsRest(Resource):
                 return {'response': 'No Schematic Found'}, 404
             _con = db_proc.get_configmanager(skm=_skm)
             _zons = db_proc.get_zones(skm=_skm)
-            LOG.info(_zons)
             jobs = []
             if _zons:
                 for zone in _zons:
+                    LOG.debug(zone.__dict__)
                     if zone.zone_state == 'BUILDING':
                         return {'response': ("Schematic Delete can not be"
                                              " performed because Zone %s has a"
@@ -87,6 +87,7 @@ class SchematicsRest(Resource):
                                           config=_con)
                         cell['uuids'] = [ins.instance_id for ins in ints]
                         jobs.append(cell)
+                        LOG.debug('THIS IS FROM THE REQUEST ==> %s' % cell)
             cell = build_cell(job='schematic_delete',
                               schematic=_skm,
                               config=_con)

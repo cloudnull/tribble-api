@@ -34,9 +34,13 @@ def apiauth(packet):
         elif provider.upper() == 'RACKSPACE':
             STATS.incr('Provider_Rackspace')
             driver = get_driver(Provider.RACKSPACE)
+            if packet.get('cloud_region'):
+                _dc = packet.get('cloud_region')
+            else:
+                raise CantContinue('No Datacenter Provided')
             specs = {'ex_force_auth_url': packet.get('cloud_url'),
                      'ex_force_auth_version': packet.get('cloud_version'),
-                     'datacenter': packet.get('cloud_region').lower()}
+                     'datacenter': _dc.lower()}
         elif provider.upper() == 'VMWARE':
             STATS.incr('Provider_VMWARE')
             driver = get_driver(Provider.VCLOUD)
