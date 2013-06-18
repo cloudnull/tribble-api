@@ -61,7 +61,7 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
     from tribble.appsetup.start import LOG
     packet = {'cloud_key': schematic.cloud_key,
               'cloud_username': schematic.cloud_username,
-              'cloud_region': schematic.cloud_region,
+              'cloud_region': zone.cloud_region,
               'cloud_provider': schematic.cloud_provider,
               'job': job}
 
