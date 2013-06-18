@@ -10,6 +10,7 @@ def post_zones(skm, zon, ssh):
     from tribble.operations import utils
     return Zones(schematic_id=skm.id,
                  config_runlist=zon.get('config_runlist'),
+                 cloud_region=zon.get('cloud_region'),
                  config_script=zon.get('config_script'),
                  config_env=zon.get('config_env'),
                  zone_state=zon.get('zone_state', 'BUILT'),
@@ -46,7 +47,6 @@ def post_schematic(session, con, uid, post):
                       cloud_username=post.get('cloud_username'),
                       cloud_provider=post.get('cloud_provider'),
                       cloud_version=post.get('cloud_version'),
-                      cloud_region=post.get('cloud_region'),
                       cloud_tenant=post.get('cloud_tenant',
                                             post.get('cloud_username')))
 
@@ -93,6 +93,7 @@ def put_zone(session, zon, put):
     """
     zon.image_id = put.get('image_id', zon.image_id)
     zon.name_convention = put.get('name_convention', zon.name_convention)
+    zon.cloud_region = put.get('cloud_region', zon.cloud_region)
     zon.security_groups = put.get('security_groups', zon.security_groups)
     zon.inject_files = put.get('inject_files', zon.inject_files)
     zon.cloud_networks = put.get('cloud_networks', zon.cloud_networks)
@@ -134,7 +135,6 @@ def put_schematic_id(session, skm, put):
     skm.cloud_key = put.get('cloud_key', skm.cloud_key)
     skm.cloud_provider = put.get('cloud_provider', skm.cloud_provider)
     skm.cloud_version = put.get('cloud_version', skm.cloud_version)
-    skm.cloud_region = put.get('cloud_region', skm.cloud_region)
     skm.cloud_tenant = put.get('cloud_tenant', skm.cloud_tenant)
     skm.cloud_url = put.get('cloud_url', skm.cloud_url)
     skm.cloud_username = put.get('cloud_username', skm.cloud_username)
