@@ -15,6 +15,7 @@ with open('README') as r_file:
     long_description = r_file.read()
 
 T_M = ['paramiko',
+       'hashlib',
        'Fabric==1.6.0',
        'python-daemon==1.6',
        'PyCrypto',
