@@ -274,24 +274,35 @@ class MainOffice(object):
                                           % (node.id, node.name))
 
     def _node_remove(self, ids):
-        sess = _DB.session
-        schematic = db_proc.get_schematic_id(sid=self.nucleus['schematic_id'],
-                                             uid=self.nucleus['auth_id'])
-        zone = db_proc.get_zones_by_id(skm=schematic,
-                                       zid=self.nucleus['zone_id'])
-        inss = db_proc.get_instance_ids(zon=zone, ids=ids)
-        for ins in inss:
-            sess = db_proc.delete_item(session=sess, item=ins)
-        db_proc.commit_session(session=sess)
-        for _ in ids:
-            STATS.gauge('Instances', -1, delta=True)
+        try:
+            sess = _DB.session
+            schematic = db_proc.get_schematic_id(
+                sid=self.nucleus['schematic_id'],
+                uid=self.nucleus['auth_id'])
+            zone = db_proc.get_zones_by_id(skm=schematic,
+                                           zid=self.nucleus['zone_id'])
+            inss = db_proc.get_instance_ids(zon=zone, ids=ids)
+            for ins in inss:
+                sess = db_proc.delete_item(session=sess, item=ins)
+            db_proc.commit_session(session=sess)
+        except Exception, exp:
+            self.nucleus['zone_msg'] = exp
+            LOG.info('Critical Issues when Removing Instances %s' % exp)
+        else:
+            for _ in ids:
+                STATS.gauge('Instances', -1, delta=True)
 
     def _node_post(self, info):
         atom = self.nucleus
-        sess = _DB.session
-        sess = db_proc.add_item(session=sess,
-                                item=db_proc.post_instance(ins=info,
-                                                           put=atom))
-        db_proc.commit_session(session=sess)
-        STATS.gauge('Instances', 1, delta=True)
-        LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))
+        try:
+            sess = _DB.session
+            sess = db_proc.add_item(session=sess,
+                                    item=db_proc.post_instance(ins=info,
+                                                               put=atom))
+            db_proc.commit_session(session=sess)
+        except Exception, exp:
+            self.nucleus['zone_msg'] = exp
+            LOG.info('Critical Issues when Posting Instances %s' % exp)
+        else:
+            STATS.gauge('Instances', 1, delta=True)
+            LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))

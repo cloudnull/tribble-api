@@ -190,11 +190,11 @@ class SchematicsRest(Resource):
                     jobs.append(packet)
                 LOG.debug('JOB TO DO ==> %s' % jobs)
                 QUEUE.put(jobs)
+            db_proc.commit_session(session=sess)
         except Exception:
             LOG.error(traceback.format_exc())
             return {'response': 'Unexpected Error'}, 500
         else:
-            db_proc.commit_session(session=sess)
             STATS.gauge('Schematics', 1, delta=True)
             STATS.gauge('Zones', 1, delta=True)
             return {'response': ('Application requests have been recieved'

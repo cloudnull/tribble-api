@@ -34,8 +34,8 @@ class ZoneState(object):
         self.state_update()
 
     def _delete_resource(self, skm=False):
-        sess = _DB.session
         try:
+            sess = _DB.session
             ints = db.get_instances(zon=self.zone)
             if not len(ints) == 0:
                 self.cell['zone_state'] = 'DELETE FAILED'
@@ -46,18 +46,22 @@ class ZoneState(object):
             sess = db.delete_item(session=sess, item=self.zone)
             key = db.get_instanceskeys(zon=self.zone)
             sess = db.delete_item(session=sess, item=key)
+            db.commit_session(session=sess)
         except AttributeError, exp:
             LOG.info('No Zone To Delete as No Zone was Found ==> %s' % exp)
+        else:
+            STATS.gauge('Zones', -1, delta=True)
 
-        if skm:
-            _con = db.get_configmanager(skm=self.schematic)
-            sess = db.delete_item(session=sess, item=self.schematic)
-            sess = db.delete_item(session=sess, item=_con)
-
-        db.commit_session(session=sess)
-        STATS.gauge('Zones', -1, delta=True)
-
-        if skm:
+        try:
+            sess = _DB.session
+            if skm:
+                _con = db.get_configmanager(skm=self.schematic)
+                sess = db.delete_item(session=sess, item=self.schematic)
+                sess = db.delete_item(session=sess, item=_con)
+            db.commit_session(session=sess)
+        except Exception, exp:
+            LOG.critical('FAILED to update when deleting resources %s' % exp)
+        else:
             STATS.gauge('Schematics', -1, delta=True)
 
     def state_update(self):
