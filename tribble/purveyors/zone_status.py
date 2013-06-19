@@ -51,18 +51,17 @@ class ZoneState(object):
             LOG.info('No Zone To Delete as No Zone was Found ==> %s' % exp)
         else:
             STATS.gauge('Zones', -1, delta=True)
-
-        try:
-            sess = _DB.session
-            if skm:
+        if skm:
+            try:
+                sess = _DB.session
                 _con = db.get_configmanager(skm=self.schematic)
                 sess = db.delete_item(session=sess, item=self.schematic)
                 sess = db.delete_item(session=sess, item=_con)
-            db.commit_session(session=sess)
-        except Exception, exp:
-            LOG.critical('FAILED to update when deleting resources %s' % exp)
-        else:
-            STATS.gauge('Schematics', -1, delta=True)
+                db.commit_session(session=sess)
+            except Exception, exp:
+                LOG.critical('FAILED to update when deleting resources %s' % exp)
+            else:
+                STATS.gauge('Schematics', -1, delta=True)
 
     def state_update(self):
         try:
