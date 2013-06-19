@@ -2,9 +2,8 @@ import traceback
 from flask import request
 from flask.ext.restful import Resource
 from tribble.appsetup.start import _DB, LOG, QUEUE, STATS
-from tribble.operations import utils
 from tribble.purveyors import db_proc
-from tribble.webapp import pop_ts, parse_dict_list, auth_mech, build_cell
+from tribble.webapp import pop_ts, auth_mech, build_cell, encoder
 
 
 class ZonesRest(Resource):
@@ -36,6 +35,13 @@ class ZonesRest(Resource):
                 else:
                     for zone in zon:
                         dzone = pop_ts(zone.__dict__)
+                        if dzone.get('config_script'):
+                            dzone['config_script'] = 'SCRIPT FOUND'
+                        if dzone.get('cloud_init'):
+                            dzone['cloud_init'] = 'CLOUD INIT-SCRIPT FOUND'
+                        if dzone.get('inject_files'):
+                            dzone['inject_files'] = 'INJECTION SCRIPT FOUND'
+
                         ints = db_proc.get_instances(zon=zone)
                         if ints:
                             _di = dzone['instances'] = []
@@ -111,6 +117,7 @@ class ZonesRest(Resource):
                 return {'response': ('Missing Information %s %s'
                                      % (user_id, _hd))}, 400
             else:
+                _hd = encoder(obj=_hd)
                 _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
             if _skm:
                 _zon = db_proc.get_zones_by_id(skm=_skm, zid=_zid)
@@ -149,6 +156,7 @@ class ZonesRest(Resource):
                 return {'response': ('Missing Information %s %s'
                                      % (user_id, _hd))}, 400
             else:
+                _hd = encoder(obj=_hd)
                 LOG.info(_hd)
                 _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
                 if not _skm:

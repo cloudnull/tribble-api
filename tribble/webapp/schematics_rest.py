@@ -3,13 +3,10 @@ from flask import request
 from flask.ext.restful import Resource
 from tribble.appsetup.start import LOG, QUEUE, _DB, STATS
 from tribble.purveyors import db_proc
-from tribble.webapp import pop_ts, auth_mech, build_cell
+from tribble.webapp import pop_ts, auth_mech, build_cell, encoder
 
 
 class SchematicsRest(Resource):
-    def head(self, _sid=None):
-        return {'response': 'Unexpected Error'}, 500
-
     def get(self, _sid=None):
         """
         get method
@@ -35,6 +32,12 @@ class SchematicsRest(Resource):
                     zon = db_proc.get_zones(skm=_skm)
                     if zon:
                         _dz = dskm['num_zones'] = len(zon)
+                        if dskm.get('config_script'):
+                            dskm['config_script'] = 'SCRIPT FOUND'
+                        if dskm.get('cloud_init'):
+                            dskm['cloud_init'] = 'CLOUD INIT-SCRIPT FOUND'
+                        if dskm.get('inject_files'):
+                            dskm['inject_files'] = 'INJECTION SCRIPT FOUND'
                     else:
                         _dz = dskm['num_zones'] = 0
                     con = db_proc.get_configmanager(skm=_skm)
@@ -115,6 +118,7 @@ class SchematicsRest(Resource):
             if not all([user_id, _hd]):
                 return {'response': 'Request Not Valid'}, 400
             else:
+                _hd = encoder(obj=_hd)
                 _skm = db_proc.get_schematic_id(sid=_sid, uid=user_id)
                 if not _skm:
                     return {'response': 'No Schematic Found'}, 404
@@ -157,6 +161,8 @@ class SchematicsRest(Resource):
             if not all([user_id, _hd]):
                 return {'response':
                     'Missing Information, Not Acceptable'}, 406
+            else:
+                _hd = encoder(obj=_hd)
             LOG.info(_hd)
             sess = _DB.session
             con = db_proc.post_configmanager(session=sess, post=_hd)

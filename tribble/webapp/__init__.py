@@ -11,6 +11,35 @@ def pop_ts(temp):
     return temp
 
 
+def max_size(obj):
+    """
+    The Max allowable Size of a object can only be 10KB
+    """
+    from tribble.appsetup.start import LOG
+    from base64 import b64encode as b64e
+    from sys import getsizeof
+    b64obj = b64e(obj)
+    objsize = getsizeof(b64obj) / 1024
+    if objsize > 12:
+        LOG.info('File was REJECTED for being too larger')
+        return None
+    else:
+        return b64obj
+
+
+def encoder(obj):
+    """
+    Encode Script Type Objects into Base64 for Database Storage
+    """
+    if obj.get('config_script'):
+        obj['config_script'] = max_size(obj=obj.get('config_script'))
+    if obj.get('cloud_init'):
+        obj['cloud_init'] = max_size(obj=obj.get('cloud_init'))
+    if obj.get('inject_files'):
+        obj['inject_files'] = max_size(obj=obj.get('inject_files'))
+    return obj
+
+
 def parse_dict_list(objlist):
     return [pop_ts(obj.__dict__) for obj in objlist if obj and obj.__dict__]
 
@@ -58,6 +87,7 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
     """
     Craft the packet that we need to perform actions
     """
+    from base64 import b64decode as b64d
     from tribble.appsetup.start import LOG
     packet = {'cloud_key': schematic.cloud_key,
               'cloud_username': schematic.cloud_username,
@@ -124,7 +154,7 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
         if zone.config_runlist:
             packet['config_runlist'] = zone.config_runlist
         if zone.config_script:
-            packet['config_script'] = zone.config_script
+            packet['config_script'] = b64d(zone.config_script)
         if zone.config_env:
             packet['config_env'] = zone.config_env
         if zone.cloud_networks:
@@ -132,9 +162,9 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
         if zone.security_groups:
             packet['security_groups'] = zone.security_groups
         if zone.inject_files:
-            packet['inject_files'] = zone.inject_files
+            packet['inject_files'] = b64d(zone.inject_files)
         if zone.cloud_init:
-            packet['cloud_init'] = zone.cloud_init
+            packet['cloud_init'] = b64d(zone.cloud_init)
 
     LOG.debug('Sent Packet for Work ==> \n\n%s\n\n' % packet)
     return packet
