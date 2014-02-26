@@ -1,3 +1,12 @@
+# =============================================================================
+# Copyright [2013] [Kevin Carter]
+# License Information :
+# This software has no warranty, it is provided 'as is'. It is your
+# responsibility to validate the behavior of the routines and its accuracy
+# using the code provided. Consult the GNU General Public license for further
+# details (see GNU General Public License).
+# http://www.gnu.org/licenses/gpl.html
+# =============================================================================
 import os
 from socket import gethostname
 from OpenSSL import crypto
@@ -5,10 +14,11 @@ from tribble.info import __appname__ as appname
 
 
 def generate_self_signed_cert(cert_dir='/etc/%s' % appname, is_valid=True):
-    """
-    Generate a SSL certificate.
+    """Generate a SSL certificate.
+
     If the cert_path and the key_path are present they will be overwritten.
     """
+
     if not os.path.exists(cert_dir):
         os.makedirs(cert_dir)
     cert_path = os.path.join(cert_dir, '%s.crt' % appname)
@@ -29,7 +39,7 @@ def generate_self_signed_cert(cert_dir='/etc/%s' % appname, is_valid=True):
     cert.get_subject().ST = 'San Antonio'
     cert.get_subject().L = 'United States'
     cert.get_subject().O = appname
-    cert.get_subject().OU = 'CloudNull says Relax'
+    cert.get_subject().OU = 'Tribble'
     cert.get_subject().CN = gethostname() if is_valid else gethostname()[::-1]
     cert.set_serial_number(1000)
     cert.gmtime_adj_notBefore(0)

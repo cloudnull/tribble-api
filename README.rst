@@ -132,7 +132,8 @@ Installation
 
     .. code-block:: python
 
-        [basic]
+        [default]
+
         log_level = info
         DB_USERNAME = mysqlusername
         DB_PASSWORD = mysqlpassword
@@ -141,6 +142,7 @@ Installation
         DB_NAME = mysqldatabasename
         DB_ENGINE = mysql
         debug_mode = True
+
 
   4. Use ``PIP`` to install "apache-libcloud", "fabric", "python-daemon==1.6", "MySQL-python", "SQLAlchemy", "gevent", "Flask-RESTful", "Flask", and "Flask-SQLAlchemy"
   #. Go to the bin directory in the cloned application

@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
-import setuptools
 import sys
-from tribble import info
+
+import setuptools
+
 
 # Check the version of Python that we have been told to use
+from tribble import info
+
 if sys.version_info < (2, 6, 0):
     sys.stderr.write('The Tribble System Presently requires'
                      ' Python 2.6.0 or greater\n')
@@ -25,8 +28,7 @@ T_M = ['paramiko',
        'apache-libcloud',
        'mysql-python',
        'statsd',
-       'Flask-RESTful',
-       'Flask==0.9',
+       'Flask',
        'Flask-SQLAlchemy',
        'prettytable',
        'gevent']
@@ -42,14 +44,14 @@ setuptools.setup(
     packages=['tribble',
               'tribble.admin',
               'tribble.admin.basestrings',
-              'tribble.appsetup',
+              'tribble.common',
               'tribble.db',
               'tribble.dist',
-              'tribble.operations',
-              'tribble.purveyors',
-              'tribble.purveyors.chef',
-              'tribble.purveyors.fabric',
-              'tribble.webapp'],
+              'tribble.engine',
+              'tribble.plugins',
+              'tribble.plugins.chef',
+              'tribble.plugins.fabric',
+              'tribble.views'],
     url=info.__urlinformation__,
     install_requires=T_M,
     classifiers=[

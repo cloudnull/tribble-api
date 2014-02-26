@@ -1,0 +1,15 @@
+paramiko
+requests
+Fabric==1.6.0
+PyCrypto
+PyChef
+sqlalchemy
+argparse
+apache-libcloud
+mysql-python
+statsd
+Flask
+Flask-SQLAlchemy
+prettytable
+greenlet
+eventlet

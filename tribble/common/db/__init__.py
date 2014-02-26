@@ -7,3 +7,15 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import logging
+
+from tribble.common import system_config
+
+CONFIG = system_config.ConfigureationSetup()
+LOG = logging.getLogger('tribble-api')
+
+
+def load_sql_engine(app, debug=False):
+
+
+    return sql_app

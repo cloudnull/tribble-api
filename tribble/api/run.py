@@ -7,3 +7,26 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+from tribble.api import wsgi
+from tribble.common import system_config, logger
+
+
+CONFIG = system_config.ConfigureationSetup()
+
+
+def executable():
+    """Start the Tribble API."""
+
+    default_config = CONFIG.config_args()
+
+    logger.logger_setup(
+        name='tribble-api',
+        debug_logging=default_config.get('debug_mode', False)
+    )
+
+    wsgi_server = wsgi.Server()
+    wsgi_server.start()
+    wsgi_server.wait()
+
+if __name__ == '__main__':
+    executable()
