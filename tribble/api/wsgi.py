@@ -130,7 +130,6 @@ class Server(object):
 
     def start(self):
         """Start the WSGI Server."""
-
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGHUP, self.stop)
         self.worker = eventlet.spawn(self._start)
@@ -138,8 +137,8 @@ class Server(object):
 
     def stop(self, *args):
         """Stop this server."""
-
         LOG.warn('Stopping Tribble WSGI server.')
+        LOG.debug(args)
         if self.worker is not None:
             # Resize pool to stop new requests from being processed
             self.spawn_pool.resize(0)
@@ -147,7 +146,6 @@ class Server(object):
 
     def wait(self):
         """Block, until the server has stopped."""
-
         try:
             if self.worker is not None:
                 self.worker.wait()
