@@ -1,8 +1,20 @@
+# =============================================================================
+# Copyright [2013] [Kevin Carter]
+# License Information :
+# This software has no warranty, it is provided 'as is'. It is your
+# responsibility to validate the behavior of the routines and its accuracy
+# using the code provided. Consult the GNU General Public license for further
+# details (see GNU General Public License).
+# http://www.gnu.org/licenses/gpl.html
+# =============================================================================
+import logging
+import subprocess
 import tempfile
 import os
 import traceback
-from fabric.api import local
-from tribble.api.start import LOG
+
+
+LOG = logging.getLogger('tribble-engine')
 
 
 class SshKeyCreateFail(Exception):
@@ -12,7 +24,6 @@ class SshKeyCreateFail(Exception):
 class KeyGen(object):
     def __init__(self):
         self.sshkey = tempfile.mktemp()
-        self.logger = LOG
 
     def check_files(self):
         if not os.path.isfile('%s' % self.sshkey):
@@ -28,13 +39,14 @@ class KeyGen(object):
         """
         if not self.check_files():
             try:
-                self.logger.info('Creating SSH Key Pair')
+                LOG.info('Creating SSH Key Pair')
                 if not os.path.isfile('%s' % self.sshkey):
-                    local("$(which ssh-keygen) -N '' -f %s" % self.sshkey)
-
+                    cmd = "ssh-keygen -t rsa -f %s -N ''" % self.sshkey
+                    subprocess.check_call(cmd, shell=True)
                 if not self.check_files():
-                    raise SshKeyCreateFail('Something bad happened while'
-                                           ' making the key')
+                    raise SshKeyCreateFail(
+                        'Something bad happened while making the key'
+                    )
                 with open('%s' % self.sshkey, 'r') as _prik:
                     pri_key = _prik.read()
                 with open('%s.pub' % self.sshkey, 'r') as _pubk:

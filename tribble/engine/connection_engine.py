@@ -9,66 +9,102 @@
 # =============================================================================
 import logging
 
-
 from libcloud.compute.providers import get_driver
 from libcloud import security
 
 import tribble
+from tribble.common.db import zone_status
+from tribble.engine import utils
 from tribble.common import system_config
-from tribble.engine import cloud_application_map as cam
+from tribble.engine import config_manager
+from tribble.engine import engine_maps as cam
 
 
 LOG = logging.getLogger('tribble-engine')
 CONFIG = system_config.ConfigureationSetup()
 
 
-def connection_engine(packet):
-    """
-    Authenticates a user with the Cloud System they are attempting to operate
-    with. If authentication is successful, then the system will allow the user
-    to deploy through the application to the provider.
-    """
+class UserData(utils.EngineParser):
+    def __init__(self, packet, user_init, conn):
+        super(UserData).__init__(packet=packet)
 
-    provider = packet.get('cloud_provider')
+        self.user_init = user_init
+        self.conn = conn
+        self.zone_status = zone_status.ZoneState(cell=self.packet)
 
-    if provider is not None:
-        cloud_provider = cam.APP_MAP.get(provider.upper())
+    def _get_user_data(self):
+        return config_manager.ConfigManager(packet=self.packet)
 
-        if cloud_provider is None:
-            raise tribble.CantContinue('no provider found')
-
-        required_args = cloud_provider['required_args']
-        if 'NO_CHOICE' in cloud_provider:
-            driver = get_driver(cloud_provider['NO_CHOICE'])
+    def _get_security_groups(self):
+        sec_groups = self.specs.get('security_groups')
+        try:
+            sgns = ''.join(sec_groups.split()).split(',')
+            all_sg = self.conn.ex_list_security_groups()
+            sgns = [sg for sg in all_sg if sg.name in sgns]
+        except Exception as exp:
+            LOG.error(exp)
+            self.zone_status.error(error_msg=exp)
         else:
-            region = cloud_provider['CHOICES'].get('cloud_region')
-            if region is None:
-                raise tribble.CantContinue('no driver found for %s' % region)
-            driver = get_driver(region)
+            return sgns
 
-        specs = {}
-        for item, value in required_args.items():
-            if 'get' in value:
-                specs[item] = packet.get(value['get'], value.get('default'))
-            elif 'is' in value:
-                specs[item] = value['is']
+    def run(self):
+        for item, value in self.user_init.items():
+            action = getattr(self, '_%s' % value)
+            if action is not None:
+                action(item, value)
 
-            if value.get('required') is True and specs[item] is None:
-                raise tribble.CantContinue(
-                    '%s is a requied value but was set as None' % item
-                )
+        return self.specs
 
-            if 'make' in value:
-                if value['make'] == 'upper':
-                    specs[item] = specs[item].upper()
-                elif value['make'] == 'lower':
-                    specs[item] = specs[item].lower()
 
-        LOG.debug(specs)
+class ConnectionEngine(utils.EngineParser):
+    def __init__(self, packet):
+        """Authenticates a user with a Cloud System.
+
+        If authentication is successful, then the system will allow the user
+        to deploy through the application to the provider.
+        """
+        super(ConnectionEngine).__init__(packet=packet)
+
+        self.provider = packet.get('cloud_provider')
+        if self.provider is not None:
+            self.cloud_provider = cam.CLOUD_APP_MAP.get(self.provider.upper())
+            if self.cloud_provider is None:
+                raise tribble.CantContinue('no provider found')
+        else:
+            raise tribble.CantContinue('no provider provided')
+
+        self.required_args = self.cloud_provider['required_args']
+
+    def _choices(self):
+        region = self.cloud_provider.get('cloud_region')
+        if region is None:
+            msg = 'No Region Found for driver %s' % region
+            raise tribble.CantContinue(msg)
+
+        return get_driver(region)
+
+    def run(self):
+        driver = self._choices()
+
+        for item, value in self.required_args.items():
+            action = getattr(self, '_%s' % value)
+            if action is not None:
+                action(item, value)
+
+        LOG.debug(self.specs)
         default_config = CONFIG.config_args()
         security.CA_CERTS_PATH.append(default_config.get('ca_cert_pem'))
-        return driver(
-            packet.get('cloud_username'),
-            packet.get('cloud_key'),
-            **specs
+
+        driver = driver(
+            self.packet.get('cloud_username'),
+            self.packet.get('cloud_key'),
+            **self.specs
         )
+
+        user_data = UserData(
+            packet=self.specs, user_init=self.cloud_provider, conn=driver
+        )
+
+        deployment = self.cloud_provider['deployment_methods']
+
+        return driver, user_data.run(), deployment

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # =============================================================================
 # Copyright [2013] [Kevin Carter]
 # License Information :
@@ -7,3 +8,19 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import local_load
+
+local_path = local_load.os.path.join(
+    local_load.possible_topdir, 'tribble', '__init__.py'
+)
+if local_load.os.path.exists(local_path):
+    local_load.sys.path.insert(0, local_load.possible_topdir)
+    from tribble.api import run
+    run.executable()
+
+
+
+
+
+
+

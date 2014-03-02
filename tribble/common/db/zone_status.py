@@ -28,6 +28,11 @@ class ZoneState(object):
                 skm=self.schematic, zid=self.cell['zone_id']
             )
 
+    def error(self, error_msg):
+        self.cell['zone_state'] = 'ERROR'
+        self.cell['zone_msg'] = error_msg
+        self.state_update()
+
     def reconfig(self):
         self.cell['zone_state'] = 'RECONFIGURING'
         self.state_update()
@@ -49,33 +54,35 @@ class ZoneState(object):
         self.cell['zone_state'] = 'DELETING'
         self.state_update()
 
-    def delete_resource(self, skm=False):
+    def delete_schematic_resource(self):
         try:
             sess = DB.session
-            ints = db_proc.get_instances(zon=self.zone)
-            if not len(ints) == 0:
-                self.cell['zone_state'] = 'DELETE FAILED'
-                self.cell['zone_msg'] = ('Found Instance when they should'
-                                         ' have all been deleted')
-                self.state_update()
-                return  False
-            sess = db_proc.delete_item(session=sess, item=self.zone)
-            key = db_proc.get_instanceskeys(zon=self.zone)
-            sess = db_proc.delete_item(session=sess, item=key)
-            db_proc.commit_session(session=sess)
+            config = db_proc.get_configmanager(skm=self.schematic)
+            db_proc.delete_item(session=sess, item=self.schematic)
+            db_proc.delete_item(session=sess, item=config)
         except AttributeError, exp:
             LOG.info('No Zone To Delete as No Zone was Found ==> %s' % exp)
+        else:
+            db_proc.commit_session(session=sess)
 
-        if skm:
-            try:
-                sess = DB.session
-                config = db_proc.get_configmanager(skm=self.schematic)
-                sess = db_proc.delete_item(session=sess, item=self.schematic)
-                sess = db_proc.delete_item(session=sess, item=config)
-                db_proc.commit_session(session=sess)
-            except Exception, exp:
-                LOG.critical('FAILED to update when deleting resources'
-                             ' %s' % exp)
+    def delete_resource(self):
+        try:
+            sess = DB.session
+            instances = db_proc.get_instances(zon=self.zone)
+            if len(instances) > 0:
+                self.cell['zone_state'] = 'DELETE FAILED'
+                self.cell['zone_msg'] = (
+                    'Found Instance when they should have all been deleted'
+                )
+                self.state_update()
+                return False
+            key = db_proc.get_instanceskeys(zon=self.zone)
+            db_proc.delete_item(session=sess, item=self.zone)
+            db_proc.delete_item(session=sess, item=key)
+        except AttributeError, exp:
+            LOG.info('No Zone To Delete as No Zone was Found ==> %s' % exp)
+        else:
+            db_proc.commit_session(session=sess)
 
     def state_update(self):
         try:

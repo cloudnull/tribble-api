@@ -7,313 +7,279 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import errno
+from httplib import BadStatusLine
+import logging
 import traceback
 import time
 
-from libcloud.compute.base import DeploymentError, LibcloudError
+from libcloud.compute.base import DeploymentError
+from libcloud.compute.base import LibcloudError
 from libcloud.compute.types import NodeState
+from libcloud.compute.deployment import SSHKeyDeployment
+from libcloud.compute.deployment import MultiStepDeployment
+from libcloud.compute.deployment import ScriptDeployment
 
-from tribble.api.start import LOG, _DB, STATS
+import tribble
+import tribble.engine as engine
+from tribble.api.application import DB
 from tribble.common.db import db_proc
+from tribble.common.db import zone_status
+from tribble.plugins.chef_server import cheferizer
+from tribble.engine import connection_engine
 from tribble.engine import utils
-from tribble.engine import ret_conn, ret_image, ret_size
-from tribble.engine import config_manager as _cm
+from tribble.engine import config_manager
 
 
-class MainOffice(object):
-    def __init__(self, nucleus):
-        """
-        Perform actions based on a described action
-        """
-        self.nucleus = nucleus
+LOG = logging.getLogger('tribble-engine')
 
-    def bob_destroyer(self):
-        """
-        Kill an instance from information in our DB
-        """
-        from tribble.plugins.chef import cheferizer
-        conn = ret_conn(nucleus=self.nucleus)
-        if not conn:
+
+class InstanceDeployment(object):
+    def __init__(self, packet):
+        """Perform actions based on a described action."""
+
+        self.driver = None
+        self.user_data = None
+        self.deployment_methods = None
+        self.packet = packet
+        self.user_specs = {
+            'max_tries': 15,
+            'timeout': 1200
+        }
+        self.zone_status = zone_status.ZoneState(cell=self.packet)
+
+    def engine_setup(self):
+        engine = connection_engine.ConnectionEngine(
+            packet=self.packet
+        )
+        driver, user_data, deployment_methods = engine
+        self.driver = driver
+        self.user_data = user_data
+        self.deployment_methods = deployment_methods
+
+    def api_setup(self):
+        self.engine_setup()
+
+        if not self.driver:
+            self.zone_status.error(error_msg='No Available Connection')
             raise DeploymentError('No Available Connection')
-        LOG.debug('Nodes to Delete %s' % self.nucleus['uuids'])
+
+        image = self.user_specs['image'] = engine.ret_image(
+            conn=self.driver, specs=self.packet
+        )
+        if not image:
+            self.zone_status.error(error_msg='No image_id found')
+            raise DeploymentError('No image_id found')
+
+        size = self.user_specs['size'] = engine.ret_size(
+            conn=self.driver, specs=self.packet
+        )
+        if not size:
+            self.zone_status.error(error_msg='No size_id Found')
+            raise DeploymentError('No size_id Found')
+
+        name_conv = self.packet.get('name_convention', 'tribble_node')
+        node_name = '%s-%s'.lower() % (name_conv, utils.rand_string())
+        self.packet['node_name'] = self.user_specs['name'] = node_name
+
+        server_instances = int(self.packet.get('quantity', 1))
+        utils.worker_proc(
+            job_action=self.vm_constructor, num_jobs=server_instances
+        )
+
+    def vm_destroyer(self):
+        """Kill an instance from information in our DB."""
+        LOG.debug('Nodes to Delete %s' % self.packet['uuids'])
+
         try:
-            node_list = [_nd for _nd in conn.list_nodes()]
+            node_list = [_nd for _nd in self.driver.list_nodes()]
         except LibcloudError, exp:
-            self.nucleus['zone_msg'] = exp
-            LOG.warn('Error When getting Node list for Deleting ==> %s'
-                     % exp)
+            self.zone_status.error(error_msg=exp)
+            LOG.warn('Error When getting Node list for Deleting ==> %s' % exp)
             return False
         else:
             LOG.debug('All nodes in the customer API ==> %s' % node_list)
+
         for dim in node_list:
-            if dim.id in self.nucleus['uuids']:
+            if dim.id in self.packet['uuids']:
                 LOG.info('DELETING %s' % dim.id)
                 try:
                     time.sleep(utils.stupid_hack())
-                    with STATS.timer('InstanceDelete'):
-                        conn.destroy_node(dim)
-                except Exception, exp:
-                    self.nucleus['zone_msg'] = exp
+                    self.driver.destroy_node(dim)
+                except Exception as exp:
+                    self.zone_status.error(error_msg=exp)
                     LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
-                cheferizer.ChefMe(nucleus=self.nucleus,
-                                  name=dim.name.lower(),
-                                  function='chefer_remove_all',
-                                  logger=LOG)
-        self._node_remove(ids=self.nucleus['uuids'])
+                else:
+                    cheferizer.ChefMe(
+                        specs=self.packet,
+                        name=dim.name.lower(),
+                        function='chefer_remove_all',
+                    )
+        else:
+            self._node_remove(ids=self.packet['uuids'])
 
-    def api_setup(self):
-        self.conn = ret_conn(nucleus=self.nucleus)
-        if not self.conn:
-            self.nucleus['zone_msg'] = 'No Available Connection'
-            raise DeploymentError('No Available Connection')
+    def ssh_deploy(self):
+        """Prepaire for an SSH deployment Method for any found config
 
-        self.image_id = ret_image(conn=self.conn, nucleus=self.nucleus)
-        if not self.image_id:
-            self.nucleus['zone_msg'] = 'No image_id found'
-            raise DeploymentError('No image_id found')
-
-        self.size_id = ret_size(conn=self.conn, nucleus=self.nucleus)
-        if not self.size_id:
-            self.nucleus['zone_msg'] = 'No size_id Found'
-            raise DeploymentError('No size_id Found')
-
-        utils.worker_proc(job_action=self.bob_vm_builder,
-                          num_jobs=int(self.nucleus.get('quantity', 1)))
-
-    def vm_ssh_deploy(self):
-        """
-        Prepaire for an SSH deployment Method for any found config
         managemnet and or scripts
         """
-        from libcloud.compute.deployment import SSHKeyDeployment
-        from libcloud.compute.deployment import MultiStepDeployment
-        from libcloud.compute.deployment import ScriptDeployment
         dep_action = []
-        if self.nucleus.get('ssh_key_pub'):
-            ssh = SSHKeyDeployment(key=self.nucleus.get('ssh_key_pub'))
+        if self.packet.get('ssh_key_pub'):
+            ssh = SSHKeyDeployment(key=self.packet.get('ssh_key_pub'))
             dep_action.append(ssh)
 
-        conf_init = _cm.check_configmanager(nucleus=self.nucleus, ssh=True)
+        conf_init = config_manager.ConfigManager(packet=self.packet, ssh=True)
+        script = '/tmp/deployment_tribble_%s.sh'
         if conf_init:
-            _conf_init = str(conf_init)
-            LOG.debug(_conf_init)
-            con = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
-                                         % utils.rand_string()),
-                                   script=_conf_init)
+            conf_init = str(conf_init)
+            LOG.debug(conf_init)
+            _script = script % utils.rand_string()
+            con = ScriptDeployment(name=_script, script=conf_init)
             dep_action.append(con)
 
-        if self.nucleus.get('config_script'):
-            user_script = str(self.nucleus.get('config_script'))
+        if self.packet.get('config_script'):
+            user_script = str(self.packet.get('config_script'))
             LOG.debug(user_script)
-            scr = ScriptDeployment(name=('/tmp/deployment_tribble_%s.sh'
-                                         % utils.rand_string()),
-                                   script=user_script)
+            _script = script % utils.rand_string()
+            scr = ScriptDeployment(name=_script, script=user_script)
             dep_action.append(scr)
 
-        if dep_action > 1:
-            dep = MultiStepDeployment(dep_action)
-        else:
-            dep = dep_action[0]
-        return dep
+        return MultiStepDeployment(dep_action)
 
-    def bob_vm_builder(self):
-        """
-        Build an instance from values in our DB
-        """
-        time.sleep(utils.stupid_hack())
-        _node_name = '%s%s' % (self.nucleus.get('name_convention',
-                                                utils.rand_string()),
-                               utils.rand_string())
-        node_name = _node_name.lower()
-        self.nucleus['node_name'] = node_name
-        specs = {'name': node_name,
-                 'image': self.image_id,
-                 'size': self.size_id,
-                 'max_tries': 15,
-                 'timeout': 1200}
+    def _ssh_deploy(self, user_specs):
+        node = self.driver.deploy_node(**user_specs)
+        return self.state_wait(node=node)
 
-        LOG.debug('Here are the specs for the build ==> %s' % specs)
-        if self.nucleus['cloud_provider'].upper() in ('AMAZON',
-                                                      'OPENSTACK',
-                                                      'RACKSPACE'):
+    def _cloud_init(self, user_specs):
+        return self.driver.deploy_node(**user_specs)
 
-            if self.nucleus['cloud_provider'].upper() == 'RACKSPACE':
-                specs['deploy'] = self.vm_ssh_deploy()
+    def _list_instances(self):
+        return self.driver.list_nodes()
 
-            if self.nucleus['cloud_provider'].upper() == 'AMAZON':
-                if self.nucleus.get('security_groups'):
-                    _sg = self.nucleus.get('security_groups')
-                    specs['ex_securitygroup'] = _sg
+    def vm_constructor(self):
+        """Build VMs."""
+        LOG.debug(self.user_specs)
+        LOG.info('Building Node Based on %s' % self.user_specs)
 
-            if self.nucleus['cloud_provider'].upper() == 'OPENSTACK':
-                if self.nucleus.get('security_groups'):
-                    _sec_groups = self.nucleus.get('security_groups')
-                    _sgns = ''.join(_sec_groups.split()).split(',')
-                    try:
-                        _asg = self.conn.ex_list_security_groups()
-                        if _asg:
-                            sgns = [_sg for _sg in _asg if _sg.name in _sgns]
-                        else:
-                            sgns = None
-                    except Exception, exp:
-                        self.nucleus['zone_msg'] = exp
-                        raise DeploymentError('No Security Group Found')
-                    else:
-                        specs['ex_security_groups'] = sgns
-
-            if self.nucleus['cloud_provider'].upper() in ('OPENSTACK',
-                                                          'AMAZON'):
-                specs['ex_keyname'] = self.nucleus.get('key_name')
-                userdata = _cm.check_configmanager(nucleus=self.nucleus)
-                specs['ex_userdata'] = userdata
-                specs['ssh_key'] = self.nucleus.get('ssh_key_pri')
-                specs['ssh_username'] = self.nucleus.get('ssh_username')
-
-            if self.nucleus['cloud_provider'].upper() in ('OPENSTACK',
-                                                          'RACKSPACE'):
-                if self.nucleus.get('cloud_networks'):
-                    networks = self.nucleus.get('cloud_networks').split(',')
-                    specs['networks'] = networks
-                if self.nucleus.get('inject_files'):
-                    files = self.nucleus.get('inject_files').split(',')
-                    specs['ex_files'] = files
-        else:
-            specs['deploy'] = self.vm_ssh_deploy()
-        self.vm_constructor(specs=specs)
-
-    def vm_constructor(self, specs):
-        """
-        Build VMs
-        """
-        LOG.debug(specs)
-        LOG.info('Building Node Based on %s' % specs)
-        try:
-            time.sleep(utils.stupid_hack())
-            with STATS.timer('InstanceCreate'):
-                if 'deploy' in specs:
-                    _nd = self.conn.deploy_node(**specs)
-                else:
-                    _nd = self.conn.create_node(**specs)
-                    _nd = self.state_wait(node=_nd)
-        except DeploymentError, exp:
-            self.nucleus['zone_msg'] = exp
-            LOG.critical('Exception while Building Instance ==> %s' % exp)
+        for deployment in self.deployment_methods:
             try:
-                time.sleep(utils.stupid_hack())
-                dead_node = [_nd for _nd in self.conn.list_nodes()
-                             if _nd.name == specs['name']]
-                if dead_node:
-                    for node in dead_node:
-                        LOG.warn('Removing Node that failed to Build ==> %s'
-                                 % node)
-                        try:
-                            for _ in xrange(3):
-                                _nd = self.conn.destroy_node(node)
-                                if _nd:
-                                    break
-                                time.sleep(utils.stupid_hack())
-                        except Exception, exp:
-                            LOG.error('Node was not removed an error'
-                                      ' occured ==> %s' % exp)
-            except utils.RetryError:
-                LOG.error(traceback.format_exc())
+                action = getattr(self, '_%s' % deployment)
+                action(self.user_specs)
+            except DeploymentError, exp:
+                LOG.critical('Exception while Building Instance ==> %s' % exp)
+                self.zone_status.error(error_msg=exp)
+                self.check_for_dead_nodes()
+            else:
+                break
+
+    def check_for_dead_nodes(self):
+        all_nodes = self._list_instances()
+        dead_node = [n for n in all_nodes if n.name == self.user_specs['name']]
+        if not dead_node:
+            return
+
+        try:
+            node = dead_node[0]
+            time.sleep(utils.stupid_hack())
+            msg = 'Removing Node that failed to Build ==> %s' % node
+            LOG.debug(msg)
+            self.driver.destroy_node(node)
+        except tribble.RetryError:
+            LOG.error(traceback.format_exc())
         except Exception:
             LOG.error(traceback.format_exc())
         else:
-            self._node_post(info=_nd)
+            self._node_post(info=node)
 
     def state_wait(self, node):
-        """
-        Wait for a node to go to a specified state
-        """
-        import errno
-        from httplib import BadStatusLine
+        """Wait for a node to go to a specsified state."""
+
+        all_nodes = self._list_instances()
         for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
+            instances = [_nd for _nd in all_nodes if _nd.id == node.id]
+            if not instances:
+                _retry()
+
             try:
-                inst = [_nd for _nd in self.conn.list_nodes()
-                        if _nd.id == node.id]
-                if inst:
-                    ins = inst[0]
-                    if ins.state == NodeState.PENDING:
-                        LOG.info('Waiting for active ==> %s' % ins)
-                        _retry()
-                    elif ins.state == NodeState.TERMINATED:
-                        raise DeploymentError('ID:%s NAME:%s was Never Active'
-                                              ' and has since been Terminated'
-                                              % (node.id, node.name))
-                    elif ins.state == NodeState.UNKNOWN:
-                        LOG.info('State Unknown for the instance will retry'
-                                 ' to pull information on %s' % ins)
-                        _retry()
-                    else:
-                        LOG.info('Instance active ==> %s' % ins)
-                        return ins
-                else:
+                instance = instances[0]
+                if instance.state == NodeState.PENDING:
+                    LOG.info('Waiting for active ==> %s' % instances)
                     _retry()
-            except utils.RetryError, exp:
-                self.nucleus['zone_msg'] = exp
+                elif instance.state == NodeState.TERMINATED:
+                    raise DeploymentError(
+                        'ID:%s NAME:%s was Never Active and has since been'
+                        ' Terminated' % (node.id, node.name)
+                    )
+                elif instance.state == NodeState.UNKNOWN:
+                    msg = (
+                        'State Unknown for the instance will retry to pull'
+                        ' information on %s' % instances
+                    )
+                    LOG.info(msg)
+                    _retry()
+                else:
+                    LOG.info('Instance active ==> %s' % instances)
+            except tribble.RetryError as exp:
+                self.zone_status.error(error_msg=exp)
                 LOG.critical(exp)
-                LOG.debug(inst)
-                raise DeploymentError('ID:%s NAME:%s was Never Active'
-                                      % (node.id, node.name))
-            except BadStatusLine, exp:
-                self.nucleus['zone_msg'] = exp
+                raise DeploymentError(
+                    'ID:%s NAME:%s was Never Active' % (node.id, node.name)
+                )
+            except BadStatusLine as exp:
+                self.zone_status.error(error_msg=exp)
                 LOG.critical(exp)
                 time.sleep(utils.stupid_hack())
-                self.conn = ret_conn(nucleus=self.nucleus)
                 _retry()
-            except Exception, exp:
-                self.nucleus['zone_msg'] = exp
+            except Exception as exp:
+                self.zone_status.error(error_msg=exp)
                 LOG.critical(exp)
                 try:
-                    if exp.errno in (errno.ECONNREFUSED, errno.ECONNRESET):
+                    if exp.errno in [errno.ECONNREFUSED, errno.ECONNRESET]:
                         time.sleep(utils.stupid_hack())
-                        self.conn = ret_conn(nucleus=self.nucleus)
-                        if not self.conn:
-                            raise DeploymentError('No Available Connection')
-                        _retry()
-                except utils.RetryError, exp:
-                    self.nucleus['zone_msg'] = exp
+                        raise DeploymentError('No Available Connection')
+                except tribble.RetryError, exp:
                     LOG.critical(exp)
-                    LOG.debug(inst)
-                    raise DeploymentError('ID:%s NAME:%s was Never Active'
-                                          % (node.id, node.name))
-                except Exception, exp:
+                    self.zone_status.error(error_msg=exp)
+                    raise DeploymentError(
+                        'ID:%s NAME:%s was Never Active' % (node.id, node.name)
+                    )
+                except Exception as exp:
+                    self.zone_status.error(error_msg=exp)
                     LOG.critical(exp)
-                    self.nucleus['zone_msg'] = exp
-                    raise DeploymentError('ID:%s NAME:%s was Never Active'
-                                          % (node.id, node.name))
+                    raise DeploymentError(
+                        'ID:%s NAME:%s was Never Active' % (node.id, node.name)
+                    )
+            else:
+                return instance
 
     def _node_remove(self, ids):
         try:
-            sess = _DB.session
+            sess = DB.session
             schematic = db_proc.get_schematic_id(
-                sid=self.nucleus['schematic_id'],
-                uid=self.nucleus['auth_id'])
-            zone = db_proc.get_zones_by_id(skm=schematic,
-                                           zid=self.nucleus['zone_id'])
-            inss = db_proc.get_instance_ids(zon=zone, ids=ids)
-            for ins in inss:
-                sess = db_proc.delete_item(session=sess, item=ins)
-            db_proc.commit_session(session=sess)
+                sid=self.packet['schematic_id'], uid=self.packet['auth_id']
+            )
+            zone = db_proc.get_zones_by_id(
+                skm=schematic, zid=self.packet['zone_id']
+            )
+            instances = db_proc.get_instance_ids(zon=zone, ids=ids)
+            for instance in instances:
+                sess = db_proc.delete_item(session=sess, item=instance)
         except Exception, exp:
-            self.nucleus['zone_msg'] = exp
+            self.zone_status.error(error_msg=exp)
             LOG.info('Critical Issues when Removing Instances %s' % exp)
         else:
-            for _ in ids:
-                STATS.gauge('Instances', -1, delta=True)
+            db_proc.commit_session(session=sess)
 
     def _node_post(self, info):
-        atom = self.nucleus
         try:
-            sess = _DB.session
-            sess = db_proc.add_item(session=sess,
-                                    item=db_proc.post_instance(ins=info,
-                                                               put=atom))
-            db_proc.commit_session(session=sess)
+            sess = DB.session
+            new_instance = db_proc.post_instance(ins=info, put=self.packet)
+            sess = db_proc.add_item(
+                session=sess, item=new_instance
+            )
         except Exception, exp:
-            self.nucleus['zone_msg'] = exp
+            self.zone_status.error(error_msg=exp)
             LOG.info('Critical Issues when Posting Instances %s' % exp)
         else:
-            STATS.gauge('Instances', 1, delta=True)
+            db_proc.commit_session(session=sess)
             LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))

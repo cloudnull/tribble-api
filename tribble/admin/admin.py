@@ -11,28 +11,26 @@ import argparse
 import traceback
 import sys
 import datetime
-import os
-import subprocess
 
 import prettytable
 
 import tribble
-from tribble import logger
 from tribble import info
-from tribble.admin.basestrings import strings
 from tribble.admin import key_setup
-from tribble.common import rosetta, system_config
+from tribble.common import rosetta
+from tribble.common import logger
+from tribble.common import system_config
 from tribble.common.db import db_proc
 from tribble.api.application import DB
 
 
 CONFIG = system_config.ConfigureationSetup()
-LOG = logger.logger_setup(name='tribble-api', debug_logging=True)
 
 
 class AdministrativeTasks(object):
-    def __init__(self, args):
+    def __init__(self, args, log):
         self.args = args
+        self.log = log
         self.user = self.args.get('username')
         self.psw = self.args.get('password')
         self.key = self.args.get('key')
@@ -46,41 +44,13 @@ class AdministrativeTasks(object):
         with open(path, 'w+') as conf_f:
             conf_f.write(conf)
 
-    @staticmethod
-    def create_keys():
+    def create_keys(self):
         cert_path, key_path = key_setup.generate_self_signed_cert()
-        LOG.info('created :\n  Cert => %s\n  Key => %s' % (cert_path, key_path))
+        self.log.info('created :\n  Cert => %s\n  Key => %s' % (cert_path, key_path))
 
     def create_db_models(self):
         DB.create_all()
-        LOG.info('Database Models have been created')
-
-    def init_script_setup(self):
-        # create the init script
-        i_name = info.__appname__
-        i_path = '/etc/init.d'
-        i_full = os.path.join(i_path, i_name)
-        c_path = '/etc/tribble'
-
-        init_file = strings.tribble_init % {'syspath': c_path}
-        if os.path.isdir(i_path):
-            if os.path.isfile(i_full):
-                os.remove(i_full)
-            self.file_write(path=i_full, conf=init_file)
-        else:
-            raise SystemExit('No Init Script Directory Found')
-
-        if os.path.isfile(i_full):
-            os.chmod(i_full, 0550)
-
-        if os.path.isfile('/usr/sbin/update-rc.d'):
-            subprocess.check_call(
-                ['/usr/sbin/update-rc.d', '-f', i_name, 'defaults']
-            )
-        elif os.path.isfile('/sbin/chkconfig'):
-            subprocess.check_call(
-                ['/sbin/chkconfig', i_name, 'on']
-            )
+        self.log.info('Database Models have been created')
 
     def delete_user(self):
         try:
@@ -92,7 +62,7 @@ class AdministrativeTasks(object):
             print 'Failed to delete user\nERROR : %s' % exp
         else:
             db_proc.commit_session(session=sess)
-            LOG.warn('User %s was deleted' % self.user)
+            self.log.warn('User %s was deleted' % self.user)
 
     def create_user(self):
         try:
@@ -109,7 +79,7 @@ class AdministrativeTasks(object):
         except Exception, exp:
             print 'Failed to create user\nERROR : %s' % exp
         else:
-            LOG.info('User %s was created' % self.user)
+            self.log.info('User %s was created' % self.user)
 
     def reset_user(self):
         try:
@@ -127,7 +97,7 @@ class AdministrativeTasks(object):
         except Exception:
             print traceback.format_exc()
         else:
-            LOG.warn('User %s was reset' % self.user)
+            self.log.warn('User %s was reset' % self.user)
 
     @staticmethod
     def user_list():
@@ -262,9 +232,14 @@ def admin_args():
 
 def admin_executable():
     """Begin Administration Applications."""
+    default_config = CONFIG.config_args()
+    log = logger.logger_setup(
+        name='tribble-api',
+        debug_logging=default_config.get('debug_mode', False)
+    )
 
     args = admin_args()
-    admin = AdministrativeTasks(args=args)
+    admin = AdministrativeTasks(args=args, log=log)
 
     try:
         action = getattr(admin, args['method'])

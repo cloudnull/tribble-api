@@ -7,6 +7,40 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import tribble
+
+
+class EngineParser(object):
+    def __init__(self, packet):
+        self.packet = packet
+        self.specs = {}
+
+    def _get(self, *args):
+        item, value = args
+        self.specs[item] = self.packet.get(value['get'], value.get('default'))
+
+    def _is(self, *args):
+        item, value = args
+        self.specs[item] = value['is']
+
+    def _required(self, *args):
+        item, value = args
+        if value['required'] is True and self.specs[item] is None:
+            raise tribble.CantContinue(
+                '%s is a requied value but was set as None' % item
+            )
+
+    def _comma_split(self, *args):
+        item = args[0]
+        self.specs[item] = self.specs[item].split(',')
+
+    def _upper(self, *args):
+        item = args[0]
+        self.specs[item] = self.specs[item].upper()
+
+    def _lower(self, *args):
+        item = args[0]
+        self.specs[item] = self.specs[item].lower()
 
 
 def escape_quote(item):

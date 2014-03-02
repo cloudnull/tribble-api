@@ -45,38 +45,33 @@ def scan_port(log, oper, port):
         sock.close()
 
 
-def ipsopenport(log, instance, nucleus):
+def ipsopenport(log, instance, specs):
     hosts = []
     _ips = instance.get('public_ips', []) + instance.get('private_ips', [])
     ips = [_ip for _ip in _ips if ipvfour_validator(_ip)]
     for i_p in ips:
-        if scan_port(log=log, oper=i_p, port=nucleus.get('port', '22')):
+        if scan_port(log=log, oper=i_p, port=specs.get('port', '22')):
             hosts.append(i_p)
     return hosts
 
 
-def ret_conn(nucleus):
-    from tribble.engine.connection_engine import apiauth
-    conn = apiauth(packet=nucleus)
-    if not conn:
-        raise tribble.DeadOnArival('No Connection Available')
-    else:
-        return conn
-
-
-def ret_size(conn, nucleus):
-    _size = [_sz for _sz in conn.list_sizes()
-             if str(_sz.id) == str(nucleus.get('size_id'))]
-    if not _size:
+def ret_size(conn, specs):
+    size = [
+        sz for sz in conn.list_sizes()
+        if str(sz.id) == str(specs.get('size_id'))
+    ]
+    if not size:
         raise tribble.NoSizeFound('Size not found')
     else:
-        return _size[0]
+        return size[0]
 
 
-def ret_image(conn, nucleus):
-    _image = [_im for _im in conn.list_images()
-              if str(_im.id) == str(nucleus.get('image_id'))]
-    if not _image:
+def ret_image(conn, specs):
+    image = [
+        im for im in conn.list_images()
+        if str(im.id) == str(specs.get('image_id'))
+    ]
+    if not image:
         raise tribble.NoImageFound('Image not found')
     else:
-        return _image[0]
+        return image[0]
