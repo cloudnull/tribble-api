@@ -11,6 +11,7 @@ import traceback
 import logging
 import multiprocessing as multi
 
+import kombu
 from kombu.mixins import ConsumerMixin
 
 from tribble.common import rpc
@@ -31,16 +32,6 @@ class Worker(ConsumerMixin):
         """Open a worker connection for a consumer."""
         self.connection = connection
         self.active_jobs = []
-
-    def _load_queues(self):
-        """Load queues off of the set topic."""
-        routing_key = '%s.info' % rpc.RPC_CFG['topic']
-        exchange = self._load_exchange()
-        return rpc.declare_queue(routing_key, self.connection, exchange)
-
-    def _load_exchange(self):
-        """Load RPC exchange."""
-        return rpc.exchange(conn=self.connection)
 
     @staticmethod
     def work_doer(cell):
@@ -83,11 +74,10 @@ class Worker(ConsumerMixin):
         """Get the consumer."""
         return [
             Consumer(
-                queues=[self._load_queues()],
+                queues=[rpc.load_queues(self.connection)],
                 accept=['json'],
                 callbacks=[
-                    self.process_task,
-                    self.join_active
+                    self.process_task
                 ]
             )
         ]
@@ -100,23 +90,27 @@ class Worker(ConsumerMixin):
 
     def _process_task(self, message):
         """Execute the code."""
+        default_args = CONFIG.config_args()
+        while len(self.active_jobs) <= default_args.get('workers', 10):
+            if self.should_stop is True:
+                break
+            try:
+                job = multi.Process(target=self.work_doer, args=(message,))
+                self.active_jobs.append(job)
+                job.start()
+            except Exception as exp:
+                LOG.error('task raised exception: %s', exp)
+        else:
+            self.join_active()
+
+    def process_task(self, body, message):
+        """Execute the code."""
         try:
-            job = multi.Process(target=self.work_doer, args=(message,))
-            self.active_jobs.append(job)
-            job.start()
-        except Exception as exc:
-            LOG.error('task raised exception: %r', exc)
+            if message.acknowledged is not True:
+                LOG.debug(message.__dict__)
+                self._process_task(body)
+        except Exception as exp:
+            message.reject()
+            LOG.error('task "%s" raised exception: "%s"', body, exp)
         else:
             message.ack()
-
-    def process_task(self, message):
-        """Execute the code."""
-        default_args = CONFIG.config_args()
-        while len(self.active_jobs) <= default_args['worker']:
-            if self.should_stop is False:
-                break
-
-            try:
-                self._process_task(message)
-            except Exception as exc:
-                LOG.error('task "%s" raised exception: "%s"', (message, exc))

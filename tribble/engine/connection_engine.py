@@ -26,7 +26,7 @@ CONFIG = system_config.ConfigureationSetup()
 
 class UserData(utils.EngineParser):
     def __init__(self, packet, user_init, conn):
-        super(UserData).__init__(packet=packet)
+        utils.EngineParser.__init__(self, packet)
 
         self.user_init = user_init
         self.conn = conn
@@ -63,7 +63,7 @@ class ConnectionEngine(utils.EngineParser):
         If authentication is successful, then the system will allow the user
         to deploy through the application to the provider.
         """
-        super(ConnectionEngine).__init__(packet=packet)
+        utils.EngineParser.__init__(self, packet)
 
         self.provider = packet.get('cloud_provider')
         if self.provider is not None:

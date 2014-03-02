@@ -9,8 +9,10 @@
 # =============================================================================
 import logging
 import traceback
+import json
 
 import kombu
+from kombu.utils.debug import setup_logging
 
 from tribble.common import system_config
 
@@ -18,6 +20,18 @@ from tribble.common import system_config
 CONFIG = system_config.ConfigureationSetup()
 RPC_CFG = CONFIG.config_args('rpc')
 LOG = logging.getLogger('tribble-api')
+
+
+def load_queues(connection):
+    """Load queues off of the set topic."""
+    _routing_key = get_routing_key()
+    _exchange = _load_exchange(connection)
+    return declare_queue(_routing_key, connection, _exchange)
+
+
+def _load_exchange(connection):
+    """Load RPC exchange."""
+    return exchange(conn=connection)
 
 
 def connect():
@@ -43,25 +57,40 @@ def exchange(conn):
     )
 
 
-def declare_queue(routing_key, conn, exchange):
+def declare_queue(routing_key, conn, topic_exchange):
     """Declare working queue."""
 
-    return kombu.Queue(
+    return_queue = kombu.Queue(
         name=routing_key,
         routing_key=routing_key,
-        exchange=exchange,
+        exchange=topic_exchange,
         channel=conn.channel(),
         durable=RPC_CFG.get('durable_queues', False),
-    ).declare()
+    )
+    return_queue.declare()
+    return return_queue
 
 
-def publisher(message, exchange, routing_key):
+def publisher(message, topic_exchange, routing_key):
     """Publish Messages into AMQP."""
 
     try:
-        msg_new = exchange.Message(
-            message.body, content_type='application/json'
+        msg_new = topic_exchange.Message(
+            json.dumps(message), content_type='application/json'
         )
-        exchange.publish(msg_new, routing_key)
+        topic_exchange.publish(msg_new, routing_key)
     except Exception:
         LOG.error(traceback.format_exc())
+
+
+def get_routing_key(routing_key='control_exchange'):
+    return '%s.info' % RPC_CFG[routing_key]
+
+
+def default_publisher(message):
+    conn = connect()
+    _exchange = exchange(conn)
+    _routing_key = get_routing_key()
+    publisher(
+        message=message, topic_exchange=_exchange, routing_key=_routing_key
+    )

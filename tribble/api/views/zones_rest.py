@@ -12,11 +12,11 @@ import logging
 
 from flask import Blueprint
 
-from tribble.common import system_config
-
-from tribble.common.db import db_proc
 from tribble.api.application import DB
 from tribble.api import utils
+from tribble.common import rpc
+from tribble.common import system_config
+from tribble.common.db import db_proc
 from tribble.common.db import zone_status
 
 
@@ -29,7 +29,6 @@ DEFAULT = CONFIG.config_args()
 @mod.route('/v1/schematics/<sid>/zones', methods=['GET'])
 def zones_get(sid):
     """GET all zones for a schematic."""
-
     parsed_data = utils.zone_basic_handler(DB, sid)
     if parsed_data[0] is False:
         return utils.return_msg(
@@ -62,6 +61,7 @@ def zones_get(sid):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['GET'])
 def zone_id_get(sid, zid):
+    """Get zone from ID."""
     parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(
@@ -90,18 +90,17 @@ def zone_delete(sid=None, zid=None):
         try:
             config = db_proc.get_configmanager(skm=schematic)
             instances = db_proc.get_instances(zon=zone)
-            cell = utils.build_cell(
+            packet = utils.build_cell(
                 job='zone_delete',
                 schematic=schematic,
                 zone=zone,
                 config=config
             )
-            cell['uuids'] = [instance.instance_id for instance in instances]
-            sess = DB.session
-            zone_status.ZoneState(cell=cell).delete()
+            packet['uuids'] = [instance.instance_id for instance in instances]
+            rpc.default_publisher(message=packet)
 
-            #TODO(kevin) Use Kombu
-            # QUEUE.put([cell])
+            sess = DB.session
+            zone_status.ZoneState(cell=packet).delete()
         except Exception:
             LOG.error(traceback.format_exc())
             return utils.return_msg(msg='unexpected error', status=500)
@@ -114,10 +113,8 @@ def zone_delete(sid=None, zid=None):
 def zone_purge(sid=None, zid=None):
     """purge a Zone.
 
-    This will delete the zone record without deleting the instances within
-    the zone.
+    This will PURGE the zone record.
     """
-
     parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(
@@ -142,7 +139,6 @@ def zone_purge(sid=None, zid=None):
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['PUT'])
 def zone_put(sid=None, zid=None):
     """Update a Zone."""
-
     parsed_data = utils.zone_data_handler(db=DB, sid=sid)
     if parsed_data[0] is False:
         return utils.return_msg(
@@ -174,7 +170,6 @@ def zone_put(sid=None, zid=None):
 @mod.route('/v1/schematics/<sid>/zones', methods=['POST'])
 def zone_post(sid=None):
     """Post a Zone."""
-
     parsed_data = utils.zone_data_handler(db=DB, sid=sid, check_for_zone=True)
     if parsed_data[0] is False:
         return utils.return_msg(
@@ -184,37 +179,38 @@ def zone_post(sid=None):
         _success, schematic, payload, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, payload, user_id)
 
-    try:
-        jobs = []
-        _con = db_proc.get_configmanager(skm=schematic)
+    config = db_proc.get_configmanager(skm=schematic)
 
+    try:
         sess = DB.session
         for _zn in payload['zones']:
-            _ssh_user = _zn.get('ssh_user')
+            ssh_user = _zn.get('ssh_user')
             pub = _zn.get('ssh_key_pub')
             key_name = _zn.get('key_name')
-            _ssh = db_proc.post_instanceskeys(pub=pub,
-                                              sshu=_ssh_user,
-                                              key_name=key_name)
-            sess = db_proc.add_item(session=sess, item=_ssh)
+            ssh_key = db_proc.post_instanceskeys(
+                pub=pub,
+                sshu=ssh_user,
+                key_name=key_name
+            )
+            db_proc.add_item(session=sess, item=ssh_key)
 
-            _zon = db_proc.post_zones(skm=schematic,
-                                      zon=_zn,
-                                      ssh=_ssh)
-            sess = db_proc.add_item(session=sess, item=_zon)
+            zone = db_proc.post_zones(
+                skm=schematic,
+                zon=_zn,
+                ssh=ssh_key
+            )
+            db_proc.add_item(session=sess, item=zone)
 
             packet = utils.build_cell(
                 job='build',
                 schematic=schematic,
-                zone=_zon,
-                sshkey=_ssh,
-                config=_con
+                zone=zone,
+                sshkey=ssh_key,
+                config=config
             )
-            jobs.append(packet)
             LOG.debug(packet)
+            rpc.default_publisher(message=packet)
 
-        # TODO(kevin) Make this use KOMBU
-        # QUEUE.put(jobs)
     except Exception:
         LOG.error(traceback.format_exc())
         return utils.return_msg(msg='Unexpected Error', status=500)
@@ -226,6 +222,7 @@ def zone_post(sid=None):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>/redeploy', methods=['POST'])
 def redeploy_zone(sid=None, zid=None):
+    """Redploy a zone."""
     parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(
@@ -236,9 +233,6 @@ def redeploy_zone(sid=None, zid=None):
         LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
 
     config = db_proc.get_configmanager(skm=schematic)
-
-    jobs = []
-
     key = db_proc.get_instanceskeys(zon=zone)
     ints = db_proc.get_instances(zon=zone)
     base_qty = int(zone.quantity)
@@ -246,23 +240,21 @@ def redeploy_zone(sid=None, zid=None):
 
     if base_qty > numr_qty:
         difference = base_qty - numr_qty
-        cell = utils.build_cell(
+        packet = utils.build_cell(
             job='redeploy_build',
             schematic=schematic,
             zone=zone,
             sshkey=key,
             config=config
         )
-        cell['quantity'] = difference
-        LOG.debug(cell)
-
-        #TODO(kevin) Use Kombu
-        # QUEUE.put([packet])
+        packet['quantity'] = difference
+        LOG.debug(packet)
+        rpc.default_publisher(message=packet)
         msg = 'Building %s Instances for Zone %s' % (difference, zone.id)
         return utils.return_msg(msg=msg, status=200)
     elif base_qty < numr_qty:
         difference = numr_qty - base_qty
-        cell = utils.build_cell(
+        packet = utils.build_cell(
             job='redeploy_delete',
             schematic=schematic,
             zone=zone,
@@ -271,12 +263,14 @@ def redeploy_zone(sid=None, zid=None):
         )
         instances = [ins.instance_id for ins in ints]
         remove_instances = instances[:difference]
-        cell['uuids'] = remove_instances
-        LOG.debug(cell)
+        packet['uuids'] = remove_instances
+        LOG.debug(packet)
+        rpc.default_publisher(message=packet)
         remove_ids = [
             ins for ins in ints
             if ins.instance_id in remove_instances
         ]
+
         try:
             sess = DB.session
             for instance_id in remove_ids:
@@ -286,9 +280,6 @@ def redeploy_zone(sid=None, zid=None):
             return utils.return_msg(msg='Unexpected Error', status=500)
         else:
             db_proc.commit_session(session=sess)
-            #TODO(kevin) Use Kombu
-            # QUEUE.put([packet])
-
             msg = 'Removing %s Instances for Zone %s' % (difference, zone.id)
             return utils.return_msg(msg=msg, status=200)
     else:
@@ -297,7 +288,7 @@ def redeploy_zone(sid=None, zid=None):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>/resetstate', methods=['POST'])
 def reset_zone_state(sid=None, zid=None):
-
+    """Reset the state of a zone to active."""
     parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(

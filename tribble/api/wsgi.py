@@ -44,8 +44,6 @@ class Server(object):
         pool_size = int(self.net_cfg.get('connection_pool', 1000))
         self.spawn_pool = eventlet.GreenPool(size=pool_size)
 
-        self.active_workers = []
-
         self.active = True
         self.worker = None
 

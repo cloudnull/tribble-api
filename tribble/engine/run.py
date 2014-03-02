@@ -7,7 +7,7 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-from kombu import Connection
+import traceback
 
 from tribble.common import rpc
 from tribble.common import logger
@@ -18,21 +18,31 @@ from tribble.engine import mixin
 CONFIG = system_config.ConfigureationSetup()
 
 
+def log_level(debug):
+    if debug is True:
+        return 'DEBUG'
+    else:
+        return 'INFO'
+
+
 def executable():
     default_config = CONFIG.config_args()
-    log = logger.logger_setup(
-        name='tribble-engine',
-        debug_logging=default_config.get('debug_mode', False)
-    )
+    debug = default_config.get('debug_mode', False)
+    log = logger.logger_setup(name='tribble-engine', debug_logging=debug)
 
-    with Connection(rpc.connect()) as conn:
-        try:
-            worker = mixin.Worker(connection=conn)
-            worker.run()
-        except KeyboardInterrupt:
-            raise SystemExit('Process Killed.')
-        except Exception as exp:
-            log.error(exp)
+    handlers = ['tribble-api', 'tribble-engine']
+    rpc.setup_logging(loglevel=log_level(debug=debug), loggers=handlers)
+
+    conn = rpc.connect()
+    try:
+        worker = mixin.Worker(connection=conn)
+        worker.run()
+    except KeyboardInterrupt:
+        raise SystemExit('Process Killed.')
+    except Exception:
+        log.error(traceback.format_exc())
+    else:
+        conn.release()
 
 
 if __name__ == '__main__':

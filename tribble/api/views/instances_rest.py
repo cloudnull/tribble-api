@@ -13,8 +13,8 @@ import logging
 from flask import Blueprint
 from flask import request
 
+from tribble.common import rpc
 from tribble.common import system_config
-
 from tribble.common.db import db_proc
 from tribble.api.application import DB
 from tribble.api import utils
@@ -75,8 +75,5 @@ def instance_delete(sid=None, zid=None, iid=None):
         LOG.error(traceback.format_exc())
         return utils.return_msg(msg='Unexpected Error', status=500)
     else:
-
-        # TODO(kevin) USE KOMBU
-        # QUEUE.put(build_zones)
-
+        rpc.default_publisher(message=cell)
         return utils.return_msg(msg='Deletes Recieved', status=203)

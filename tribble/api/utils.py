@@ -124,14 +124,16 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
     Craft the packet that we need to perform actions
     """
 
-    packet = {'cloud_key': schematic.cloud_key,
-              'cloud_username': schematic.cloud_username,
-              'cloud_provider': schematic.cloud_provider,
-              'job': job}
+    packet = {
+        'cloud_key': schematic.cloud_key,
+        'cloud_username': schematic.cloud_username,
+        'cloud_provider': schematic.cloud_provider,
+        'job': job
+    }
 
     if config is not None:
         if config.id:
-            packet['config_id'] = config.id
+            packet['config_id'] = str(config.id)
         if config.config_key:
             packet['config_key'] = config.config_key
         if config.config_server:
@@ -147,7 +149,7 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
 
     if schematic is not None:
         if schematic.auth_id:
-            packet['auth_id'] = schematic.auth_id
+            packet['auth_id'] = str(schematic.auth_id)
         if schematic.cloud_tenant:
             packet['cloud_tenant'] = schematic.cloud_tenant
         if schematic.cloud_url:
@@ -157,11 +159,11 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
         if schematic.cloud_provider:
             packet['cloud_provider'] = schematic.cloud_provider
         if schematic.id:
-            packet['schematic_id'] = schematic.id
+            packet['schematic_id'] = str(schematic.id)
 
     if sshkey is not None:
         if sshkey.id:
-            packet['credential_id'] = sshkey.id
+            packet['credential_id'] = str(sshkey.id)
         if sshkey.ssh_user:
             packet['ssh_username'] = sshkey.ssh_user
         if sshkey.ssh_key_pub:
@@ -177,11 +179,11 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
         if zone.name_convention:
             packet['name_convention'] = zone.name_convention
         if zone.image_id:
-            packet['image_id'] = zone.image_id
+            packet['image_id'] = str(zone.image_id)
         if zone.size_id:
-            packet['size_id'] = zone.size_id
+            packet['size_id'] = str(zone.size_id)
         if zone.id:
-            packet['zone_id'] = zone.id
+            packet['zone_id'] = str(zone.id)
         if zone.zone_msg:
             packet['zone_msg'] = zone.zone_msg
         if zone.zone_state:

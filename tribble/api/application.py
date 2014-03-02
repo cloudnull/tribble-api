@@ -15,6 +15,7 @@ from flask_sqlalchemy import SQLAlchemy
 from tribble import info
 from tribble.api import views
 from tribble.common import system_config
+from tribble.common import rpc
 
 
 CONFIG = system_config.ConfigureationSetup()
@@ -37,6 +38,9 @@ app.config['SQLALCHEMY_POOL_RECYCLE'] = sql_config.get('pool_recycle', 120)
 
 DB = SQLAlchemy(app)
 DB.init_app(app)
+
+# Load the RPC Queues
+rpc.load_queues(rpc.connect())
 
 
 def load_routes():

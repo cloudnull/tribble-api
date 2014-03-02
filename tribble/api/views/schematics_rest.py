@@ -14,7 +14,7 @@ from flask import Blueprint
 from flask import request
 
 from tribble.common import system_config
-
+from tribble.common import rpc
 from tribble.common.db import db_proc
 from tribble.api.application import DB
 from tribble.api import utils
@@ -27,7 +27,6 @@ DEFAULT = CONFIG.config_args()
 
 
 def _zone_builder(session, schematic, con, payload):
-    build_zones = []
     for zone in payload['zones']:
         zone = utils.encoder(obj=zone)
         LOG.debug(zone)
@@ -52,8 +51,7 @@ def _zone_builder(session, schematic, con, payload):
             sshkey=ssh,
             config=con
         )
-        build_zones.append(packet)
-    return build_zones
+        rpc.default_publisher(message=packet)
 
 
 @mod.route('/v1/schematics', methods=['GET'])
@@ -129,8 +127,6 @@ def schematic_delete(sid=None):
         LOG.error(traceback.format_exc())
         return utils.return_msg(msg='unexpected error', status=500)
     else:
-        # TODO(kevin) USE KOMBU
-        # QUEUE.put(cell)
         db_proc.commit_session(session=sess)
         return utils.return_msg(msg='deletes received', status=203)
 
@@ -212,17 +208,17 @@ def schematic_post():
         )
         db_proc.add_item(session=sess, item=schematic)
         if 'zones' in payload:
-            build_zones = _zone_builder(
+            _zone_builder(
                 session=sess, schematic=schematic, con=con, payload=payload
             )
-            # TODO(kevin) USE KOMBU
-            # QUEUE.put(build_zones)
 
     except Exception:
         LOG.error(traceback.format_exc())
         return utils.return_msg(msg='Unexpected Error', status=500)
     else:
+        build_response = (
+            'Application requests have been recieved and Schematic %s has'
+            ' been built' % schematic.id
+        )
         db_proc.commit_session(session=sess)
-        build_response = ('Application requests have been recieved and'
-                          ' Schematic %s has been built' % schematic.id)
         return utils.return_msg(msg=build_response, status=200)
