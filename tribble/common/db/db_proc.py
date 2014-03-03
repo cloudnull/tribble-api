@@ -10,6 +10,7 @@
 import datetime
 
 from sqlalchemy import and_
+from sqlalchemy.orm import exc
 
 from tribble.engine import utils
 from tribble.common.db.models import CloudAuth

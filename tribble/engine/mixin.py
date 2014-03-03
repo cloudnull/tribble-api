@@ -87,19 +87,16 @@ class Worker(ConsumerMixin):
         if self.active_jobs:
             for job in self.active_jobs:
                 job.join()
+                self.active_jobs.remove(job)
 
     def _process_task(self, message):
         """Execute the code."""
-        default_args = CONFIG.config_args()
-        while len(self.active_jobs) <= default_args.get('workers', 10):
-            if self.should_stop is True:
-                break
-            try:
-                job = multi.Process(target=self.work_doer, args=(message,))
-                self.active_jobs.append(job)
-                job.start()
-            except Exception as exp:
-                LOG.error('task raised exception: %s', exp)
+        try:
+            job = multi.Process(target=self.work_doer, args=(message,))
+            self.active_jobs.append(job)
+            job.start()
+        except Exception as exp:
+            LOG.error('task raised exception: %s', exp)
         else:
             self.join_active()
 

@@ -30,7 +30,7 @@ def parse_dict_list(objlist):
     return [pop_ts(obj.__dict__) for obj in objlist if obj and obj.__dict__]
 
 
-def auth_mech(models, rdata, hdata=None):
+def auth_mech(rdata, hdata=None):
 
     LOG.debug(rdata)
     user_query = db_proc.get_user_id(user_name=rdata['x-user'])
@@ -207,67 +207,59 @@ def build_cell(job, schematic=None, zone=None, sshkey=None, config=None):
     return packet
 
 
-def zone_data_handler(db, sid, check_for_zone=False):
+def zone_data_handler(sid, check_for_zone=False):
     if not sid:
-        return False, {'response': 'No Schematic specified'}, 400
+        return False, 'No Schematic specified', 400
 
-    auth = auth_mech(
-        models=db, hdata=request.data, rdata=request.headers
-    )
+    auth = auth_mech(hdata=request.data, rdata=request.headers)
     if not auth:
-        return False, {'response': 'Authentication or Data Type Failure'}, 401
+        return False, 'Authentication or Data Type Failure', 401
     else:
         user_id, payload = auth
 
     if not all([user_id, payload]):
-        build_response = {
-            'response': 'Missing Information %s %s' % (user_id, payload)
-        }
-        return False, build_response, 400
+        return False, 'Missing Information %s %s' % (user_id, payload), 400
     else:
         payload = encoder(obj=payload)
         LOG.debug(payload)
 
     schematic = db_proc.get_schematic_id(sid=sid, uid=user_id)
     if not schematic:
-        return False, {'response': 'no schematic found'}, 404
+        return False, 'no schematic found', 404
 
     if check_for_zone is True and 'zones' not in payload:
-        build_response = {
-            'response': 'Missing Information %s %s' % (user_id, payload)
-        }
-        return False, build_response, 400
+        return False, 'Missing Information %s %s' % (user_id, payload), 400
 
     return True, schematic, payload, user_id
 
 
-def zone_basic_handler(db, sid, zid=None):
+def zone_basic_handler(sid, zid=None):
     if not sid:
-        return False, {'response': 'No Schematic Specified'}, 400
+        return False, 'No Schematic Specified', 400
 
-    user_id = auth_mech(models=db, rdata=request.headers)
+    user_id = auth_mech(rdata=request.headers)
     if not user_id:
-        return False, {'response': 'no user id found'}, 400
+        return False, 'no user id found', 400
 
     schematic = db_proc.get_schematic_id(sid=sid, uid=user_id)
     if not schematic:
-        return False, {'response': 'no schematic found'}, 404
+        return False, 'no schematic found', 404
 
     if zid is not None:
         zone = db_proc.get_zones_by_id(skm=schematic, zid=zid)
         if not zone:
-            return False, {'response': 'no zones found'}, 404
+            return False, 'no zones found', 404
         elif zone.zone_state == 'BUILDING':
-            build_response = {
-                'response': ('Zone Delete can not be performed because Zone'
-                             ' %s has a Pending Status' % zone.id)
-            }
+            build_response = (
+                'Zone Delete can not be performed because Zone "%s" has a'
+                ' Pending Status' % zone.id
+            )
             return False, build_response, 200
         else:
             return True, schematic, zone, user_id
     else:
         zones = db_proc.get_zones(skm=schematic)
         if not zones:
-            return False, {'response': 'no zones found'}, 404
+            return False, 'no zones found', 404
         else:
             return True, schematic, zones, user_id

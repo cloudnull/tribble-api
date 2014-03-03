@@ -37,7 +37,7 @@ def instance_delete(sid=None, zid=None, iid=None):
             msg='missing Information %s' % check_all, status=400
         )
 
-    user_id = utils.auth_mech(DB, rdata=request.headers)
+    user_id = utils.auth_mech(rdata=request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 

@@ -61,7 +61,7 @@ class ZoneState(object):
             db_proc.delete_item(session=sess, item=self.schematic)
             db_proc.delete_item(session=sess, item=config)
         except AttributeError, exp:
-            LOG.info('No Zone To Delete as No Zone was Found ==> %s' % exp)
+            LOG.info('No Zone To Delete as No Zone was Found ==> %s', exp)
         else:
             db_proc.commit_session(session=sess)
 
@@ -69,18 +69,18 @@ class ZoneState(object):
         try:
             sess = DB.session
             instances = db_proc.get_instances(zon=self.zone)
-            if len(instances) > 0:
+            if instances:
                 self.cell['zone_state'] = 'DELETE FAILED'
                 self.cell['zone_msg'] = (
                     'Found Instance when they should have all been deleted'
                 )
                 self.state_update()
-                return False
-            key = db_proc.get_instanceskeys(zon=self.zone)
-            db_proc.delete_item(session=sess, item=self.zone)
-            db_proc.delete_item(session=sess, item=key)
+            else:
+                key = db_proc.get_instanceskeys(zon=self.zone)
+                db_proc.delete_item(session=sess, item=self.zone)
+                db_proc.delete_item(session=sess, item=key)
         except AttributeError, exp:
-            LOG.info('No Zone To Delete as No Zone was Found ==> %s' % exp)
+            LOG.error('No Zone To Delete as No Zone was Found ==> %s', exp)
         else:
             db_proc.commit_session(session=sess)
 

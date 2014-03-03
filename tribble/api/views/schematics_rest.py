@@ -58,7 +58,7 @@ def _zone_builder(session, schematic, con, payload):
 def schematics_get():
     """get method."""
 
-    user_id = utils.auth_mech(DB, rdata=request.headers)
+    user_id = utils.auth_mech(rdata=request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 
@@ -86,7 +86,7 @@ def schematic_get(sid=None):
     if not sid:
         return utils.return_msg(msg='missing information', status=400)
 
-    user_id = utils.auth_mech(DB, rdata=request.headers)
+    user_id = utils.auth_mech(rdata=request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 
@@ -105,7 +105,7 @@ def schematic_delete(sid=None):
     if not sid:
         return utils.return_msg(msg='missing information', status=400)
 
-    user_id = utils.auth_mech(DB, rdata=request.headers)
+    user_id = utils.auth_mech(rdata=request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 
@@ -142,9 +142,7 @@ def schematic_put(sid=None):
     if not sid:
         return utils.return_msg(msg='missing information', status=400)
 
-    auth = utils.auth_mech(
-        models=DB, hdata=request.data, rdata=request.headers
-    )
+    auth = utils.auth_mech(hdata=request.data, rdata=request.headers)
     if not auth:
         return utils.return_msg(
             msg='Authentication or Data Type Failure',
@@ -182,9 +180,7 @@ def schematic_put(sid=None):
 def schematic_post():
     """Post a Schematic, if a zone is present in the POST, then post a zone."""
 
-    auth = utils.auth_mech(
-        models=DB, hdata=request.data, rdata=request.headers
-    )
+    auth = utils.auth_mech(hdata=request.data, rdata=request.headers)
     if not auth:
         return utils.return_msg(
             msg='Authentication or Data Type Failure',

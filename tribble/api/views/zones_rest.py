@@ -29,11 +29,9 @@ DEFAULT = CONFIG.config_args()
 @mod.route('/v1/schematics/<sid>/zones', methods=['GET'])
 def zones_get(sid):
     """GET all zones for a schematic."""
-    parsed_data = utils.zone_basic_handler(DB, sid)
+    parsed_data = utils.zone_basic_handler(sid=sid)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zones, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, zones, user_id)
@@ -62,11 +60,9 @@ def zones_get(sid):
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['GET'])
 def zone_id_get(sid, zid):
     """Get zone from ID."""
-    parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
+    parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zone, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
@@ -78,11 +74,9 @@ def zone_id_get(sid, zid):
 def zone_delete(sid=None, zid=None):
     """Delete a Zone."""
 
-    parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
+    parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zone, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
@@ -115,11 +109,9 @@ def zone_purge(sid=None, zid=None):
 
     This will PURGE the zone record.
     """
-    parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
+    parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zone, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
@@ -139,11 +131,9 @@ def zone_purge(sid=None, zid=None):
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['PUT'])
 def zone_put(sid=None, zid=None):
     """Update a Zone."""
-    parsed_data = utils.zone_data_handler(db=DB, sid=sid)
+    parsed_data = utils.zone_data_handler(sid=sid)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, payload, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, payload, user_id)
@@ -170,11 +160,9 @@ def zone_put(sid=None, zid=None):
 @mod.route('/v1/schematics/<sid>/zones', methods=['POST'])
 def zone_post(sid=None):
     """Post a Zone."""
-    parsed_data = utils.zone_data_handler(db=DB, sid=sid, check_for_zone=True)
+    parsed_data = utils.zone_data_handler(sid=sid, check_for_zone=True)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, payload, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, payload, user_id)
@@ -223,11 +211,9 @@ def zone_post(sid=None):
 @mod.route('/v1/schematics/<sid>/zones/<zid>/redeploy', methods=['POST'])
 def redeploy_zone(sid=None, zid=None):
     """Redploy a zone."""
-    parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
+    parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zone, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
@@ -289,11 +275,9 @@ def redeploy_zone(sid=None, zid=None):
 @mod.route('/v1/schematics/<sid>/zones/<zid>/resetstate', methods=['POST'])
 def reset_zone_state(sid=None, zid=None):
     """Reset the state of a zone to active."""
-    parsed_data = utils.zone_basic_handler(db=DB, sid=sid, zid=zid)
+    parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
-        return utils.return_msg(
-            '%s %s' % (parsed_data[1], parsed_data[2]), status=404
-        )
+        return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zone, user_id = parsed_data
         LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)

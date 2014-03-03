@@ -49,10 +49,10 @@ class InstanceDeployment(object):
         self.zone_status = zone_status.ZoneState(cell=self.packet)
 
     def engine_setup(self):
-        engine = connection_engine.ConnectionEngine(
+        _engine = connection_engine.ConnectionEngine(
             packet=self.packet
         )
-        driver, user_data, deployment_methods = engine
+        driver, user_data, deployment_methods = _engine
         self.driver = driver
         self.user_data = user_data
         self.deployment_methods = deployment_methods
