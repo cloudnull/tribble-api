@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 ### BEGIN INIT INFO
-# Provides:          tribble-api
+# Provides:          tribble-engine
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Should-Start:      $named
@@ -13,8 +13,8 @@
 
 set -e
 
-# /etc/init.d/tribble-api: start and stop the tribble daemon
-PROGRAM_NAME="tribble-api"
+# /etc/init.d/tribble-engine: start and stop the tribble daemon
+PROGRAM_NAME="tribble-engine"
 
 DAEMON="/usr/local/bin/${PROGRAM_NAME}"
 TRIBBLE_CONFIG_FILE="/etc/tribble/tribble.conf"
