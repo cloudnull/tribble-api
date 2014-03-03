@@ -1,64 +1,91 @@
-#!/usr/bin/env bash
+#! /usr/bin/env bash
+
 ### BEGIN INIT INFO
-# Provides:          tribbleapi
-# Required-Start:    $local_fs $remote_fs $network $syslog $named
-# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Provides:          tribble-api
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Should-Start:      $named
 # Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Start Tribble daemon at boot time.
+# Default-Stop:
+# Short-Description: configuration management API for cloud providers
+# Description:       configuration management API for cloud providers
 ### END INIT INFO
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+set -e
 
-# What is the Name of this Script, and what are we starting
-PROGRAM="Tribble API"
+# /etc/init.d/tribble-api: start and stop the tribble daemon
+PROGRAM_NAME="Tribble-API"
 
-# What is the Directory to your server installation
-AGENT_APP="/usr/local/bin/tribble-api"
+DAEMON="/usr/local/bin/tribble-api"
+TRIBBLE_CONFIG_FILE="/etc/tribble/tribble.conf"
+TRIBBLE_PID_FILE="/var/run/tribble.pid"
 
-### -------------------------------------------------------------- ###
-###    DO NOT EDIT THIS AREA UNLESS YOU KNOW WHAT YOU ARE DOING    ###
-### -------------------------------------------------------------- ###
 
-if [ "$(id -u)" != "0" ]; then
-    echo "This script must be run as ROOT"
-    echo "You have attempted to run this as $USER"
-    echo "use su -c "" or sudo or change to root and try again."
-    exit 0
-fi
+source /lib/lsb/init-functions
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 
-start() {
-    $AGENT_APP --start
+tribble_api_start() {
+    if [ ! -s "$TRIBBLE_CONFIG_FILE" ]; then
+        log_failure_msg "missing or empty config file $TRIBBLE_CONFIG_FILE"
+        log_end_msg 1
+        exit 0
+    fi
+    if start-stop-daemon --start --background --pidfile $RSYNC_PID_FILE --make-pidfile $RSYNC_NICE_PARM --exec $DAEMON; then
+        rc=0
+        sleep 1
+        if ! kill -0 $(cat $TRIBBLE_PID_FILE) >/dev/null 2>&1; then
+            rc=1
+        fi
+    else
+        rc=1
+    fi
+
+    if [ $rc -eq 0 ]; then
+        log_end_msg 0
+    else
+        log_failure_msg "${PROGRAM_NAME} daemon failed to start"
+        log_end_msg 1
+        rm -f $TRIBBLE_PID_FILE
+    fi
 }
 
-stop() {
-    $AGENT_APP --stop
-}
 
 case "$1" in
-    start)
-        start
+  start)
+        log_daemon_msg "Starting ${PROGRAM_NAME} daemon" "${PROGRAM_NAME}"
+        if [ -s $TRIBBLE_PID_FILE ] && kill -0 $(cat $TRIBBLE_PID_FILE) >/dev/null 2>&1; then
+            log_progress_msg "Tribble is already running"
+            log_end_msg 0
+            exit 0
+        fi
+        tribble_api_start
+        ;;
+  stop)
+        log_daemon_msg "Stopping ${PROGRAM_NAME} daemon" "${PROGRAM_NAME}"
+        start-stop-daemon --stop --quiet --oknodo --pidfile $TRIBBLE_PID_FILE
+        log_end_msg $?
+        rm -f $TRIBBLE_PID_FILE
+        ;;
+  restart)
+        set +e
+        log_daemon_msg "Restarting ${PROGRAM_NAME} daemon" "${PROGRAM_NAME}"
+        if [ -s $TRIBBLE_PID_FILE ] && kill -0 $(cat $TRIBBLE_PID_FILE) >/dev/null 2>&1; then
+            start-stop-daemon --stop --quiet --oknodo --pidfile $TRIBBLE_PID_FILE || true
+            sleep 1
+        else
+            log_warning_msg "${PROGRAM_NAME} daemon not running, attempting to start."
+            rm -f $TRIBBLE_PID_FILE
+        fi
+        tribble_api_start
         ;;
 
-    stop)
-        stop
+  status)
+        status_of_proc -p $TRIBBLE_PID_FILE "$DAEMON" tribble-api
+        exit $?
         ;;
-
-    status)
-        $AGENT_APP --status
-        ;;
-
-    restart)
-        stop
-        sleep 1
-        start
-        ;;
-
-    *)
-        echo "Usage: $0 {start|stop|restart|status}" >&2
-        ;;
+  *)
+        echo "Usage: /etc/init.d/tribble-api {start|stop|restart|status}"
+        exit 1
 esac
 
-EXITCODE=$(echo $?)
-echo $EXITCODE | logger
-exit $EXITCODE
+exit 0

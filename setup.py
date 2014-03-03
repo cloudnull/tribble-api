@@ -69,7 +69,7 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            "tribble-api = tribble.run:executable",
+            "tribble-api = tribble.api.run:executable",
             "tribble-admin = tribble.admin.admin:admin_executable",
             "tribble-engine = tribble.engine.run:executable"
         ]
