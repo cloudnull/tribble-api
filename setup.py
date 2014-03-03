@@ -18,11 +18,12 @@ with open('requirements.txt') as f:
     REQUIRED = f.read().splitlines()
 
 if sys.version_info < (2, 6, 0):
-    sys.stderr.write("Turbolift Presently requires Python 2.6.0 or greater \n")
+    sys.stderr.write("Tribble Presently requires Python 2.6.0 or greater \n")
     raise SystemExit(
         '\nUpgrade python because you version of it is VERY deprecated\n'
     )
-elif sys.version_info < (2, 7, 0):
+
+if sys.version_info < (2, 7, 0):
     REQUIRED.append('argparse')
 
 with open('README', 'rb') as r_file:
