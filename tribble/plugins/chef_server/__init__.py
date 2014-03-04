@@ -13,7 +13,8 @@ import chef_server
 import cheferizer
 
 
-def init_chefserver(specs, sop, ssh=False):
+def init_chefserver(*args):
+    specs, sop, ssh = args
     chef = chef_server.Strapper(specs=specs)
     chef_init = chef.chef_cloudinit()
     script = specs.get('config_script')
@@ -26,12 +27,12 @@ def init_chefserver(specs, sop, ssh=False):
     return chef_init
 
 
-def chef_update_instances(specs):
-    node_list = specs.get('db_instances')
+def chef_update_instances(*args):
+    node_list = args[0].get('db_instances')
     if node_list:
         for node in node_list:
             cheferizer.ChefMe(
-                specs=specs,
+                specs=args[0],
                 name=node.server_name,
                 function='chefer_setup',
             )

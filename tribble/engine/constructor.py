@@ -52,34 +52,34 @@ class InstanceDeployment(object):
         _engine = connection_engine.ConnectionEngine(
             packet=self.packet
         )
-        driver, user_data, deployment_methods = _engine
-        self.driver = driver
-        self.user_data = user_data
-        self.deployment_methods = deployment_methods
+        self.driver, self.user_data, self.deployment_methods = _engine.run()
 
     def api_setup(self):
         self.engine_setup()
 
         if not self.driver:
-            self.zone_status.error(error_msg='No Available Connection')
-            raise DeploymentError('No Available Connection')
+            msg = 'No Available Connection'
+            self.zone_status.error(error_msg=msg)
+            raise DeploymentError(msg)
 
         image = self.user_specs['image'] = engine.ret_image(
             conn=self.driver, specs=self.packet
         )
         if not image:
-            self.zone_status.error(error_msg='No image_id found')
-            raise DeploymentError('No image_id found')
+            msg = 'No image_id found'
+            self.zone_status.error(error_msg=msg)
+            raise DeploymentError(msg)
 
         size = self.user_specs['size'] = engine.ret_size(
             conn=self.driver, specs=self.packet
         )
         if not size:
-            self.zone_status.error(error_msg='No size_id Found')
-            raise DeploymentError('No size_id Found')
+            msg = 'No size_id Found'
+            self.zone_status.error(error_msg=msg)
+            raise DeploymentError(msg)
 
-        name_conv = self.packet.get('name_convention', 'tribble_node')
-        node_name = '%s-%s'.lower() % (name_conv, utils.rand_string())
+        name_convention = self.packet.get('name_convention', 'tribble_node')
+        node_name = '%s-%s'.lower() % (name_convention, utils.rand_string())
         self.packet['node_name'] = self.user_specs['name'] = node_name
 
         server_instances = int(self.packet.get('quantity', 1))
@@ -119,30 +119,33 @@ class InstanceDeployment(object):
             self._node_remove(ids=self.packet['uuids'])
 
     def ssh_deploy(self):
-        """Prepaire for an SSH deployment Method for any found config
+        """Prepare for an SSH deployment Method for any found config
 
-        managemnet and or scripts
+        management and or scripts
         """
+        script = '/tmp/deployment_tribble_%s.sh'
         dep_action = []
+
         if self.packet.get('ssh_key_pub'):
             ssh = SSHKeyDeployment(key=self.packet.get('ssh_key_pub'))
             dep_action.append(ssh)
 
         conf_init = config_manager.ConfigManager(packet=self.packet, ssh=True)
-        script = '/tmp/deployment_tribble_%s.sh'
         if conf_init:
             conf_init = str(conf_init)
             LOG.debug(conf_init)
-            _script = script % utils.rand_string()
-            con = ScriptDeployment(name=_script, script=conf_init)
+            con = ScriptDeployment(
+                name=script % utils.rand_string(), script=conf_init
+            )
             dep_action.append(con)
 
         if self.packet.get('config_script'):
             user_script = str(self.packet.get('config_script'))
             LOG.debug(user_script)
-            _script = script % utils.rand_string()
-            scr = ScriptDeployment(name=_script, script=user_script)
-            dep_action.append(scr)
+            con = ScriptDeployment(
+                name=script % utils.rand_string(), script=user_script
+            )
+            dep_action.append(con)
 
         return MultiStepDeployment(dep_action)
 
@@ -151,7 +154,7 @@ class InstanceDeployment(object):
         return self.state_wait(node=node)
 
     def _cloud_init(self, user_specs):
-        return self.driver.deploy_node(**user_specs)
+        return self.driver.create_node(**user_specs)
 
     def _list_instances(self):
         return self.driver.list_nodes()
@@ -160,7 +163,6 @@ class InstanceDeployment(object):
         """Build VMs."""
         LOG.debug(self.user_specs)
         LOG.info('Building Node Based on %s' % self.user_specs)
-
         for deployment in self.deployment_methods:
             try:
                 action = getattr(self, '_%s' % deployment)

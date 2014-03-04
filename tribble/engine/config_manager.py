@@ -9,10 +9,8 @@
 # =============================================================================
 import traceback
 import logging
-import pkgutil
 
-import tribble
-from tribble import plugins
+from tribble.common import plugin_loader
 from tribble.engine import utils
 
 
@@ -43,54 +41,26 @@ DEFAULT_APP = {
 }
 
 
-class PluginLoad(object):
-    def __init__(self, config_type):
-        self.config_type = config_type
-
-    def get_method(self, method, name):
-        """Import what is required to run the System."""
-
-        to_import = '%s.%s' % (method.__name__, name)
-        return __import__(to_import, fromlist="None")
-
-    def load_plugin(self):
-        for mod, name, package in pkgutil.iter_modules(plugins.__path__):
-            try:
-                method = self.get_method(method=plugins, name=name)
-                if self.config_type in method.CONFIG_APP_MAP:
-                    return method.CONFIG_APP_MAP[self.config_type]
-            except Exception:
-                msg = 'Plugin %s failed to load correctly' % name
-                LOG.error('%s %s' % (msg, traceback.format_exc()))
-                raise tribble.DeadOnArival(msg)
-            else:
-                msg = '%s is loaded for config management' % self.config_type
-                LOG.info(msg)
-
-
 class ConfigManager(utils.EngineParser):
     def __init__(self, packet, ssh=False):
-        super(ConfigManager, self).__init__(packet=packet)
-
+        utils.EngineParser.__init__(self, packet)
         self.ssh = ssh
 
-    def check_configmanager(self, packet):
+    def check_configmanager(self):
         try:
             LOG.info('Looking for config management')
-            config_type = packet.get('config_type')
-            if config_type is not None:
-                config_type = config_type.upper()
-            plugin = PluginLoad(config_type=config_type)
+            config_type = self.packet.get('config_type')
+            if config_type is None:
+                return None
+
+            config_type = config_type.upper()
+            plugin = plugin_loader.PluginLoad(config_type=config_type)
             config_manager = plugin.load_plugin()
+
             required_args = config_manager.get('required_args')
+            self._run(init_items=required_args)
 
-            for item, value in required_args.items():
-                spec_action = getattr(self, '_%s' % value)
-                if spec_action is not None:
-                    spec_action(item, value)
-
-            action = config_manager['action']
+            action = config_manager.get(self.packet['job'])
             return action(packet=self.specs, sop=SOP, ssh=self.ssh)
-
         except Exception:
             LOG.error(traceback.format_exc())

@@ -196,7 +196,6 @@ def zone_post(sid=None):
                 sshkey=ssh_key,
                 config=config
             )
-            LOG.debug(packet)
             rpc.default_publisher(message=packet)
 
     except Exception:

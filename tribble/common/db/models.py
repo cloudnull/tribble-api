@@ -224,6 +224,11 @@ class Schematics(DB.Model):
         DB.VARCHAR(length=100),
         nullable=True
     )
+    name = DB.Column(
+        'name',
+        DB.VARCHAR(length=100),
+        nullable=True
+    )
     created_at = DB.Column(
         'created_at',
         DB.TIMESTAMP(),
@@ -244,7 +249,7 @@ class Schematics(DB.Model):
     )
 
     def __init__(self, config_id, cloud_key, cloud_url, cloud_username,
-                 cloud_provider, cloud_version, cloud_tenant, auth_id):
+                 cloud_provider, cloud_version, cloud_tenant, auth_id, name):
         """
         Schematics provide for the configuration which would peratine to a
         built Zone.
@@ -252,6 +257,7 @@ class Schematics(DB.Model):
 
         self.config_id = config_id
         self.auth_id = auth_id
+        self.name = name
         self.cloud_key = cloud_key
         self.cloud_url = cloud_url
         self.cloud_provider = cloud_provider

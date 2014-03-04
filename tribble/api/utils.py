@@ -11,15 +11,17 @@ import logging
 import traceback
 import json
 from base64 import b64encode as b64e
-from sys import getsizeof
 
 from flask import jsonify
 from flask import request
 
 from tribble.common.db import db_proc
+from tribble.common import system_config
 
 
 LOG = logging.getLogger('tribble-api')
+CONFIG = system_config.ConfigureationSetup()
+DEFAULT = CONFIG.config_args()
 
 
 def return_msg(msg, status=200):
@@ -59,14 +61,14 @@ def max_size(obj):
     """
     The Max allowable Size of a object can only be 10KB
     """
-
-    b64obj = b64e(obj)
-    objsize = getsizeof(b64obj) / 1024
-    if objsize > 12:
-        LOG.info('File was REJECTED for being too larger')
-        return None
+    if obj:
+        if (obj.__sizeof__() / 1024) > DEFAULT.get('max_file_size', 10):
+            LOG.info('File was REJECTED for being too larger')
+            return None
+        else:
+            return b64e(obj)
     else:
-        return b64obj
+        return None
 
 
 def encoder(obj):

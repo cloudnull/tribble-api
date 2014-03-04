@@ -31,11 +31,10 @@ CLOUD_APP_MAP = {
         'required_args': {
             'ex_force_auth_url': {
                 'get': 'cloud_url',
-                'required': True
             },
             'ex_force_auth_version': {
                 'get': 'cloud_version',
-                'default': '2.0_password'
+                'default': '2.0'
             },
             'datacenter': {
                 'get': 'cloud_region',
@@ -44,7 +43,7 @@ CLOUD_APP_MAP = {
             }
         },
         'CHOICES': {
-            Provider.RACKSPACE
+            'only': Provider.RACKSPACE
         }
     },
     'VMWARE': {
@@ -61,7 +60,7 @@ CLOUD_APP_MAP = {
             }
         },
         'CHOICES': {
-            Provider.VCLOUD
+            'only': Provider.VCLOUD
         }
     },
     'OPENSTACK': {
@@ -109,7 +108,7 @@ CLOUD_APP_MAP = {
             }
         },
         'CHOICES': {
-            Provider.OPENSTACK
+            'only': Provider.OPENSTACK
         }
     },
     'AMAZON': {

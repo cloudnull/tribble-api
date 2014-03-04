@@ -33,10 +33,11 @@ class UserData(utils.EngineParser):
         self.zone_status = zone_status.ZoneState(cell=self.packet)
 
     def _get_user_data(self):
-        return config_manager.ConfigManager(packet=self.packet)
+        config = config_manager.ConfigManager(packet=self.packet)
+        return config.check_configmanager()
 
     def _get_security_groups(self):
-        sec_groups = self.specs.get('security_groups')
+        sec_groups = self.packet.get('security_groups')
         try:
             sgns = ''.join(sec_groups.split()).split(',')
             all_sg = self.conn.ex_list_security_groups()
@@ -48,12 +49,7 @@ class UserData(utils.EngineParser):
             return sgns
 
     def run(self):
-        for item, value in self.user_init.items():
-            action = getattr(self, '_%s' % value)
-            if action is not None:
-                action(item, value)
-
-        return self.specs
+        return self._run(init_items=self.user_init)
 
 
 class ConnectionEngine(utils.EngineParser):
@@ -74,22 +70,24 @@ class ConnectionEngine(utils.EngineParser):
             raise tribble.CantContinue('no provider provided')
 
         self.required_args = self.cloud_provider['required_args']
+        self.user_init_args = self.cloud_provider['user_init']
 
     def _choices(self):
-        region = self.cloud_provider.get('cloud_region')
-        if region is None:
-            msg = 'No Region Found for driver %s' % region
+        provider_regions = self.cloud_provider.get('CHOICES')
+        if 'only' in provider_regions:
+            provider_region = provider_regions['only']
+        else:
+            provider_region = provider_regions.get('cloud_region')
+
+        if provider_region is None:
+            msg = 'No Provider Found for driver "%s"' % self.cloud_provider
             raise tribble.CantContinue(msg)
 
-        return get_driver(region)
+        return get_driver(provider_region)
 
     def run(self):
         driver = self._choices()
-
-        for item, value in self.required_args.items():
-            action = getattr(self, '_%s' % value)
-            if action is not None:
-                action(item, value)
+        self._run(init_items=self.required_args)
 
         LOG.debug(self.specs)
         default_config = CONFIG.config_args()
@@ -101,10 +99,11 @@ class ConnectionEngine(utils.EngineParser):
             **self.specs
         )
 
-        user_data = UserData(
-            packet=self.specs, user_init=self.cloud_provider, conn=driver
+        _user_data = UserData(
+            packet=self.packet, user_init=self.user_init_args, conn=driver
         )
+        user_data = _user_data.run()
 
         deployment = self.cloud_provider['deployment_methods']
 
-        return driver, user_data.run(), deployment
+        return driver, user_data, deployment

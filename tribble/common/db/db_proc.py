@@ -10,7 +10,6 @@
 import datetime
 
 from sqlalchemy import and_
-from sqlalchemy.orm import exc
 
 from tribble.engine import utils
 from tribble.common.db.models import CloudAuth
@@ -76,6 +75,7 @@ def post_schematic(con, uid, post):
         config_id=con.id,
         cloud_key=post.get('cloud_key'),
         cloud_url=post.get('cloud_url'),
+        name=post.get('name'),
         cloud_username=post.get('cloud_username'),
         cloud_provider=post.get('cloud_provider'),
         cloud_version=post.get('cloud_version'),
@@ -174,6 +174,7 @@ def put_schematic_id(session, skm, put):
     skm.cloud_tenant = put.get('cloud_tenant', skm.cloud_tenant)
     skm.cloud_url = put.get('cloud_url', skm.cloud_url)
     skm.cloud_username = put.get('cloud_username', skm.cloud_username)
+    skm.name = put.get('name', skm.name)
     session.flush()
     return session
 

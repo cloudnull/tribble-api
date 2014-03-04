@@ -11,7 +11,6 @@ import traceback
 import logging
 import multiprocessing as multi
 
-import kombu
 from kombu.mixins import ConsumerMixin
 
 from tribble.common import rpc
@@ -32,9 +31,9 @@ class Worker(ConsumerMixin):
         """Open a worker connection for a consumer."""
         self.connection = connection
         self.active_jobs = []
+        self.state = None
 
-    @staticmethod
-    def work_doer(cell):
+    def work_doer(self, cell):
         """This is the "doing part of the work thread.
 
         Once an Item is taken out of the queue, it is processed. The first action
@@ -43,14 +42,13 @@ class Worker(ConsumerMixin):
         authentication failure, or raise an exception.
         """
 
-        state = zone_status.ZoneState(cell=cell)
         deployment_manager = constructor.InstanceDeployment(packet=cell)
 
         try:
             job_action = engine_maps.JOBS_MAP.get(cell['job'])
             if 'enter_state' in job_action:
                 enter_state = job_action['enter_state']
-                state_action = getattr(state, enter_state)
+                state_action = getattr(self.state, enter_state)
                 state_action()
 
             if 'jobs' in job_action:
@@ -60,7 +58,7 @@ class Worker(ConsumerMixin):
 
             if 'exit_state' in job_action:
                 exit_state = job_action['exit_state']
-                state_action = getattr(state, exit_state)
+                state_action = getattr(self.state, exit_state)
                 state_action()
         except Exception as exp:
             LOG.error(traceback.format_exc())
@@ -68,7 +66,7 @@ class Worker(ConsumerMixin):
                 'Issues are happening while performing actions'
                 ' MESSAGE: "%s"' % exp
             )
-            state.error(error_msg=msg)
+            self.state.error(error_msg=msg)
 
     def get_consumers(self, Consumer, channel):
         """Get the consumer."""
@@ -96,6 +94,7 @@ class Worker(ConsumerMixin):
             self.active_jobs.append(job)
             job.start()
         except Exception as exp:
+
             LOG.error('task raised exception: %s', exp)
         else:
             self.join_active()
@@ -103,6 +102,7 @@ class Worker(ConsumerMixin):
     def process_task(self, body, message):
         """Execute the code."""
         try:
+            self.state = zone_status.ZoneState(cell=body)
             if message.acknowledged is not True:
                 LOG.debug(message.__dict__)
                 self._process_task(body)

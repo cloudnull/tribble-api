@@ -13,17 +13,24 @@ import logging
 from flask import Blueprint
 from flask import request
 
-from tribble.common import system_config
-from tribble.common import rpc
-from tribble.common.db import db_proc
+import tribble
 from tribble.api.application import DB
 from tribble.api import utils
+from tribble.common import system_config
+from tribble.common import rpc
+from tribble.common import plugin_loader
+from tribble.common.db import db_proc
 
 
 mod = Blueprint('schematics', __name__)
 LOG = logging.getLogger('tribble-api')
 CONFIG = system_config.ConfigureationSetup()
 DEFAULT = CONFIG.config_args()
+
+
+def _config_check(config_type):
+    config_type = config_type.upper()
+    return plugin_loader.PluginLoad(config_type=config_type)
 
 
 def _zone_builder(session, schematic, con, payload):
@@ -55,7 +62,7 @@ def _zone_builder(session, schematic, con, payload):
 
 
 @mod.route('/v1/schematics', methods=['GET'])
-def schematics_get():
+def schematics_list():
     """get method."""
 
     user_id = utils.auth_mech(rdata=request.headers)
@@ -95,6 +102,11 @@ def schematic_get(sid=None):
         return utils.return_msg(msg='no schematic found', status=404)
     else:
         _schematic = utils.pop_ts(temp=schematic.__dict__)
+        config = db_proc.get_configmanager(skm=schematic)
+        if config:
+            _config = utils.pop_ts(temp=config.__dict__)
+            _schematic['config_manager'] = _config
+
         return utils.return_msg(msg=_schematic, status=200)
 
 
@@ -114,6 +126,7 @@ def schematic_delete(sid=None):
         return utils.return_msg(msg='no schematic found', status=404)
 
     try:
+        config = db_proc.get_configmanager(skm=schematic)
         zones = db_proc.get_zones(skm=schematic)
         if zones:
             zone_ids = [zone.id for zone in zones]
@@ -123,6 +136,7 @@ def schematic_delete(sid=None):
 
         sess = DB.session
         db_proc.delete_item(session=sess, item=schematic)
+        db_proc.delete_item(session=sess, item=config)
     except Exception:
         LOG.error(traceback.format_exc())
         return utils.return_msg(msg='unexpected error', status=500)
@@ -159,8 +173,12 @@ def schematic_put(sid=None):
         build_response = 'missing information %s %s' % (user_id, payload)
         return utils.return_msg(msg=build_response, status=400)
 
+    config_type = payload.get('config_type')
     try:
         sess = DB.session
+        if config_type is not None:
+            _config_check(config_type).load_plugin()
+
         con = db_proc.get_configmanager(skm=schematic)
         db_proc.put_schematic_id(session=sess, skm=schematic, put=payload)
         db_proc.put_configmanager(session=sess, con=con, put=payload)
@@ -168,10 +186,13 @@ def schematic_put(sid=None):
             _zone_builder(
                 session=sess, schematic=schematic, con=con, payload=payload
             )
+    except tribble.DeadOnArival as exp:
+        return utils.return_msg(msg='%s' % exp, status=405)
     except Exception:
         LOG.error(traceback.format_exc())
         return utils.return_msg(msg='Unexpected Error', status=500)
     else:
+        LOG.debug(payload)
         db_proc.commit_session(session=sess)
         return utils.return_msg(msg='Updates Recieved', status=201)
 
@@ -193,8 +214,12 @@ def schematic_post():
         build_response = 'missing information %s %s' % (user_id, payload)
         return utils.return_msg(msg=build_response, status=400)
 
+    config_type = payload.get('config_type')
     try:
         sess = DB.session
+        if config_type is not None:
+            _config_check(config_type).load_plugin()
+
         con = db_proc.post_configmanager(post=payload)
         db_proc.add_item(session=sess, item=con)
         schematic = db_proc.post_schematic(
@@ -207,11 +232,13 @@ def schematic_post():
             _zone_builder(
                 session=sess, schematic=schematic, con=con, payload=payload
             )
-
+    except tribble.DeadOnArival as exp:
+        return utils.return_msg(msg='%s' % exp, status=405)
     except Exception:
         LOG.error(traceback.format_exc())
         return utils.return_msg(msg='Unexpected Error', status=500)
     else:
+        LOG.debug(payload)
         build_response = (
             'Application requests have been recieved and Schematic %s has'
             ' been built' % schematic.id

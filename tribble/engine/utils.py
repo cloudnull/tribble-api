@@ -25,31 +25,78 @@ class EngineParser(object):
         self.specs = {}
 
     def _get(self, *args):
-        item, value = args
-        self.specs[item] = self.packet.get(value['get'], value.get('default'))
+        item, all_args, value = args
+        self.specs[item] = self.packet.get(value, all_args.get('default'))
 
     def _is(self, *args):
-        item, value = args
-        self.specs[item] = value['is']
+        item, all_args, value = args
+        self.specs[item] = value
+
+    def _action(self, *args):
+        item, all_args, value = args
+        action = getattr(self, '_%s' % value)
+        return action()
 
     def _required(self, *args):
-        item, value = args
-        if value['required'] is True and self.specs[item] is None:
+        item, all_args, value = args
+        if value is True and self.specs[item] is None:
             raise tribble.CantContinue(
-                '%s is a requied value but was set as None' % item
+                '"%s" is a required value but was set as None' % item
             )
 
     def _comma_split(self, *args):
-        item = args[0]
+        item, all_args, value = args
         self.specs[item] = self.specs[item].split(',')
 
-    def _upper(self, *args):
-        item = args[0]
-        self.specs[item] = self.specs[item].upper()
+    def _make(self, *args):
+        item, all_args, value = args
+        if value == 'lower':
+            self.specs[item] = self.specs[item].upper()
+        elif value == 'upper':
+            self.specs[item] = self.specs[item].lower()
 
-    def _lower(self, *args):
-        item = args[0]
-        self.specs[item] = self.specs[item].lower()
+    def _run(self, init_items):
+        """Parser Example:
+        'required_args': {
+            'ex_force_auth_url': {
+                'get': 'cloud_url',
+                'required': True
+            },
+            'ex_force_auth_version': {
+                'get': 'cloud_version',
+                'default': '2.0'
+            },
+            'datacenter': {
+                'get': 'cloud_region',
+                'make': 'lower',
+                'required': True
+            }
+        }
+        """
+
+        wait = []
+        for item, arguments in init_items.items():
+            for key, value in arguments.items():
+                if key in ['make', 'comma_split', 'required']:
+                    wait.append({key: [item, arguments, value]})
+                else:
+                    try:
+                        action = getattr(self, '_%s' % key)
+                    except AttributeError:
+                        pass
+                    else:
+                        action(item, arguments, value)
+            else:
+                for last_action in wait:
+                    for key in last_action:
+                        try:
+                            action = getattr(self, '_%s' % key)
+                        except AttributeError:
+                            pass
+                        else:
+                            action(*last_action[key])
+
+        return self.specs
 
 
 def escape_quote(item):
