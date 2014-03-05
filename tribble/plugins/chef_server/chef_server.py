@@ -23,7 +23,7 @@ CLIENTRB = """
 log_level               :info
 log_location            STDOUT
 chef_server_url         '%(config_server)s'
-validation_key          '/etc/chef_server/validation.pem'
+validation_key          '/etc/chef/validation.pem'
 validation_client_name  '%(config_clientname)s'
 node_name               '%(node_name)s'
 """
@@ -36,7 +36,7 @@ import subprocess
 import httplib
 
 url = 'www.opscode.com'
-path = '/chef_server/install.sh'
+path = '/chef/install.sh'
 conn = httplib.HTTPSConnection(url)
 conn.request('GET', path)
 resp = conn.getresponse()
@@ -62,7 +62,7 @@ except Exception:
 open('%(client_pem_location)s', 'w').write(CLIENT)
 open('%(validation_pem_location)s', 'w').write(VALID)
 open('%(first_boot_json_location)s', 'w').write(FIRST)
-subprocess.call(['/usr/bin/chef_server-client',
+subprocess.call(['/usr/bin/chef-client',
                  '-j',
                  '%(first_boot_json_location)s',
                  '-c',
@@ -70,7 +70,7 @@ subprocess.call(['/usr/bin/chef_server-client',
                  '-E',
                  '%(config_env)s',
                  '-L',
-                 '/var/log/chef_server-client.log'])
+                 '/var/log/chef-client.log'])
 """
 
 
@@ -83,9 +83,9 @@ class Strapper(object):
 
     def chef_system(self):
         """
-        Get ready to chef_server
+        Get ready to chef-client
         """
-        chef_dir = '/etc/chef_server'
+        chef_dir = '/etc/chef'
 
         LOG.info('Making Temp File for validation PEM')
         v_file = ('%(config_validation_key)s' % self.specs)
@@ -110,7 +110,7 @@ class Strapper(object):
             _run_list = ''.join(_run_list.split()).split(',')
         run_list_args = _run_list
         fj_file = json.dumps({"run_list": list(run_list_args)})
-        fj_file_loc = '/etc/chef_server/first-boot.json'
+        fj_file_loc = '/etc/chef/first-boot.json'
 
         bs_system = {
             'script_location': s_file_loc,

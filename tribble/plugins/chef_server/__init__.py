@@ -66,6 +66,7 @@ CONFIG_APP_MAP = {
             },
             'config_env': {
                 'get': 'config_env',
+                'required': True
             },
             'config_server': {
                 'get': 'config_server',
