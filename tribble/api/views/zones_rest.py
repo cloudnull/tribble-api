@@ -40,14 +40,9 @@ def zones_get(sid):
         return_zones = []
         for zone in zones:
             dzone = utils.pop_ts(zone.__dict__)
-            ints = db_proc.get_instances(zon=zone)
-            if ints:
-                _di = dzone['instances'] = []
-                for inst in ints:
-                    _di.append(utils.pop_ts(inst.__dict__))
-                dzone['num_instances'] = len(_di)
-            else:
-                dzone['num_instances'] = 0
+            instances = db_proc.get_instances(zon=zone)
+            if instances:
+                dzone['instance_quantity'] = len(instances)
 
             return_zones.append(dzone)
     except Exception:
@@ -58,15 +53,20 @@ def zones_get(sid):
 
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['GET'])
-def zone_id_get(sid, zid):
+def zone_get(sid, zid):
     """Get zone from ID."""
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zone, user_id = parsed_data
-        LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
         _zone = utils.pop_ts(temp=zone.__dict__)
+        instances = db_proc.get_instances(zon=zone)
+        if instances:
+            _zone['instances'] = [
+                utils.pop_ts(temp=instance.__dict__) for instance in instances
+            ]
+        LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
         return utils.return_msg(msg=_zone, status=200)
 
 
@@ -174,9 +174,11 @@ def zone_post(sid=None):
         for _zn in payload['zones']:
             ssh_user = _zn.get('ssh_user')
             pub = _zn.get('ssh_key_pub')
+            pri = _zn.get('ssh_key_pri')
             key_name = _zn.get('key_name')
             ssh_key = db_proc.post_instanceskeys(
                 pub=pub,
+                pri=pri,
                 sshu=ssh_user,
                 key_name=key_name
             )
@@ -250,7 +252,6 @@ def redeploy_zone(sid=None, zid=None):
         remove_instances = instances[:difference]
         packet['uuids'] = remove_instances
         LOG.debug(packet)
-        rpc.default_publisher(message=packet)
         remove_ids = [
             ins for ins in ints
             if ins.instance_id in remove_instances
@@ -264,6 +265,7 @@ def redeploy_zone(sid=None, zid=None):
             LOG.error(traceback.format_exc())
             return utils.return_msg(msg='Unexpected Error', status=500)
         else:
+            rpc.default_publisher(message=packet)
             db_proc.commit_session(session=sess)
             msg = 'Removing %s Instances for Zone %s' % (difference, zone.id)
             return utils.return_msg(msg=msg, status=200)

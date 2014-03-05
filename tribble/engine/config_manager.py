@@ -61,6 +61,6 @@ class ConfigManager(utils.EngineParser):
             self._run(init_items=required_args)
 
             action = config_manager.get(self.packet['job'])
-            return action(packet=self.specs, sop=SOP, ssh=self.ssh)
+            return action(self.specs, SOP, self.ssh)
         except Exception:
             LOG.error(traceback.format_exc())

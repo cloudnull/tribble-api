@@ -12,6 +12,7 @@ import json
 import os
 
 from tribble.engine import utils
+from tempfile import mktemp
 
 
 
@@ -79,13 +80,6 @@ class Strapper(object):
         Get strapped for Chef Server
         """
         self.specs = specs
-
-    def temp_file(self):
-        from tempfile import mktemp
-        keyfile = mktemp()
-        with open(keyfile, 'w') as _keyfile:
-            _keyfile.write(self.specs['ssh_key_pri'])
-        return keyfile
 
     def chef_system(self):
         """

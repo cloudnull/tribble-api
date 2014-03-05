@@ -27,34 +27,45 @@ def init_chefserver(*args):
     return chef_init
 
 
-def chef_update_instances(*args):
+def _chef_node(node_list, specs, function):
+    for node in node_list:
+        cheferizer.ChefMe(
+            specs=specs,
+            name=node.server_name,
+            function=function,
+        )
+
+
+def chef_delete_node(*args):
     node_list = args[0].get('db_instances')
     if node_list:
-        for node in node_list:
-            cheferizer.ChefMe(
-                specs=args[0],
-                name=node.server_name,
-                function='chefer_setup',
-            )
+        _chef_node(
+            node_list=node_list, specs=args[0], function='chefer_node_remove'
+        )
+
+
+def chef_deploy_node(*args):
+    node_list = args[0].get('db_instances')
+    if node_list:
+        _chef_node(
+            node_list=node_list, specs=args[0], function='chefer_setup'
+        )
+
 
 
 CONFIG_APP_MAP = {
     'CHEF_SERVER': {
-        'reconfig': chef_update_instances,
+        'reconfig': chef_deploy_node,
         'build': init_chefserver,
         'redeploy_build': init_chefserver,
+        'instance_delete': chef_delete_node,
         'required_args': {
-            'ssh_key_pri': {
-                'get': 'ssh_key_pri',
-                'required': True
-            },
             'config_key': {
                 'get': 'config_key',
                 'required': True
             },
             'config_env': {
                 'get': 'config_env',
-                'required': True
             },
             'config_server': {
                 'get': 'config_server',

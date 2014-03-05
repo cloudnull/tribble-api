@@ -71,7 +71,12 @@ class InstancesKeys(DB.Model):
     )
     ssh_key_pub = DB.Column(
         'ssh_key_pub',
-        DB.TEXT(length=4000),
+        DB.TEXT(),
+        nullable=True
+    )
+    ssh_key_pri = DB.Column(
+        'ssh_key_pri',
+        DB.TEXT(),
         nullable=True
     )
     key_name = DB.Column(
@@ -98,13 +103,14 @@ class InstancesKeys(DB.Model):
         autoincrement=True
     )
 
-    def __init__(self, ssh_user, ssh_key_pub, key_name):
+    def __init__(self, ssh_user, ssh_key_pub, ssh_key_pri, key_name):
         """The Keys are used to interface with an instance.
 
         This is used for instance bootstrap and or interfacing with an
         instance,
         """
 
+        self.ssh_key_pri = ssh_key_pri
         self.ssh_key_pub = ssh_key_pub
         self.ssh_user = ssh_user
         self.key_name = key_name

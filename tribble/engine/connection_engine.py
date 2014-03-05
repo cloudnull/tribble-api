@@ -16,7 +16,6 @@ import tribble
 from tribble.common.db import zone_status
 from tribble.engine import utils
 from tribble.common import system_config
-from tribble.engine import config_manager
 from tribble.engine import engine_maps as cam
 
 
@@ -32,11 +31,7 @@ class UserData(utils.EngineParser):
         self.conn = conn
         self.zone_status = zone_status.ZoneState(cell=self.packet)
 
-    def _get_user_data(self):
-        config = config_manager.ConfigManager(packet=self.packet)
-        return config.check_configmanager()
-
-    def _get_security_groups(self):
+    def _get_security_groups(self, *args):
         sec_groups = self.packet.get('security_groups')
         try:
             sgns = ''.join(sec_groups.split()).split(',')

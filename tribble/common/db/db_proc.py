@@ -55,13 +55,14 @@ def post_zones(skm, zon, ssh):
     )
 
 
-def post_instanceskeys(pub, sshu, key_name):
+def post_instanceskeys(pub, pri, sshu, key_name):
     """
     post a new row for a set of keys to an instance
     """
     return InstancesKeys(
         ssh_user=sshu,
         ssh_key_pub=pub,
+        ssh_key_pri=pri,
         key_name=key_name
     )
 
@@ -111,9 +112,7 @@ def post_instance(ins, put):
 
 
 def put_instance(session, inst, put):
-    """
-    Post information on an Instnace
-    """
+    """Post information on an Instance."""
     inst.public_ip = put.get('public_ip', inst.public_ip)
     inst.private_ip = put.get('private_ip', inst.private_ip)
     inst.server_name = put.get('server_name', inst.server_name)
@@ -122,9 +121,7 @@ def put_instance(session, inst, put):
 
 
 def put_zone(session, zon, put):
-    """
-    Put an update to the system for a zone
-    """
+    """Put an update to the system for a zone."""
     zon.image_id = put.get('image_id', zon.image_id)
     zon.name_convention = put.get('name_convention', zon.name_convention)
     zon.cloud_region = put.get('cloud_region', zon.cloud_region)
@@ -145,9 +142,7 @@ def put_zone(session, zon, put):
 
 
 def put_configmanager(session, con, put):
-    """
-    put an update to the system for a set of config management
-    """
+    """put an update to the system for a set of config management."""
     con.config_type = put.get('config_type', con.config_type)
     con.config_key = put.get('config_key', con.config_key)
     con.config_server = put.get('config_server', con.config_server)
@@ -165,9 +160,7 @@ def put_configmanager(session, con, put):
 
 
 def put_schematic_id(session, skm, put):
-    """
-    Put an update to the system for a provided schematic
-    """
+    """Put an update to the system for a provided schematic."""
     skm.cloud_key = put.get('cloud_key', skm.cloud_key)
     skm.cloud_provider = put.get('cloud_provider', skm.cloud_provider)
     skm.cloud_version = put.get('cloud_version', skm.cloud_version)
@@ -180,12 +173,10 @@ def put_schematic_id(session, skm, put):
 
 
 def put_instanceskeys(session, ssh, put):
-    """
-    Post information on an Instnace
-    """
+    """Post information on an Instance."""
     ssh.ssh_user = put.get('ssh_user', ssh.ssh_user)
     ssh.ssh_key_pri = put.get('ssh_key_pri', ssh.ssh_key_pri)
-    ssh.ssh_key_pub = put.get('private_ip', ssh.ssh_key_pub)
+    ssh.ssh_key_pub = put.get('ssh_key_pub', ssh.ssh_key_pub)
     ssh.key_name = put.get('key_name', ssh.key_name)
     session.flush()
     return session

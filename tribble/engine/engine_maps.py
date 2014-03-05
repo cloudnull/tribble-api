@@ -24,8 +24,8 @@ CLOUD_APP_MAP = {
                 'get': 'inject_files',
                 'make': 'comma_split'
             },
-            'ex_userdata': {
-                'action': 'get_user_data'
+            'ssh_key': {
+                'get': 'ssh_key_pri'
             }
         },
         'required_args': {
@@ -74,9 +74,6 @@ CLOUD_APP_MAP = {
             },
             'ssh_key': {
                 'get': 'ssh_key_pri'
-            },
-            'ex_userdata': {
-                'action': 'get_user_data'
             },
             'ssh_username': {
                 'get': 'ssh_username'
@@ -127,9 +124,6 @@ CLOUD_APP_MAP = {
             'ssh_key': {
                 'get': 'ssh_key_pri'
             },
-            'ex_userdata': {
-                'action': 'get_user_data'
-            },
             'ssh_username': {
                 'get': 'ssh_username'
             }
@@ -153,14 +147,14 @@ JOBS_MAP = {
         'enter_state': 'build',
         'exit_state': 'active',
         'jobs': [
-            'api_setup'
+            'vm_constructor'
         ]
     },
     'redeploy_build': {
         'enter_state': 'build',
         'exit_state': 'active',
         'jobs': [
-            'api_setup'
+            'vm_constructor'
         ]
     },
     'schematic_delete': {

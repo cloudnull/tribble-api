@@ -25,7 +25,6 @@ import tribble.engine as engine
 from tribble.api.application import DB
 from tribble.common.db import db_proc
 from tribble.common.db import zone_status
-from tribble.plugins.chef_server import cheferizer
 from tribble.engine import connection_engine
 from tribble.engine import utils
 from tribble.engine import config_manager
@@ -55,8 +54,6 @@ class InstanceDeployment(object):
         self.driver, self.user_data, self.deployment_methods = _engine.run()
 
     def api_setup(self):
-        self.engine_setup()
-
         if not self.driver:
             msg = 'No Available Connection'
             self.zone_status.error(error_msg=msg)
@@ -78,17 +75,39 @@ class InstanceDeployment(object):
             self.zone_status.error(error_msg=msg)
             raise DeploymentError(msg)
 
+        server_instances = int(self.packet.get('quantity', 1))
+        utils.worker_proc(
+            job_action=self._vm_constructor, num_jobs=server_instances
+        )
+
+    def _vm_constructor(self):
         name_convention = self.packet.get('name_convention', 'tribble_node')
         node_name = '%s-%s'.lower() % (name_convention, utils.rand_string())
         self.packet['node_name'] = self.user_specs['name'] = node_name
 
-        server_instances = int(self.packet.get('quantity', 1))
-        utils.worker_proc(
-            job_action=self.vm_constructor, num_jobs=server_instances
-        )
+        LOG.debug(self.user_specs)
+        LOG.info('Building Node Based on %s' % self.user_specs)
+
+        for deployment in self.deployment_methods:
+            try:
+                action = getattr(self, '_%s' % deployment)
+                node = action(self.user_specs)
+            except DeploymentError, exp:
+                LOG.critical('Exception while Building Instance ==> %s' % exp)
+                self.zone_status.error(error_msg=exp)
+                self.check_for_dead_nodes()
+            else:
+                self._node_post(info=node)
+                break
+
+    def vm_constructor(self):
+        """Build VMs."""
+        self.engine_setup()
+        self.api_setup()
 
     def vm_destroyer(self):
         """Kill an instance from information in our DB."""
+        self.engine_setup()
         LOG.debug('Nodes to Delete %s' % self.packet['uuids'])
 
         try:
@@ -110,13 +129,14 @@ class InstanceDeployment(object):
                     self.zone_status.error(error_msg=exp)
                     LOG.info('Node %s NOT Deleted ==> %s' % (dim.id, exp))
                 else:
-                    cheferizer.ChefMe(
-                        specs=self.packet,
-                        name=dim.name.lower(),
-                        function='chefer_remove_all',
-                    )
+                    pass
+                    # TODO(kevin) remove config management.
         else:
             self._node_remove(ids=self.packet['uuids'])
+
+    def _get_user_data(self, use_ssh=False):
+        config = config_manager.ConfigManager(packet=self.packet, ssh=use_ssh)
+        return config.check_configmanager()
 
     def ssh_deploy(self):
         """Prepare for an SSH deployment Method for any found config
@@ -126,11 +146,12 @@ class InstanceDeployment(object):
         script = '/tmp/deployment_tribble_%s.sh'
         dep_action = []
 
-        if self.packet.get('ssh_key_pub'):
-            ssh = SSHKeyDeployment(key=self.packet.get('ssh_key_pub'))
+        public_key = self.packet.get('ssh_key_pub')
+        if public_key:
+            ssh = SSHKeyDeployment(key=public_key)
             dep_action.append(ssh)
 
-        conf_init = config_manager.ConfigManager(packet=self.packet, ssh=True)
+        conf_init = self._get_user_data(use_ssh=True)
         if conf_init:
             conf_init = str(conf_init)
             LOG.debug(conf_init)
@@ -139,8 +160,9 @@ class InstanceDeployment(object):
             )
             dep_action.append(con)
 
-        if self.packet.get('config_script'):
-            user_script = str(self.packet.get('config_script'))
+        config_script = self.packet.get('config_script')
+        if config_script:
+            user_script = str(config_script)
             LOG.debug(user_script)
             con = ScriptDeployment(
                 name=script % utils.rand_string(), script=user_script
@@ -150,48 +172,44 @@ class InstanceDeployment(object):
         return MultiStepDeployment(dep_action)
 
     def _ssh_deploy(self, user_specs):
+        user_specs['deploy'] = self.ssh_deploy()
+        LOG.debug('DEPLOYMENT ARGS: %s' % user_specs)
         node = self.driver.deploy_node(**user_specs)
         return self.state_wait(node=node)
 
     def _cloud_init(self, user_specs):
+        user_specs['ex_userdata'] = self._get_user_data()
+        LOG.debug('DEPLOYMENT ARGS: %s' % user_specs)
         return self.driver.create_node(**user_specs)
 
     def _list_instances(self):
         return self.driver.list_nodes()
 
-    def vm_constructor(self):
-        """Build VMs."""
-        LOG.debug(self.user_specs)
-        LOG.info('Building Node Based on %s' % self.user_specs)
-        for deployment in self.deployment_methods:
-            try:
-                action = getattr(self, '_%s' % deployment)
-                action(self.user_specs)
-            except DeploymentError, exp:
-                LOG.critical('Exception while Building Instance ==> %s' % exp)
-                self.zone_status.error(error_msg=exp)
-                self.check_for_dead_nodes()
-            else:
-                break
-
     def check_for_dead_nodes(self):
         all_nodes = self._list_instances()
-        dead_node = [n for n in all_nodes if n.name == self.user_specs['name']]
-        if not dead_node:
+        dead_nodes = []
+        name = self.user_specs['name']
+        for node in all_nodes:
+            if node.name == name and node.state != NodeState.RUNNING:
+                dead_nodes.append(node)
+
+        if not dead_nodes:
             return
 
-        try:
-            node = dead_node[0]
-            time.sleep(utils.stupid_hack())
-            msg = 'Removing Node that failed to Build ==> %s' % node
-            LOG.debug(msg)
-            self.driver.destroy_node(node)
-        except tribble.RetryError:
-            LOG.error(traceback.format_exc())
-        except Exception:
-            LOG.error(traceback.format_exc())
-        else:
-            self._node_post(info=node)
+        remove_node = []
+        for node in dead_nodes:
+            try:
+                msg = 'Removing Node that failed to Build ==> %s' % node
+                LOG.debug(msg)
+                self.driver.destroy_node(node)
+                remove_node.append(node.instance_id)
+            except tribble.RetryError:
+                LOG.error(traceback.format_exc())
+            except Exception:
+                LOG.error(traceback.format_exc())
+
+        if remove_node:
+            self._node_remove(ids=remove_node)
 
     def state_wait(self, node):
         """Wait for a node to go to a specsified state."""

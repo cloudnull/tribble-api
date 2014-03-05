@@ -39,10 +39,12 @@ def _zone_builder(session, schematic, con, payload):
         LOG.debug(zone)
         _ssh_user = zone.get('ssh_user')
         pub = zone.get('ssh_key_pub')
+        pri = zone.get('ssh_key_pri')
         key_name = zone.get('key_name')
 
         ssh = db_proc.post_instanceskeys(
             pub=pub,
+            pri=pri,
             sshu=_ssh_user,
             key_name=key_name
         )
