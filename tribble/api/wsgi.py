@@ -27,11 +27,6 @@ from tribble.api import application
 
 
 LOG = logging.getLogger('tribble-api')
-NEWRELIC = '/etc/tribble/newrelic.ini'
-if os.path.exists(NEWRELIC):
-    import newrelic.agent
-    newrelic.agent.initialize(NEWRELIC)
-    LOG.info('Newrelic Plugin Loaded')
 
 
 class Server(object):

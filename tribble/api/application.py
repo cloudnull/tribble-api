@@ -7,6 +7,7 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import os
 import logging
 
 from flask import Flask
@@ -20,6 +21,12 @@ from tribble.common import rpc
 
 CONFIG = system_config.ConfigureationSetup()
 LOG = logging.getLogger('tribble-api')
+NEWRELIC = '/etc/tribble/newrelic.ini'
+if os.path.exists(NEWRELIC):
+    import newrelic.agent
+    newrelic.agent.initialize(NEWRELIC)
+    LOG.info('Newrelic Plugin Loaded')
+
 
 app = Flask(info.__appname__)
 
