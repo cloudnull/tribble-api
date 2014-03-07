@@ -7,6 +7,49 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+"""Creating the application map and the jobs map.
+
+The application map and the jobs map are simple dicts.
+
+To add "providers" to the application map simply start with a key app in all
+capital letters. required sub keys are "deployment_methods", "user_init",
+"required_args" and "CHOICES". Here are the available options for all of the
+arguments.
+
+deployment_methods = list
+- This list contains nothing but strings.
+user_init = dict
+- This dictionary contains all of the arguments required to make the driver go.
+- available methods, by default, are:
+  "get"
+  "is"
+  "action"
+  "required"
+  "comma_split"
+  "make"
+required_args = dict
+- available methods, by default, are:
+  "get"
+  "is"
+  "action"
+  "required"
+  "comma_split"
+  "make"
+CHOICES = dict
+- Choices has a special verb, if the cloud provider only has one provider then
+  the verb to use would be "only". If the cloud provider has more than one
+  provider each provider is KEY:value with the KEY in all capital letters.
+
+
+The jobs map contains all of the available application methods. The top level
+key is the job name. Once a job has been set, the job has three available
+methods.  "enter_state", "exit_state", "jobs".
+enter_state = str
+exit_state = str
+jobs = list
+"""
+
+
 from libcloud.compute.types import Provider
 
 
@@ -36,7 +79,7 @@ CLOUD_APP_MAP = {
                 'get': 'cloud_version',
                 'default': '2.0'
             },
-            'datacenter': {
+            'region': {
                 'get': 'cloud_region',
                 'make': 'lower',
                 'required': True

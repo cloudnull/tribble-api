@@ -8,8 +8,10 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 import os
-from socket import gethostname
+import socket
+
 from OpenSSL import crypto
+
 from tribble.info import __appname__ as appname
 
 
@@ -17,6 +19,10 @@ def generate_self_signed_cert(cert_dir='/etc/%s' % appname, is_valid=True):
     """Generate a SSL certificate.
 
     If the cert_path and the key_path are present they will be overwritten.
+
+    :param cert_dir: ``str``
+    :param is_valid: ``bol``
+    :return cert_path, key_path: ``tuple``
     """
 
     if not os.path.exists(cert_dir):
@@ -40,7 +46,12 @@ def generate_self_signed_cert(cert_dir='/etc/%s' % appname, is_valid=True):
     cert.get_subject().L = 'United States'
     cert.get_subject().O = appname
     cert.get_subject().OU = 'Tribble'
-    cert.get_subject().CN = gethostname() if is_valid else gethostname()[::-1]
+    if is_valid:
+        _host_name = socket.gethostname()
+    else:
+        _host_name = socket.gethostname()[::-1]
+
+    cert.get_subject().CN = _host_name
     cert.set_serial_number(1000)
     cert.gmtime_adj_notBefore(0)
     cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)

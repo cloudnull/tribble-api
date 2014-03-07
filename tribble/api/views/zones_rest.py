@@ -7,28 +7,34 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import traceback
 import logging
+import traceback
 
-from flask import Blueprint
+import flask
 
 from tribble.api.application import DB
 from tribble.api import utils
-from tribble.common import rpc
-from tribble.common import system_config
 from tribble.common.db import db_proc
 from tribble.common.db import zone_status
+from tribble.common import rpc
+from tribble.common import system_config
 
 
-mod = Blueprint('zones', __name__)
+mod = flask.Blueprint('zones', __name__)
 LOG = logging.getLogger('tribble-api')
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 DEFAULT = CONFIG.config_args()
 
 
 @mod.route('/v1/schematics/<sid>/zones', methods=['GET'])
 def zones_get(sid):
-    """GET all zones for a schematic."""
+    """Return a list of zones.
+
+    Method is accessible with GET /v1/schematics/<sid>/zones
+
+    :param sid: ``str`` # schematic ID
+    :return json, status: ``tuple``
+    """
     parsed_data = utils.zone_basic_handler(sid=sid)
     if parsed_data[0] is False:
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
@@ -54,7 +60,14 @@ def zones_get(sid):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['GET'])
 def zone_get(sid, zid):
-    """Get zone from ID."""
+    """Return a zone.
+
+    Method is accessible with GET /v1/schematics/<sid>/zones/<zid>
+
+    :param sid: ``str`` # schematic ID
+    :param zid: ``str`` # Zone ID
+    :return json, status: ``tuple``
+    """
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
@@ -72,7 +85,14 @@ def zone_get(sid, zid):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['DELETE'])
 def zone_delete(sid=None, zid=None):
-    """Delete a Zone."""
+    """Delete a Zone.
+
+    Method is accessible with DELETE /v1/schematics/<sid>/zones/<zid>
+
+    :param sid: ``str`` # schematic ID
+    :param zid: ``str`` # Zone ID
+    :return json, status: ``tuple``
+    """
 
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
@@ -107,7 +127,15 @@ def zone_delete(sid=None, zid=None):
 def zone_purge(sid=None, zid=None):
     """purge a Zone.
 
-    This will PURGE the zone record.
+    This is used to remove all indication of a zone without attempting to
+    disconnect or otherwise clean up the zone or any of its may be attached
+    instances.
+
+    Method is accessible with DELETE /v1/schematics/<sid>/zones/<zid>/purge
+
+    :param sid: ``str`` # schematic ID
+    :param zid: ``str`` # Zone ID
+    :return json, status: ``tuple``
     """
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
@@ -130,7 +158,14 @@ def zone_purge(sid=None, zid=None):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>', methods=['PUT'])
 def zone_put(sid=None, zid=None):
-    """Update a Zone."""
+    """Update a Zone.
+
+    Method is accessible with PUT /v1/schematics/<sid>/zones/<zid>
+
+    :param sid: ``str`` # schematic ID
+    :param zid: ``str`` # Zone ID
+    :return json, status: ``tuple``
+    """
     parsed_data = utils.zone_data_handler(sid=sid)
     if parsed_data[0] is False:
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
@@ -159,7 +194,13 @@ def zone_put(sid=None, zid=None):
 
 @mod.route('/v1/schematics/<sid>/zones', methods=['POST'])
 def zone_post(sid=None):
-    """Post a Zone."""
+    """Post a Zone.
+
+    Method is accessible with POST /v1/schematics/<sid>/zones
+
+    :param sid: ``str`` # schematic ID
+    :return json, status: ``tuple``
+    """
     parsed_data = utils.zone_data_handler(sid=sid, check_for_zone=True)
     if parsed_data[0] is False:
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
@@ -211,7 +252,16 @@ def zone_post(sid=None):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>/redeploy', methods=['POST'])
 def redeploy_zone(sid=None, zid=None):
-    """Redploy a zone."""
+    """Redploy a zone.
+
+    This method will interate over an existing zone and ensure that all things
+    known in the zone are built and in an active state.
+
+    Method is accessible with POST /v1/schematics/<sid>/zones
+
+    :param sid: ``str`` # schematic ID
+    :return json, status: ``tuple``
+    """
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
@@ -275,7 +325,17 @@ def redeploy_zone(sid=None, zid=None):
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>/resetstate', methods=['POST'])
 def reset_zone_state(sid=None, zid=None):
-    """Reset the state of a zone to active."""
+    r"""Reset the state of a zone to active.
+
+    This method will reset the state of an existing zone no matter the current
+    state. The new state after invoking this method will be set to
+    "ACTIVE RESET"
+
+    Method is accessible with POST /v1/schematics/<sid>/zones
+
+    :param sid: ``str`` # schematic ID
+    :return json, status: ``tuple``
+    """
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
     if parsed_data[0] is False:
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])

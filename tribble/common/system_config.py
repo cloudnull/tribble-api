@@ -22,19 +22,20 @@ def is_int(value):
         return value
 
 
-class ConfigureationSetup(object):
+class ConfigurationSetup(object):
+    """Parse arguments from a Configuration file.
+
+    Note that anything can be set as a "Section" in the argument file.
+    """
     def __init__(self):
-        """
-        Parse arguments from a Configuration file.  Note that anything can be
-        set as a "Section" in the argument file.
-        """
         self.args = {}
         self.config_file = '/etc/%s/tribble.conf' % __appname__
         self.check_perms()
 
     def check_perms(self):
-        """
-        Check the permissions of the config file prior to performing any actions
+        """Check the permissions of the config file.
+
+        Permissions must be 0600 or 0400.
         """
         # If config file is specified, confim proper permissions
         if os.path.isfile(self.config_file):
@@ -50,7 +51,11 @@ class ConfigureationSetup(object):
             raise SystemExit('Config file %s not found,' % self.config_file)
 
     def config_args(self, section='default'):
-        """Loop through the configuration file and set all of our values."""
+        """Loop through the configuration file and set all of our values.
+
+        :param section: ``str``
+        :return: ``dict``
+        """
 
         # setup the parser to for safe config parsing with a no value argument
         # Added per - https://github.com/cloudnull/turbolift/issues/2

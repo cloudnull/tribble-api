@@ -14,8 +14,12 @@ from tribble import info
 
 
 def logger_setup(name=info.__appname__, debug_logging=False, handler=False):
-    """
-    Setup logging for your application
+    """Setup logging for your application
+
+    :param name: ``str``
+    :param debug_logging: ``bol``
+    :param handler: ``bol``
+    :return: ``object``
     """
 
     formatter = logging.Formatter(
@@ -52,12 +56,14 @@ def logger_setup(name=info.__appname__, debug_logging=False, handler=False):
 
 
 def return_logfile(filename):
-    """
-    Return a path for logging file.
+    """Return a path for logging file.
 
     IF "/var/log/" does not exist, or you don't have write permissions to
     "/var/log/" the log file will be in your working directory
-    Check for ROOT user if not log to working directory
+    Check for ROOT user if not log to working directory.
+
+    :param filename: ``str``
+    :return: ``str``
     """
 
     if os.path.isfile(filename):

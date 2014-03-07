@@ -7,13 +7,11 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import logging
 import json
+import logging
 import os
 
 from tribble.engine import utils
-from tempfile import mktemp
-
 
 
 LOG = logging.getLogger('tribble-engine')
@@ -75,21 +73,23 @@ subprocess.call(['/usr/bin/chef-client',
 
 
 class Strapper(object):
+    """Get strapped for Chef Server.
+
+    :param specs: ``dict``
+    """
     def __init__(self, specs):
-        """
-        Get strapped for Chef Server
-        """
         self.specs = specs
 
     def chef_system(self):
-        """
-        Get ready to chef-client
+        """Get ready to chef-client.
+
+        :return: ``dict``
         """
         chef_dir = '/etc/chef'
 
         LOG.info('Making Temp File for validation PEM')
-        v_file = ('%(config_validation_key)s' % self.specs)
-        v_file_loc = '%s%svalidation.pem' % (chef_dir, os.sep)
+        v_file = '%(config_validation_key)s' % self.specs
+        v_file_loc = os.path.join(chef_dir, 'validation.pem')
 
         LOG.info('Making Temp File for client.rb')
         build_crb = {
@@ -97,9 +97,10 @@ class Strapper(object):
             'config_clientname': self.specs.get('config_clientname'),
             'node_name': self.specs.get('node_name')
         }
+
         # removes a possible point of injection if string replacement has """
         c_file = CLIENTRB % utils.escape_quote(item=build_crb)
-        c_file_loc = '%s%sclient.rb' % (chef_dir, os.sep)
+        c_file_loc = os.path.join(chef_dir, 'client.rb')
 
         LOG.info('Getting the installation script')
         s_file_loc = 'omnibus_install.sh'
@@ -108,9 +109,9 @@ class Strapper(object):
         _run_list = self.specs.get('config_runlist')
         if _run_list:
             _run_list = ''.join(_run_list.split()).split(',')
-        run_list_args = _run_list
-        fj_file = json.dumps({"run_list": list(run_list_args)})
-        fj_file_loc = '/etc/chef/first-boot.json'
+
+        fj_file = json.dumps({"run_list": list(_run_list)})
+        fj_file_loc = os.path.join(chef_dir, 'first-boot.json')
 
         bs_system = {
             'script_location': s_file_loc,
@@ -126,7 +127,11 @@ class Strapper(object):
         return bs_system
 
     def chef_cloudinit(self):
-        _sd = self.chef_system()
-        _sd['config_env'] = self.specs.get('config_env')
-        chef_init = PLACESH % utils.escape_quote(item=_sd)
+        """Return a script string for bootstrapping a node with chef.
+
+        :return: ``str``
+        """
+        chef_script = self.chef_system()
+        chef_script['config_env'] = self.specs.get('config_env')
+        chef_init = PLACESH % utils.escape_quote(item=chef_script)
         return chef_init

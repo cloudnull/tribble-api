@@ -9,14 +9,12 @@
 # =============================================================================
 import logging
 
-from flask import request
-from flask import jsonify
+import flask
 
-from tribble import info
-from tribble.common.db import db_proc
 from tribble.api.views import not_found
+from tribble.common.db import db_proc
 from tribble.common import rosetta
-
+from tribble import info
 
 LOG = logging.getLogger('tribble-api')
 
@@ -32,6 +30,11 @@ def cloudauth():
         """Attempt a decode of a password found in the database.
 
         This is a place holder currently pw is in Plane text
+
+        :param cipher: ``str`` x-user headers
+        :param key: ``str`` x-secretkey headers
+        :param psw: ``str`` x-password
+        :return json, status: ``tuple``
         """
 
         password = rosetta.decrypt(password=key, ciphertext=cipher)
@@ -40,7 +43,7 @@ def cloudauth():
         else:
             return False
 
-    headers = request.headers
+    headers = flask.request.headers
     if not headers:
         return not_found(message='Go Away', error=400)
 
@@ -56,8 +59,8 @@ def cloudauth():
                 'Application': info.__appname__
             }
 
-            LOG.debug('%s %s', request.method, request.path)
-            return jsonify(state), 200
+            LOG.debug('%s %s', flask.request.method, flask.request.path)
+            return flask.jsonify(state), 200
         else:
             return not_found(message='No Credentials Provided', error=401)
     else:

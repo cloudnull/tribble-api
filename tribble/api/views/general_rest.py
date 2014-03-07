@@ -9,17 +9,22 @@
 # =============================================================================
 import logging
 
-from flask import Blueprint
-from flask import request
+import flask
 
-from tribble import info
 from tribble.api import utils
+from tribble import info
 
-mod = Blueprint('general', __name__)
+
+mod = flask.Blueprint('general', __name__)
 LOG = logging.getLogger('tribble-api')
+
 
 @mod.route('/', methods=['GET'])
 def index():
+    """Return 200 response on GET '/'
+
+    :return json, status: tuple
+    """
     state = {'Version': info.__version__, 'Application': info.__appname__}
-    LOG.debug('%s %s', request.method, request.path)
+    LOG.debug('%s %s', flask.request.method, flask.request.path)
     return utils.return_msg(msg=state, status=200)

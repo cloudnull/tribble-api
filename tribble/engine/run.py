@@ -15,7 +15,7 @@ from tribble.common import system_config
 from tribble.engine import mixin
 
 
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 
 
 def log_level(debug):

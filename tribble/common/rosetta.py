@@ -7,6 +7,11 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import os
+import hashlib
+from Crypto.Cipher import AES
+
+
 SALT_LENGTH = 32
 DERIVATION_ROUNDS = 1337
 BLOCK_SIZE = 16
@@ -14,9 +19,12 @@ KEY_SIZE = 32
 
 
 def encrypt(password, plaintext):
-    import hashlib
-    import os
-    from Crypto.Cipher import AES
+    """Encrypt a users password.
+
+    :param password: ``str``
+    :param plaintext: ``str``
+    :return: ``object``
+    """
     mode = AES.MODE_CBC
     salt = os.urandom(SALT_LENGTH)
     _iv = os.urandom(BLOCK_SIZE)
@@ -37,11 +45,11 @@ def encrypt(password, plaintext):
 
 
 def decrypt(password, ciphertext):
+    """Using Hashlib and AES we will attempt password decryption.
+
+    :param password: ``str``
+    :param ciphertext: ``str``
     """
-    Using Hashlib and AES we will attempt password decryption
-    """
-    import hashlib
-    from Crypto.Cipher import AES
     mode = AES.MODE_CBC
     decoded_ciphertext = ciphertext.decode("hex")
     start_iv = len(decoded_ciphertext) - BLOCK_SIZE - SALT_LENGTH

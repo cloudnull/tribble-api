@@ -8,55 +8,61 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 import logging
+import os
 import subprocess
 import tempfile
-import os
 import traceback
+
+import tribble
+from tribble.engine import utils
 
 
 LOG = logging.getLogger('tribble-engine')
 
 
-class SshKeyCreateFail(Exception):
-    pass
-
-
 class KeyGen(object):
-    def __init__(self):
-        self.sshkey = tempfile.mktemp()
+    """Create an SSH Public and Private Key.
 
-    def check_files(self):
-        if not os.path.isfile('%s' % self.sshkey):
-            return False
-        elif not os.path.isfile('%s.pub' % self.sshkey):
-            return False
-        else:
-            return True
+    The key that is generated is saved in temp and deleted once the key's
+    contents have been returned into memory.
+    """
+    def __init__(self):
+        temp_dir = tempfile.mkdtemp()
+        rand_str = utils.rand_string(length=24)
+        self.sshkey = os.path.join(temp_dir, rand_str)
 
     def build_ssh_key(self):
+        """Create an SSH KEY.
+
+        This will use a subprocess call to create the SSH Key.
+
+        :return: ``tuple``
         """
-        Create an SSH KEY if Using Rackspace Public Cloud
-        """
-        if not self.check_files():
-            try:
-                LOG.info('Creating SSH Key Pair')
-                if not os.path.isfile('%s' % self.sshkey):
-                    cmd = "ssh-keygen -t rsa -f %s -N ''" % self.sshkey
-                    subprocess.check_call(cmd, shell=True)
-                if not self.check_files():
-                    raise SshKeyCreateFail(
-                        'Something bad happened while making the key'
-                    )
-                with open('%s' % self.sshkey, 'r') as _prik:
-                    pri_key = _prik.read()
-                with open('%s.pub' % self.sshkey, 'r') as _pubk:
-                    pub_key = _pubk.read()
-            except Exception:
-                LOG.info(traceback.format_exc())
+        try:
+            LOG.info('Creating SSH Key Pair')
+            # Call to BASH and create an SSH Key.
+            cmd = "ssh-keygen -t rsa -f %s -N ''" % self.sshkey
+            subprocess.check_call(cmd, shell=True)
+
+            if not os.path.isfile(self.sshkey):
+                raise tribble.SshKeyCreateFail('No private key created')
             else:
-                return pub_key, pri_key
-            finally:
-                if os.path.isfile(self.sshkey):
-                    os.remove(self.sshkey)
-                if os.path.isfile('%s.pub' % self.sshkey):
-                    os.remove('%s.pub' % self.sshkey)
+                with open(self.sshkey, 'rb') as private_key:
+                    pri_key = private_key.read()
+
+            if not os.path.isfile('%s.pub' % self.sshkey):
+                raise tribble.SshKeyCreateFail('No public key created')
+            else:
+                with open('%s.pub' % self.sshkey, 'rb') as public_key:
+                    pub_key = public_key.read()
+
+        except Exception:
+            LOG.info(traceback.format_exc())
+            raise tribble.SshKeyCreateFail('Failed to create the SSH Keys')
+        else:
+            return pub_key, pri_key
+        finally:
+            if os.path.isfile(self.sshkey):
+                os.remove(self.sshkey)
+            if os.path.isfile('%s.pub' % self.sshkey):
+                os.remove('%s.pub' % self.sshkey)

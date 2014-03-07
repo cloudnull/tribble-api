@@ -17,26 +17,36 @@ from kombu.utils.debug import setup_logging
 from tribble.common import system_config
 
 
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 RPC_CFG = CONFIG.config_args('rpc')
 LOG = logging.getLogger('tribble-api')
 
 
 def load_queues(connection):
-    """Load queues off of the set topic."""
+    """Load queues off of the set topic.
+
+    :param connection: ``object``
+    :return: ``object``
+    """
     _routing_key = get_routing_key()
     _exchange = _load_exchange(connection)
     return declare_queue(_routing_key, connection, _exchange)
 
 
 def _load_exchange(connection):
-    """Load RPC exchange."""
+    """Load RPC exchange.
+
+    :param connection: ``object``
+    :return: ``object``
+    """
     return exchange(conn=connection)
 
 
 def connect():
-    """Create the connection the AMQP."""
+    """Create the connection the AMQP.
 
+    :return: ``object``
+    """
     return kombu.Connection(
         hostname=RPC_CFG.get('host', '127.0.0.1'),
         port=RPC_CFG.get('port', 5672),
@@ -47,7 +57,11 @@ def connect():
 
 
 def exchange(conn):
-    """Bind a connection to an exchange."""
+    """Bind a connection to an exchange.
+
+    :param conn: ``object``
+    :return: ``object``
+    """
 
     return kombu.Exchange(
         RPC_CFG.get('control_exchange', 'tribble'),
@@ -58,7 +72,13 @@ def exchange(conn):
 
 
 def declare_queue(routing_key, conn, topic_exchange):
-    """Declare working queue."""
+    """Declare working queue.
+
+    :param routing_key: ``str``
+    :param conn: ``object``
+    :param topic_exchange: ``str``
+    :return: ``object``
+    """
 
     return_queue = kombu.Queue(
         name=routing_key,
@@ -72,7 +92,12 @@ def declare_queue(routing_key, conn, topic_exchange):
 
 
 def publisher(message, topic_exchange, routing_key):
-    """Publish Messages into AMQP."""
+    """Publish Messages into AMQP.
+
+    :param message: ``str``
+    :param topic_exchange: ``str``
+    :param routing_key: ``str``
+    """
 
     try:
         msg_new = topic_exchange.Message(
@@ -84,10 +109,19 @@ def publisher(message, topic_exchange, routing_key):
 
 
 def get_routing_key(routing_key='control_exchange'):
+    """Return the routing Key from config.
+
+    :param routing_key: ``str``
+    :return: ``str``
+    """
     return '%s.info' % RPC_CFG[routing_key]
 
 
 def default_publisher(message):
+    """Publish an RPC message.
+
+    :param message: ``dict``
+    """
     conn = connect()
     _exchange = exchange(conn)
     _routing_key = get_routing_key()

@@ -20,7 +20,7 @@ from tribble.engine import engine_maps
 from tribble.common import system_config
 
 
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 LOG = logging.getLogger('tribble-engine')
 
 

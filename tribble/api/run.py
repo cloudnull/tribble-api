@@ -8,11 +8,11 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 from tribble.api import wsgi
-from tribble.common import system_config
 from tribble.common import logger
+from tribble.common import system_config
 
 
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 
 
 def executable():

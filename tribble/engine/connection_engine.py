@@ -20,10 +20,18 @@ from tribble.engine import engine_maps as cam
 
 
 LOG = logging.getLogger('tribble-engine')
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 
 
 class UserData(utils.EngineParser):
+    """Return user data as a dict for building cloud instances.
+
+    @inherits :class: ``utils.EngineParser.__init__``
+    :param packet: ``dict``
+    :param user_init:  ``dict``
+    :param conn: ``object``
+    :return: ``dict``
+    """
     def __init__(self, packet, user_init, conn):
         utils.EngineParser.__init__(self, packet)
 
@@ -32,6 +40,11 @@ class UserData(utils.EngineParser):
         self.zone_status = zone_status.ZoneState(cell=self.packet)
 
     def _get_security_groups(self, *args):
+        """Return a comma separated list of security groups.
+
+        :param args:
+        :return: ``dict``
+        """
         sec_groups = self.packet.get('security_groups')
         try:
             sgns = ''.join(sec_groups.split()).split(',')
@@ -44,16 +57,23 @@ class UserData(utils.EngineParser):
             return sgns
 
     def run(self):
+        """Run the methods.
+
+        :return: ``dict``
+        """
         return self._run(init_items=self.user_init)
 
 
 class ConnectionEngine(utils.EngineParser):
-    def __init__(self, packet):
-        """Authenticates a user with a Cloud System.
+    """Authenticates a user with a Cloud System.
 
-        If authentication is successful, then the system will allow the user
-        to deploy through the application to the provider.
-        """
+    If authentication is successful, then the system will allow the user
+    to deploy through the application to the provider.
+
+    @inherits :class: ``utils.EngineParser.__init__``
+    :param packet: ``dict``
+    """
+    def __init__(self, packet):
         utils.EngineParser.__init__(self, packet)
 
         self.provider = packet.get('cloud_provider')
@@ -68,6 +88,10 @@ class ConnectionEngine(utils.EngineParser):
         self.user_init_args = self.cloud_provider['user_init']
 
     def _choices(self):
+        """Return a driver from the loaded application maps.
+
+        :return: ``object``
+        """
         provider_regions = self.cloud_provider.get('CHOICES')
         if 'only' in provider_regions:
             provider_region = provider_regions['only']
@@ -81,6 +105,10 @@ class ConnectionEngine(utils.EngineParser):
         return get_driver(provider_region)
 
     def run(self):
+        """Run the methods.
+
+        :return: ``tuple``
+        """
         driver = self._choices()
         self._run(init_items=self.required_args)
 

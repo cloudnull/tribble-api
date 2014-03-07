@@ -8,29 +8,32 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 import errno
-import os
-import ssl
-import socket
-import signal
 import logging
+import os
+import signal
+import socket
+import ssl
 import time
 
-import greenlet
+
 import eventlet
+from eventlet.green import ssl as wsgi_ssl
 import eventlet.greenio
 from eventlet import wsgi
-from eventlet.green import ssl as wsgi_ssl
+import greenlet
 
 import tribble
-from tribble import info
 from tribble.api import application
+from tribble import info
 
 
 LOG = logging.getLogger('tribble-api')
 
 
 class Server(object):
+    """Start an Eventlet WSGI server."""
     def __init__(self):
+        """Loads the flask application."""
         self.app = application.load_routes()
         self.net_cfg = self.app.config['network']
         self.ssl_cfg = self.app.config['ssl']
@@ -50,32 +53,42 @@ class Server(object):
         eventlet.patcher.monkey_patch()
 
     def _ssl_kwargs(self):
-        key_file = self.ssl_cfg.get('key_file')
-        crt_file = self.ssl_cfg.get('cert_file')
-        ca_file = self.ssl_cfg.get('ca_certs')
+        """Check if certificate files exist.
 
-        if crt_file and not os.path.exists(crt_file):
-            raise RuntimeError("Unable to find crt_file: %s" % crt_file)
+        When using SSL this will check to see if the keyfile, certfile
+        and ca_certs exist on the system in the location provided by config.
+        If a ca_cert is specified the ssl.CERT_REQUIRED will be set otherwise
+        ssl.CERT_NONE is set.
 
-        if key_file and not os.path.exists(key_file):
-            raise RuntimeError("Unable to find key_file: %s" % key_file)
+        :return ssl_kwargs: ``dict``
+        """
+        ssl_kwargs = {'server_side': True}
 
-        if ca_file and not os.path.exists(ca_file):
-            raise RuntimeError("Unable to find ca_file: %s" % ca_file)
+        cert_files = ['keyfile', 'certfile', 'ca_certs']
+        for cert_file in cert_files:
+            cert = self.ssl_cfg.get(cert_file)
+            if cert and not os.path.exists(cert):
+                raise RuntimeError("Unable to find crt_file: %s" % cert)
+            if cert:
+                ssl_kwargs[cert_file] = cert
 
-        ssl_kwargs = {
-            'keyfile': key_file,
-            'certfile': crt_file,
-            'cert_reqs': ssl.CERT_NONE,
-            'server_side': True
-        }
-        if ca_file:
-            ssl_kwargs['ca_certs'] = ca_file
+        if 'ca_certs' in ssl_kwargs:
             ssl_kwargs['cert_reqs'] = ssl.CERT_REQUIRED
         else:
             ssl_kwargs['cert_reqs'] = ssl.CERT_NONE
 
+        return ssl_kwargs
+
     def _socket_bind(self):
+        """Bind to socket on a host.
+
+        From network config bind_host and bind_port will be used as the socket
+        the WSGI server will be bound too. The method will attempt to bind to
+        the socket for 30 seconds. If the socket is unusable after 30 seconds
+        an exception is raised.
+
+        :return sock: ``object``
+        """
         tcp_listener = (
             str(self.net_cfg.get('bind_host', '0.0.0.0')),
             int(self.net_cfg.get('bind_port', 5150))
@@ -117,6 +130,7 @@ class Server(object):
             raise tribble.WSGIServerFailure('Socket Bind Failure.')
 
     def _start(self):
+        """Start the WSGI server."""
         wsgi.server(
             self.server_socket,
             self.app,
@@ -127,14 +141,17 @@ class Server(object):
         self.spawn_pool.waitall()
 
     def start(self):
-        """Start the WSGI Server."""
+        """Start the WSGI Server worker."""
         signal.signal(signal.SIGINT, self.stop)
         signal.signal(signal.SIGHUP, self.stop)
         self.worker = eventlet.spawn(self._start)
         LOG.info('%s Has started.' % info.__appname__)
 
     def stop(self, *args):
-        """Stop this server."""
+        """Stop the WSGI server.
+
+        :param args: ``list``
+        """
         LOG.warn('Stopping Tribble WSGI server.')
         LOG.debug(args)
         if self.worker is not None:

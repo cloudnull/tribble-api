@@ -10,130 +10,152 @@
 import logging
 import traceback
 
-import chef.exceptions as chefexp
 import chef
+import chef.exceptions as chefexp
 
 
 LOG = logging.getLogger('tribble-engine')
 
 
 class ChefSearchError(Exception):
+    """Exception when performing a chef search."""
     pass
 
 
 class ChefClientStartError(Exception):
+    """Exception when performing a chef client start."""
     pass
 
 
 class ChefMe(object):
+    """Interact with a chef-server.
+
+    :param specs: ``dict``
+    :param name: ``str``
+    :param function: ``func``
+    """
     def __init__(self, specs, name, function):
         run_list = specs.get('config_runlist', '')
         self.run_list = run_list.split(',')
-
         self.env = specs.get('config_env')
         self.url = specs.get('config_server')
         self.user = specs.get('config_username')
         self.temp_f = str(specs.get('config_key'))
-
-        self.chef_s = None
+        self.chef_search = None
 
         LOG.debug(self.temp_f)
         try:
             action = getattr(self, function)
             action(name)
-        except Exception, exp:
+        except Exception as exp:
             LOG.warn('Fatal ERROR Happened with Cheferizing'
                      ' the node %s ==> %s' % (name, exp))
             LOG.error(traceback.format_exc())
 
     def chefer_setup(self, node_name):
-        # Prep the Chef API
+        """Interact with the Chef API.
+
+        :param node_name: ``str``
+        """
+        LOG.info('Running Chef setup on %s' % node_name)
         with chef.ChefAPI(url=self.url, key=self.temp_f, client=self.user):
             # Search for the node
-            chef_s = chef.Search('node', q='name:*%s*' % node_name)
-            name = None
-            LOG.debug('Nodes found in chef_server ==> %s' % chef_s)
-            if chef_s:
-                chef_n = chef_s[0]['name']
-                if chef_n:
-                    name = str(chef_n)
-            else:
-                name = node_name
+            self._chef_search(search='node', name=node_name)
 
-            LOG.info('Running Chef setup on %s' % name)
+            # node name
+            name = self._get_name(node_name=node_name)
+
             # Load the node
-            n_s = chef.Node(name)
+            node = chef.Node(name)
 
-            # Append the run_list / roles
-            if self.run_list is None:
-                n_s.run_list = []
-            else:
-                for _rl in self.run_list:
-                    n_s.run_list.append(_rl)
+            # Set node run list
+            node.run_list = self.run_list
 
             # Add the environment variables
-            n_s.chef_environment = self.env
+            node.chef_environment = self.env
 
             # Save the instance in Chef
-            n_s.save()
+            node.save()
 
     def chefer_remove_all(self, name):
-        self.chefer_remover(node_name=name, node=True)
-        self.chefer_remover(node_name=name)
+        """Remove both a client and node from within chef-server.
+
+        :param name: ``str``
+        """
+        for search_type in ['node', 'client']:
+            self.chefer_remover(node_name=name, search=search_type)
 
     def chefer_node_remove(self, name):
-        self.chefer_remover(node_name=name, node=True)
+        """Remove a node from chef-server.
+
+        :param name: ``str``
+        """
+        self.chefer_remover(node_name=name, search='node')
 
     def chefer_client_remove(self, name):
-        self.chefer_remover(node_name=name)
+        """Remove a client from chef-server.
+
+        :param name: ``str``
+        """
+        self.chefer_remover(node_name=name, search='client')
+
+    def _chef_search(self, search, name):
+        self.chef_search = chef.Search(search, q='name:*%s*' % name)
+        LOG.debug('search: %s - list: %s' % (search, self.chef_search))
 
     def _get_name(self, node_name):
-        if self.chef_s and len(self.chef_s) >= 1:
-            name = self.chef_s[0].get('name')
+        """Get the name of an instance from chef-server.
+
+        :param node_name: ``str``
+        :return: ``str``
+        """
+        if self.chef_search:
+            name = self.chef_search[0].get('name')
             if name is None:
-                raise ChefSearchError('"%s" Not Found' % self.chef_s)
+                raise ChefSearchError('"%s" Not Found' % self.chef_search)
+            return name
         else:
-            name = node_name
+            return node_name
 
-        return name
+    def chefer_remover(self, node_name, search):
+        """Remove a node from chef-server.
 
-    def chefer_remover(self, node_name, node=False):
+        :param node_name:
+        :param search:
+        """
         try:
             with chef.ChefAPI(url=self.url, key=self.temp_f, client=self.user):
-                if node:
-                    LOG.info('Removing "%s" from CHEF Nodes' % node_name)
-                    self.chef_s = chef.Search(
-                        'node', q='name:*%s*' % node_name
-                    )
-                    name = self._get_name(node_name=node_name)
-                    node_data = chef.Node(name)
-                else:
-                    LOG.info('Removing "%s" from CHEF Clients' % node_name)
-                    self.chef_s = chef.Search(
-                        'client', q='name:*%s*' % node_name
-                    )
-                    name = self._get_name(node_name=node_name)
-                    node_data = chef.Client(name)
+                LOG.info('Removing "%s" from CHEF Nodes' % node_name)
+                self._chef_search(search=search, name=node_name)
+                name = self._get_name(node_name=node_name)
+                node_data = chef.Node(name)
 
                 try:
                     node_data.delete()
                 except TypeError:
                     LOG.error('CHEF API returned an error on "%s"' % node_name)
+
         except chefexp.ChefServerNotFoundError:
             LOG.warn('The Node %s was not found' % node_name)
         except chefexp.ChefServerError:
-            LOG.error('Chef server did not respond normally'
-                      ' Check Chef and try again. Chef Server : %s '
-                      % self.url)
+            LOG.error(
+                'Chef server did not respond normally Check Chef and try'
+                ' again. Chef Server : %s ' % self.url
+            )
         except chefexp.ChefAPIVersionError:
-            LOG.error('There seems to be an issue with your API'
-                      ' version Check you Chef Server and try again')
+            LOG.error(
+                'There seems to be an issue with your API version Check you'
+                ' Chef Server and try again'
+            )
         except chefexp.ChefError:
-            LOG.error('Chef is mad, or busy, there was an error'
-                      ' and the request was not processed normally')
+            LOG.error(
+                'Chef is mad, or busy, there was an error and the request was'
+                ' not processed normally'
+            )
         except ChefSearchError:
             LOG.warn('The Node %s was not found' % node_name)
-        except Exception, exp:
-            LOG.warn('CHEF Failure when working on "%s" ==> %s'
-                             % (node_name, exp))
+        except Exception as exp:
+            LOG.error(
+                'CHEF Failure when working on "%s" => %s' % (node_name, exp)
+            )
             LOG.error(traceback.format_exc())

@@ -7,18 +7,18 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-
-from multiprocessing import Process
+import multiprocessing
 
 import requests
 
 from tribble.common import system_config
 
 
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 
 
 def process_map():
+    """Execute processes based on the provided map."""
     map = {
         'get_root': {
             'job': get_on_slash,
@@ -30,7 +30,7 @@ def process_map():
     }
 
     for name, item in map.items():
-        print '[ working on %s ]' % name
+        print('[ working on %s ]' % name)
         for _ in xrange(item['amount']):
             url = '%s%s' % (load_url(), item['path'])
             job = item['job']
@@ -41,6 +41,10 @@ def process_map():
 
 
 def load_url():
+    """Return API URL.
+
+    :return: ``str``
+    """
     ssl_config = CONFIG.config_args(section='ssl')
     network_config = CONFIG.config_args(section='network')
 
@@ -54,13 +58,20 @@ def load_url():
 
 
 def get_on_slash(url):
+    """Perform a request on a URL.
+
+    :param url: ``str``
+    """
     requests.get(url)
 
 
 def run():
+    """Run the application."""
     default_config = CONFIG.config_args()
     workers = default_config.get('workers', 10)
-    jobs = [Process(target=process_map) for _ in range(workers)]
+    jobs = [
+        multiprocessing.Process(target=process_map) for _ in range(workers)
+    ]
 
     active_jobs = []
     for job in jobs:
@@ -70,7 +81,6 @@ def run():
 
     for active_job in active_jobs:
         active_job.join()
-
 
 
 if __name__ == '__main__':

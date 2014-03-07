@@ -18,7 +18,7 @@ with open('requirements.txt') as f:
     REQUIRED = f.read().splitlines()
 
 if sys.version_info < (2, 6, 0):
-    sys.stderr.write("Tribble Presently requires Python 2.6.0 or greater \n")
+    sys.stderr.write("Tribble Presently requires Python 2.6.0 or greater\n")
     raise SystemExit(
         '\nUpgrade python because you version of it is VERY deprecated\n'
     )

@@ -21,6 +21,12 @@ from tribble.common.db.models import Zones
 
 
 def post_user(admin, user, encrypted):
+    """Post a new user and return the SQLAlchemy object.
+
+    :param admin: ``int``
+    :param user: ``str``
+    :param encrypted ``str``
+    """
     return CloudAuth(
         user_type=admin,
         dcuser=user,
@@ -31,8 +37,12 @@ def post_user(admin, user, encrypted):
 
 
 def post_zones(skm, zon, ssh):
-    """
-    post a new row for a zone
+    """Post a new zone and return the SQLAlchemy object.
+
+    :param skm: ``object`` Schematic
+    :param zon: ``object`` Zone
+    :param ssh ``object`` SSH
+    :return: Zone: ``object``
     """
     return Zones(
         schematic_id=skm.id,
@@ -56,8 +66,12 @@ def post_zones(skm, zon, ssh):
 
 
 def post_instanceskeys(pub, pri, sshu, key_name):
-    """
-    post a new row for a set of keys to an instance
+    """post a new set of keys to an instance and return the SQLAlchemy object.
+
+    :param pub: ``str`` Public Key
+    :param pri: ``str`` Private Key
+    :param sshu ``str`` SSH User
+    :param key_name: ``object``
     """
     return InstancesKeys(
         ssh_user=sshu,
@@ -68,8 +82,11 @@ def post_instanceskeys(pub, pri, sshu, key_name):
 
 
 def post_schematic(con, uid, post):
-    """
-    post a new row for a schematic
+    """post a new row for a schematic.
+    :param con: ``object``
+    :param uid: ``str``
+    :param post: ``dict``
+    :return: ``object``
     """
     return Schematics(
         auth_id=uid,
@@ -85,8 +102,10 @@ def post_schematic(con, uid, post):
 
 
 def post_configmanager(post):
-    """
-    post a new row for configuration management
+    """post a new row for configuration management.
+
+    :param post: ``dict``
+    :return: ``object``
     """
     return ConfigManager(
         config_type=post.get('config_type'),
@@ -99,8 +118,11 @@ def post_configmanager(post):
 
 
 def post_instance(ins, put):
-    """
-    Post information on an Instnace
+    """Post a new instance.
+
+    :param ins: ``object`` Instance
+    :param put: ``dict``
+    :return: ``object``
     """
     return Instances(
         instance_id=str(ins.id),
@@ -112,7 +134,13 @@ def post_instance(ins, put):
 
 
 def put_instance(session, inst, put):
-    """Post information on an Instance."""
+    """Post information on an Instance and return the open SQLAlchemy session.
+
+    :param session: ``object``
+    :param inst: ``object``
+    :param put: ``dict``
+    :return: ``object``
+    """
     inst.public_ip = put.get('public_ip', inst.public_ip)
     inst.private_ip = put.get('private_ip', inst.private_ip)
     inst.server_name = put.get('server_name', inst.server_name)
@@ -121,7 +149,13 @@ def put_instance(session, inst, put):
 
 
 def put_zone(session, zon, put):
-    """Put an update to the system for a zone."""
+    """Put an update to a zone and return the open SQLAlchemy session.
+
+    :param session: ``object``
+    :param zon: ``object``
+    :param put: ``dict``
+    :return: ``object``
+    """
     zon.image_id = put.get('image_id', zon.image_id)
     zon.name_convention = put.get('name_convention', zon.name_convention)
     zon.cloud_region = put.get('cloud_region', zon.cloud_region)
@@ -142,7 +176,13 @@ def put_zone(session, zon, put):
 
 
 def put_configmanager(session, con, put):
-    """put an update to the system for a set of config management."""
+    """put an update to the system for a set of config management.
+
+    :param session: ``object``
+    :param con: ``object``
+    :param put: ``dict``
+    :return: ``object``
+    """
     con.config_type = put.get('config_type', con.config_type)
     con.config_key = put.get('config_key', con.config_key)
     con.config_server = put.get('config_server', con.config_server)
@@ -160,7 +200,13 @@ def put_configmanager(session, con, put):
 
 
 def put_schematic_id(session, skm, put):
-    """Put an update to the system for a provided schematic."""
+    """Put an update to the system for a provided schematic.
+
+    :param session: ``object``
+    :param skm: ``object``
+    :param put: ``dict``
+    :return: ``object``
+    """
     skm.cloud_key = put.get('cloud_key', skm.cloud_key)
     skm.cloud_provider = put.get('cloud_provider', skm.cloud_provider)
     skm.cloud_version = put.get('cloud_version', skm.cloud_version)
@@ -173,7 +219,13 @@ def put_schematic_id(session, skm, put):
 
 
 def put_instanceskeys(session, ssh, put):
-    """Post information on an Instance."""
+    """Post information on an Instance.
+
+    :param session: ``object``
+    :param ssh: ``object``
+    :param put: ``dict``
+    :return: ``object``
+    """
     ssh.ssh_user = put.get('ssh_user', ssh.ssh_user)
     ssh.ssh_key_pri = put.get('ssh_key_pri', ssh.ssh_key_pri)
     ssh.ssh_key_pub = put.get('ssh_key_pub', ssh.ssh_key_pub)
@@ -183,44 +235,58 @@ def put_instanceskeys(session, ssh, put):
 
 
 def get_users():
-    """Lookup all users."""
+    """Return all users.
+
+    :return: ``object``
+    """
     return CloudAuth.query.order_by(CloudAuth.dcuser)
 
 
 def get_user_id(user_name):
-    """Look up a user name."""
-    return CloudAuth.query.filter(
-        CloudAuth.dcuser == user_name
-    ).first()
+    """Return a user name by ID.
+
+    :param user_name: ``str``
+    :return: ``object``
+    """
+    return CloudAuth.query.filter(CloudAuth.dcuser == user_name).first()
 
 
 def get_schematic_id(sid, uid):
-    """
-    Look up schematics from Schematic ID and auth ID and return it
+    """Return schematics from Schematic ID and auth ID and return it.
+
+    :param sid: ``str``
+    :param uid: ``str``
+    :return: ``object``
     """
     return Schematics.query.filter(
-        Schematics.auth_id == uid,
-        Schematics.id == sid
+        Schematics.auth_id == uid, Schematics.id == sid
     ).first()
 
 
 def get_schematics(uid):
-    """
-    Look up all schematics and return them as a list
+    """Return all schematics and return them as a list.
+
+    :param uid: ``str``
+    :return: ``object``
     """
     return Schematics.query.filter(Schematics.auth_id == uid).all()
 
 
 def get_zones(skm):
-    """
-    Look all zones from a provided Schematic
+    """Return all zones from a provided Schematic.
+    
+    :param skm: ``object``
+    :return: ``object``
     """
     return Zones.query.filter(Zones.schematic_id == skm.id).all()
 
 
 def get_zones_by_id(skm, zid):
-    """
-    Look all zones from a provided Schematic
+    """Return all zones from a provided Schematic.
+
+    :param skm: ``object``
+    :param zid: ``str``
+    :return: ``object``
     """
     return Zones.query.filter(
         Zones.schematic_id == skm.id,
@@ -229,20 +295,24 @@ def get_zones_by_id(skm, zid):
 
 
 def get_zones_by_ids(skm, zon_ids):
-    """
-    Look up Zones by IDs
+    """Return Zones by IDs.
+
+    :param skm: ``object``
+    :param zon_ids: ``list``
+    :return: ``object``
     """
     return Zones.query.filter(
         and_(
-            Zones.schematic_id == skm.id,
-            Zones.id.in_(zon_ids)
+            Zones.schematic_id == skm.id, Zones.id.in_(zon_ids)
         )
     ).all()
 
 
 def get_configmanager(skm):
-    """
-    Look up a specific configuration management row from a provided schematic
+    """Return configuration management from a provided schematic.
+    
+    :param skm: ``skm``
+    :return: ``object``
     """
     return ConfigManager.query.filter(
         ConfigManager.id == skm.config_id
@@ -250,37 +320,45 @@ def get_configmanager(skm):
 
 
 def get_instances(zon):
-    """
-    Look up all instances for a zone and return them as a list
+    """Return all instances for a zone and return them as a list.
+
+    :param zon: ``object``
+    :return: ``object``
     """
     return Instances.query.filter(Instances.zone_id == zon.id).all()
 
 
 def get_instance_id(zon, iid):
-    """
-    Look up an instance from a zone and the Instance ID
+    """Return an instance from a zone and the Instance ID.
+
+    :param zon: ``object``
+    :param iid: ``object``
+    :return: ``object``
     """
     return Instances.query.filter(
-        Instances.zone_id == zon.id,
-        Instances.id == iid
+        Instances.zone_id == zon.id, Instances.id == iid
     ).first()
 
 
 def get_instance_ids(zon, ids):
-    """
-    Look up a bunch of instances from a zone by a list of ID's
+    """Return a list of instances from a zone by a list of ID's.
+
+    :param zon: ``object``
+    :param ids: ``list``
+    :return: ``object``
     """
     return Instances.query.filter(
         and_(
-            Instances.zone_id == zon.id,
-            Instances.instance_id.in_(ids)
+            Instances.zone_id == zon.id, Instances.instance_id.in_(ids)
         )
     ).all()
 
 
 def get_instanceskeys(zon):
-    """
-    Look up keys for a zone and return them
+    """Return credential keys for a zone.
+
+    :param zon: ``object``
+    :return: ``object``
     """
     return InstancesKeys.query.filter(
         InstancesKeys.id == zon.credential_id
@@ -288,8 +366,11 @@ def get_instanceskeys(zon):
 
 
 def delete_item(session, item):
-    """
-    Delete and Flush an Item
+    """Delete and Flush an Item then return the session.
+
+    :param session: ``object``
+    :param item: ``object``
+    :return: ``object``
     """
     session.delete(item)
     session.flush()
@@ -297,8 +378,11 @@ def delete_item(session, item):
 
 
 def add_item(session, item):
-    """
-    Add something to a session and return the session
+    """Add something to a session and return the session.
+
+    :param session: ``object``
+    :param item: ``object``
+    :return: ``object``
     """
     session.add(item)
     session.flush()
@@ -306,7 +390,9 @@ def add_item(session, item):
 
 
 def commit_session(session):
-    """
-    Commit an active session
+    """Commit a session and return the session..
+
+    :param session: ``object``
+    :return: ``object``
     """
     return session.commit()

@@ -18,6 +18,11 @@ LOG = logging.getLogger('tribble-api')
 
 
 class ZoneState(object):
+    """Perform a status update on a given Zone.
+
+    :param cell: ``dict``
+    """
+
     def __init__(self, cell):
         self.cell = cell
         self.schematic = db_proc.get_schematic_id(
@@ -29,19 +34,26 @@ class ZoneState(object):
             )
 
     def error(self, error_msg):
+        """Set zone state to Error.
+
+        :param error_msg: ``str``
+        """
         self.cell['zone_state'] = 'ERROR'
         self.cell['zone_msg'] = error_msg
         self.state_update()
 
     def reconfig(self):
+        """Set zone state to Reconfiguring."""
         self.cell['zone_state'] = 'RECONFIGURING'
         self.state_update()
 
     def build(self):
+        """Set zone state to Building."""
         self.cell['zone_state'] = 'BUILDING'
         self.state_update()
 
     def active(self):
+        """Set zone state to Active."""
         ints = db_proc.get_instances(zon=self.zone)
         if int(self.zone.quantity) == len(ints):
             self.cell['zone_state'] = 'ACTIVE'
@@ -51,10 +63,16 @@ class ZoneState(object):
         self.state_update()
 
     def delete(self):
+        """Set zone state to Deleting."""
         self.cell['zone_state'] = 'DELETING'
         self.state_update()
 
     def delete_schematic_resource(self):
+        """Perform a Schematic delete.
+
+        This will delete a provided Schematic as well as it's configuration
+        management row.
+        """
         try:
             sess = DB.session
             config = db_proc.get_configmanager(skm=self.schematic)
@@ -66,6 +84,10 @@ class ZoneState(object):
             db_proc.commit_session(session=sess)
 
     def delete_resource(self):
+        """Perform a zone resource delete.
+
+        This will delete a zone as well as it's keys.
+        """
         try:
             sess = DB.session
             instances = db_proc.get_instances(zon=self.zone)
@@ -85,6 +107,7 @@ class ZoneState(object):
             db_proc.commit_session(session=sess)
 
     def state_update(self):
+        """Perform a state update."""
         try:
             sess = DB.session
             db_proc.put_zone(session=sess, zon=self.zone, put=self.cell)

@@ -7,29 +7,33 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import traceback
 import logging
+import traceback
 
-from flask import Blueprint
-from flask import request
+import flask
 
+from tribble.api import utils
+from tribble.common.db import db_proc
 from tribble.common import rpc
 from tribble.common import system_config
-from tribble.common.db import db_proc
-from tribble.api.application import DB
-from tribble.api import utils
 
 
-mod = Blueprint('isntances', __name__)
+mod = flask.Blueprint('isntances', __name__)
 LOG = logging.getLogger('tribble-api')
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 DEFAULT = CONFIG.config_args()
 
 
 @mod.route('/v1/schematics/<sid>/zones/<zid>/instances/<iid>',
            methods=['delete'])
 def instance_delete(sid=None, zid=None, iid=None):
-    """delete method"""
+    """Delete an Instance from a Zone.
+
+    :param sid: ``str`` # schematic ID
+    :param zid: ``str`` # Zone ID
+    :param iid: ``str`` # Instance ID
+    :return json, status: ``tuple``
+    """
 
     if not all([sid, zid, iid]):
         check_all = [check for check in sid, zid, iid if not check]
@@ -37,7 +41,7 @@ def instance_delete(sid=None, zid=None, iid=None):
             msg='missing Information %s' % check_all, status=400
         )
 
-    user_id = utils.auth_mech(rdata=request.headers)
+    user_id = utils.auth_mech(rdata=flask.request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 

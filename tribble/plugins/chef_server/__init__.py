@@ -7,27 +7,35 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-from tribble.engine import utils
+import logging
 
-import chef_server
-import cheferizer
+from tribble.plugins.chef_server import chef_server
+from tribble.plugins.chef_server import cheferizer
+
+
+LOG = logging.getLogger('tribble-engine')
 
 
 def init_chefserver(*args):
+    """Return a script for bootstrapping chef-server on an instance.
+
+    :param args: ``list``
+    :return: ``str``
+    """
     specs, sop, ssh = args
     chef = chef_server.Strapper(specs=specs)
-    chef_init = chef.chef_cloudinit()
-    script = specs.get('config_script')
-    if script and not ssh:
-        operation = {
-            'op_script': str(utils.escape_quote(script)),
-            'op_script_loc': '/tmp/config_script.sh'
-        }
-        chef_init += sop % operation
-    return chef_init
+    config_init = chef.chef_cloudinit()
+    LOG.debug(config_init)
+    return config_init
 
 
 def _chef_node(node_list, specs, function):
+    """Setup chef from chef-server on a list of nodes.
+
+    :param node_list: ``list``
+    :param specs: ``dict``
+    :param function: ``function``
+    """
     for node in node_list:
         cheferizer.ChefMe(
             specs=specs,
@@ -37,6 +45,10 @@ def _chef_node(node_list, specs, function):
 
 
 def chef_delete_node(*args):
+    """Delete a node from within chef-server.
+
+    :param args: ``list``
+    """
     node_list = args[0].get('db_instances')
     if node_list:
         _chef_node(
@@ -45,12 +57,15 @@ def chef_delete_node(*args):
 
 
 def chef_deploy_node(*args):
+    """Deploy chef on a list of nodes.
+
+    :param args: ``list``
+    """
     node_list = args[0].get('db_instances')
     if node_list:
         _chef_node(
             node_list=node_list, specs=args[0], function='chefer_setup'
         )
-
 
 
 CONFIG_APP_MAP = {

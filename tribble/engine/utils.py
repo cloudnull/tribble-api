@@ -13,31 +13,55 @@ import time
 import multiprocessing
 from multiprocessing import cpu_count
 from multiprocessing import Process
-from multiprocessing import Queue
 from collections import deque
 
 import tribble
+from tribble.common import system_config
+
+
+CONFIG = system_config.ConfigurationSetup()
 
 
 class EngineParser(object):
+    """Base class for the engine parser.
+
+    :param packet: ``dict``
+    """
     def __init__(self, packet):
         self.packet = packet
         self.specs = {}
 
     def _get(self, *args):
+        """Get string from dict.
+
+        :param args: ``list``
+        """
         item, all_args, value = args
         self.specs[item] = self.packet.get(value, all_args.get('default'))
 
     def _is(self, *args):
+        """Set string.
+
+        :param args: ``list``
+        """
         item, all_args, value = args
         self.specs[item] = value
 
     def _action(self, *args):
+        """Return an action from dict.
+
+        :param args: ``list``
+        :return ``object``
+        """
         item, all_args, value = args
         action = getattr(self, '_%s' % value)
         return action()
 
     def _required(self, *args):
+        """Check if a required item is present.
+
+        :param args: ``list``
+        """
         item, all_args, value = args
         if value is True and self.specs[item] is None:
             raise tribble.CantContinue(
@@ -45,10 +69,20 @@ class EngineParser(object):
             )
 
     def _comma_split(self, *args):
+        """Split a string into a list which is comma separated.
+
+        :param args: ``list``
+        """
         item, all_args, value = args
         self.specs[item] = self.specs[item].split(',')
 
     def _make(self, *args):
+        """Modify a value.
+
+        Supported types, "upper", "lower"
+
+        :param args: ``list``
+        """
         item, all_args, value = args
         if value == 'lower':
             self.specs[item] = self.specs[item].upper()
@@ -66,7 +100,7 @@ class EngineParser(object):
                 'get': 'cloud_version',
                 'default': '2.0'
             },
-            'datacenter': {
+            'region': {
                 'get': 'cloud_region',
                 'make': 'lower',
                 'required': True
@@ -100,13 +134,20 @@ class EngineParser(object):
 
 
 def escape_quote(item):
-    """removes a possible point of injection."""
+    """removes a possible point of injection.
+
+    :param item: ``dict``
+    :return: ``dict``
+    """
     return dict([(_cx[0], _cx[1].replace('"', '\\"')) for _cx in item.items()])
 
 
 def rand_string(length=15):
     """
     Generate a Random string
+
+    :param length: ``int``
+    :return: ``str``
     """
     chr_set = string.ascii_uppercase
     output = ''
@@ -115,39 +156,16 @@ def rand_string(length=15):
     return output
 
 
-def basic_deque(iters=None):
-    """
-    iters="The iterable variables"
-    Places interables into a deque
-    """
-    worker_q = deque([])
-    if iters:
-        for _dt in iters:
-            worker_q.append(_dt)
-    return worker_q
-
-
-def basic_queue(iters=None):
-    """
-    iters="The iterable variables"
-    Places interables into a deque
-    """
-    worker_q = Queue()
-    if iters:
-        for _dt in iters:
-            worker_q.put(_dt)
-    return worker_q
-
-
 def worker_proc(job_action, num_jobs, t_args=None):
-    """job_action="What function will be used".
+    """Requires the job_action and num_jobs variables for functionality.
 
-    num_jobs="The number of jobs that will be processed"
-
-    Requires the job_action and num_jobs variables for functionality.
     All threads produced by the worker are limited by the number of concurrency
     specified by the user. The Threads are all made active prior to them
     processing jobs.
+
+    :param job_action: ``str``
+    :param num_jobs: ``int``
+    :param t_args: ``object``
     """
     proc_name = '%s-Worker' % str(job_action).split()[2]
     if t_args:
@@ -169,16 +187,23 @@ def worker_proc(job_action, num_jobs, t_args=None):
     process_threads(processes=processes)
 
 
-def compute_workers(base_count=5):
-    try:
-        max_threads = (cpu_count() * base_count)
-    except Exception:
-        max_threads = base_count
-    return max_threads
+def compute_workers():
+    """Determine the max number of available threads.
+
+    The workers are set in config.
+
+    :return: ``int``
+    """
+
+    default_config = CONFIG.config_args()
+    return default_config.get('workers', 10)
 
 
 def process_threads(processes):
-    """Process the built actions."""
+    """Process the built actions.
+
+    :param processes: ``list``
+    """
     max_threads = compute_workers()
     post_process = []
     while processes:
@@ -200,23 +225,6 @@ def process_threads(processes):
         _pp.join()
 
 
-def manager_dict(b_d=None):
-    """OPTIONAL Variable:
-
-    b_d = 'Base Dictionary'
-
-    Create a shared dictionary using multiprocessing Managers
-    If you use the "bd" variable you can specify a prebuilt dict
-    the default is that bd=None
-    """
-    manager = multiprocessing.Manager()
-    if b_d:
-        managed_dictionary = manager.dict(b_d)
-    else:
-        managed_dictionary = manager.dict()
-    return managed_dictionary
-
-
 # ACTIVE STATE retry loop
 # http://code.activestate.com/recipes/578163-retry-loop/
 def retryloop(attempts, timeout=None, delay=None, backoff=1):
@@ -225,12 +233,16 @@ def retryloop(attempts, timeout=None, delay=None, backoff=1):
     The timeout allows the application to quit on "X".
     delay allows the loop to wait on fail. Useful for making REST calls.
 
-    Example:
-        Function for retring an action.
-        for retry in retryloop(attempts=10, timeout=30, delay=1, backoff=1):
-            something
-            if somecondition:
-                retry()
+    Example: Function for retring an action.
+    >>> for retry in retryloop(attempts=10, timeout=30, delay=1, backoff=1):
+    ...     something()
+    ...     if somecondition:
+    ...         retry()
+
+    :param attempts: ``int``
+    :param timeout: ``int``
+    :param delay: ``int``
+    :param backoff: ``int``
     """
     starttime = time.time()
     success = set()
@@ -249,8 +261,6 @@ def retryloop(attempts, timeout=None, delay=None, backoff=1):
 
 
 def stupid_hack():
-    """Stupid Hack For Public Cloud so that it is not overwhemled
-    with instance creations.
-    """
+    """Randomly set a sleep time between 1 and 10 seconds."""
     timer = random.randrange(1, 10)
     return timer

@@ -7,19 +7,19 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import os
 import logging
+import os
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+import flask
+import flask_sqlalchemy
 
-from tribble import info
 from tribble.api import views
-from tribble.common import system_config
 from tribble.common import rpc
+from tribble.common import system_config
+from tribble import info
 
 
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 LOG = logging.getLogger('tribble-api')
 NEWRELIC = '/etc/tribble/newrelic.ini'
 if os.path.exists(NEWRELIC):
@@ -28,7 +28,7 @@ if os.path.exists(NEWRELIC):
     LOG.info('Newrelic Plugin Loaded')
 
 
-app = Flask(info.__appname__)
+app = flask.Flask(info.__appname__)
 
 app.config['network'] = CONFIG.config_args(section='network')
 sql_config = app.config['ssl'] = CONFIG.config_args(section='sql')
@@ -43,7 +43,7 @@ app.config['SQLALCHEMY_POOL_SIZE'] = int(sql_config.get('pool_size', 250))
 app.config['SQLALCHEMY_POOL_TIMEOUT'] = sql_config.get('pool_timeout', 60)
 app.config['SQLALCHEMY_POOL_RECYCLE'] = sql_config.get('pool_recycle', 120)
 
-DB = SQLAlchemy(app)
+DB = flask_sqlalchemy.SQLAlchemy(app)
 DB.init_app(app)
 
 # Load the RPC Queues
@@ -51,7 +51,13 @@ rpc.load_queues(rpc.connect())
 
 
 def load_routes():
-    """Load in the application and routes."""
+    r"""Load in the application and routes.
+
+    The load method should only be called when the "application" module has
+    already been imported by the "WSGI" server.
+
+    :return app: ``class`` # Loaded Flask API application
+    """
 
     app.threaded = True
     app.url_map.strict_slashes = False
@@ -61,11 +67,10 @@ def load_routes():
 
     from tribble.api import authentication
     from tribble.api.views import general_rest
+    from tribble.api.views import instances_rest
     from tribble.api.views import schematics_rest
     from tribble.api.views import zones_rest
-    from tribble.api.views import instances_rest
 
-    # TODO(kevin) Authenticate before serving requests
     app.before_request(authentication.cloudauth)
 
     app.register_blueprint(general_rest.mod)
@@ -74,24 +79,3 @@ def load_routes():
     app.register_blueprint(instances_rest.mod)
 
     return app
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

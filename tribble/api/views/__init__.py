@@ -9,21 +9,23 @@
 # =============================================================================
 import logging
 
-from flask import jsonify
+import flask
 
 
 LOG = logging.getLogger('tribble-api')
 
 
 def not_found(message=None, error=None):
-    if message:
-        msg = {"error_text": message}
-    else:
-        msg = {"error_text": "Resource not found"}
+    """Return Message when an API request is not found.
 
-    if error:
-        LOG.warn('%s %s', msg, error)
-        return jsonify(msg), error
-    else:
-        LOG.warn(msg)
-        return jsonify(msg), 404
+    :param message: ``str``
+    :param error: ``int``
+    :return json, status: ``tuple``
+    """
+    if message is None:
+        message = "resource not found"
+
+    if error is None:
+        error = 404
+
+    return flask.jsonify({"response": message}), error

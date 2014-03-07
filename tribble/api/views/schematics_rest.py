@@ -7,33 +7,44 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import traceback
 import logging
+import traceback
 
-from flask import Blueprint
-from flask import request
+import flask
 
 import tribble
 from tribble.api.application import DB
 from tribble.api import utils
-from tribble.common import system_config
-from tribble.common import rpc
-from tribble.common import plugin_loader
 from tribble.common.db import db_proc
+from tribble.common import plugin_loader
+from tribble.common import rpc
+from tribble.common import system_config
 
 
-mod = Blueprint('schematics', __name__)
+mod = flask.Blueprint('schematics', __name__)
 LOG = logging.getLogger('tribble-api')
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 DEFAULT = CONFIG.config_args()
 
 
 def _config_check(config_type):
+    """Return a dict with plugin data.
+
+    :param config_type: ``dict``
+    :return plugin: ``dict``
+    """
     config_type = config_type.upper()
     return plugin_loader.PluginLoad(config_type=config_type)
 
 
 def _zone_builder(session, schematic, con, payload):
+    """Publish a constructed Zone dict to the Engine.
+
+    :param session: ``class`` # SQLAlchemy class session
+    :oaram schematic: ``class`` # SQLAlchemy object
+    :param con: ``class`` # SQLAlchemy object
+    :param payload: ``dict``
+    """
     for zone in payload['zones']:
         zone = utils.encoder(obj=zone)
         LOG.debug(zone)
@@ -65,9 +76,14 @@ def _zone_builder(session, schematic, con, payload):
 
 @mod.route('/v1/schematics', methods=['GET'])
 def schematics_list():
-    """get method."""
+    """Return a list of Schematics.
 
-    user_id = utils.auth_mech(rdata=request.headers)
+    Method is accessible with GET /v1/schematics
+
+    :return json, status: ``tuple``
+    """
+
+    user_id = utils.auth_mech(rdata=flask.request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 
@@ -92,10 +108,17 @@ def schematics_list():
 
 @mod.route('/v1/schematics/<sid>', methods=['GET'])
 def schematic_get(sid=None):
+    """Return a of Schematic.
+
+    Method is accessible with GET /v1/schematics/<sid>
+
+    :param sid: ``str`` # schematic ID
+    :return json, status: ``tuple``
+    """
     if not sid:
         return utils.return_msg(msg='missing information', status=400)
 
-    user_id = utils.auth_mech(rdata=request.headers)
+    user_id = utils.auth_mech(rdata=flask.request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 
@@ -114,12 +137,18 @@ def schematic_get(sid=None):
 
 @mod.route('/v1/schematics/<sid>', methods=['DELETE'])
 def schematic_delete(sid=None):
-    """Delete a Schematic."""
+    """Delete a Schematic.
+
+    Method is accessible with GET /v1/schematics/<sid>
+
+    :param sid: ``str`` # schematic ID
+    :return json, status: ``tuple``
+    """
 
     if not sid:
         return utils.return_msg(msg='missing information', status=400)
 
-    user_id = utils.auth_mech(rdata=request.headers)
+    user_id = utils.auth_mech(rdata=flask.request.headers)
     if not user_id:
         return utils.return_msg(msg='missing information', status=400)
 
@@ -153,12 +182,19 @@ def schematic_put(sid=None):
 
     if a zone is in the put data add the zone to the schematic.
     The addition of a zone on a put will not build the zone automatically.
+
+    Method is accessible with PUT /v1/schematics/<sid>
+
+    :param sid: ``str`` # schematic ID
+    :return json, status: ``tuple``
     """
 
     if not sid:
         return utils.return_msg(msg='missing information', status=400)
 
-    auth = utils.auth_mech(hdata=request.data, rdata=request.headers)
+    auth = utils.auth_mech(
+        hdata=flask.request.data, rdata=flask.request.headers
+    )
     if not auth:
         return utils.return_msg(
             msg='Authentication or Data Type Failure',
@@ -170,7 +206,7 @@ def schematic_put(sid=None):
     schematic = db_proc.get_schematic_id(sid=sid, uid=user_id)
     if not schematic:
         return utils.return_msg(msg='no schematic found', status=404)
-    
+
     if not all([user_id, payload]):
         build_response = 'missing information %s %s' % (user_id, payload)
         return utils.return_msg(msg=build_response, status=400)
@@ -179,7 +215,10 @@ def schematic_put(sid=None):
     try:
         sess = DB.session
         if config_type is not None:
-            _config_check(config_type).load_plugin()
+            if _config_check(config_type).validate_plugin() is False:
+                raise tribble.DeadOnArival(
+                    'Plugin "%s" was not found.' % config_type
+                )
 
         con = db_proc.get_configmanager(skm=schematic)
         db_proc.put_schematic_id(session=sess, skm=schematic, put=payload)
@@ -201,9 +240,16 @@ def schematic_put(sid=None):
 
 @mod.route('/v1/schematics', methods=['POST'])
 def schematic_post():
-    """Post a Schematic, if a zone is present in the POST, then post a zone."""
+    """Post a Schematic,
 
-    auth = utils.auth_mech(hdata=request.data, rdata=request.headers)
+    Method is accessible with POST /v1/schematics
+
+    :return json, status: ``tuple``
+    """
+
+    auth = utils.auth_mech(
+        hdata=flask.request.data, rdata=flask.request.headers
+    )
     if not auth:
         return utils.return_msg(
             msg='Authentication or Data Type Failure',
@@ -220,7 +266,10 @@ def schematic_post():
     try:
         sess = DB.session
         if config_type is not None:
-            _config_check(config_type).load_plugin()
+            if _config_check(config_type).validate_plugin() is False:
+                raise tribble.DeadOnArival(
+                    'Plugin "%s" was not found.' % config_type
+                )
 
         con = db_proc.post_configmanager(post=payload)
         db_proc.add_item(session=sess, item=con)

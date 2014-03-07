@@ -15,6 +15,19 @@ from tribble.api.application import DB
 
 
 class CloudAuth(DB.Model):
+    """Cloud Authentication table.
+
+    This table represents the users that are allowed to post / use the
+    system. Note that the "secret" field is plain text. It is up to the
+    user to place encrypted passwords into the system, else they will be
+    stored in plane text.
+
+    :param user_type: ``str``
+    :param dcuser: ``str``
+    :param dcsecret:  ``str``
+    :param created_at:  ``object``
+    :param updated_at: ``object``
+    """
     __tablename__ = 'cloudauth'
     user_type = DB.Column(
         'user_type',
@@ -50,12 +63,6 @@ class CloudAuth(DB.Model):
     )
 
     def __init__(self, user_type, dcuser, dcsecret, created_at, updated_at):
-        """
-        This table represents the users that are allowed to post / use the
-        system. Note that the "secret" field is plain text. It is up to the
-        user to place encrypted passwords into the system, else they will be
-        stored in plane text.
-        """
         self.user_type = user_type
         self.dcuser = dcuser
         self.dcsecret = dcsecret
@@ -64,6 +71,16 @@ class CloudAuth(DB.Model):
 
 
 class InstancesKeys(DB.Model):
+    """The Keys are used to interface with an instance.
+
+    This is used for instance bootstrap and or interfacing with an
+    instance,
+
+    :param ssh_user: ``str``
+    :param ssh_key_pub: ``str``
+    :param ssh_key_pri: ``str``
+    :param key_name: ``str``
+    """
     __tablename__ = 'instances_keys'
     ssh_user = DB.Column(
         'ssh_user',
@@ -104,12 +121,6 @@ class InstancesKeys(DB.Model):
     )
 
     def __init__(self, ssh_user, ssh_key_pub, ssh_key_pri, key_name):
-        """The Keys are used to interface with an instance.
-
-        This is used for instance bootstrap and or interfacing with an
-        instance,
-        """
-
         self.ssh_key_pri = ssh_key_pri
         self.ssh_key_pub = ssh_key_pub
         self.ssh_user = ssh_user
@@ -117,6 +128,15 @@ class InstancesKeys(DB.Model):
 
 
 class ConfigManager(DB.Model):
+    """All Config Management is stored here.
+
+    :param config_key: ``str``
+    :param config_type: ``str``
+    :param config_server: ``str``
+    :param config_username: ``str``
+    :param config_clientname: ``str``
+    :param config_validation_key: ``str``
+    """
     __tablename__ = 'config_manager'
     config_key = DB.Column(
         'config_key',
@@ -168,8 +188,6 @@ class ConfigManager(DB.Model):
 
     def __init__(self, config_key, config_type, config_server,
                  config_username, config_clientname, config_validation_key):
-        """All Config Management is stored here."""
-
         self.config_key = config_key
         self.config_type = config_type
         self.config_server = config_server
@@ -179,6 +197,20 @@ class ConfigManager(DB.Model):
 
 
 class Schematics(DB.Model):
+    """All Schematic Data is stored here.
+
+    Schematics provide for the configuration which belong to a built Zone.
+
+    :param config_id: ``str``
+    :param cloud_key: ``str``
+    :param cloud_url: ``str``
+    :param cloud_username: ``str``
+    :param cloud_provider: ``str``
+    :param cloud_version: ``str``
+    :param cloud_tenant: ``str``
+    :param auth_id: ``str``
+    :param name: ``str``
+    """
     __tablename__ = 'schematics'
     auth_id = DB.Column(
         'auth_id',
@@ -256,11 +288,6 @@ class Schematics(DB.Model):
 
     def __init__(self, config_id, cloud_key, cloud_url, cloud_username,
                  cloud_provider, cloud_version, cloud_tenant, auth_id, name):
-        """
-        Schematics provide for the configuration which would peratine to a
-        built Zone.
-        """
-
         self.config_id = config_id
         self.auth_id = auth_id
         self.name = name
@@ -273,6 +300,26 @@ class Schematics(DB.Model):
 
 
 class Zones(DB.Model):
+    """Zones provide a specific setup for a collection of instances.
+
+    :param cloud_region: ``str``
+    :param security_groups: ``str``
+    :param inject_files: ``str``
+    :param cloud_networks: ``str``
+    :param cloud_init: ``str``
+    :param schematic_id: ``str``
+    :param config_runlist: ``str``
+    :param config_script: ``str``
+    :param config_env: ``str``
+    :param zone_msg: ``str``
+    :param zone_state: ``str``
+    :param zone_name: ``str``
+    :param size_id: ``str``
+    :param image_id: ``str``
+    :param name_convention: ``str``
+    :param quantity: ``int``
+    :param credential_id: ``str``
+    """
     __tablename__ = 'zones'
     schematic_id = DB.Column(
         'schematic_id',
@@ -391,10 +438,6 @@ class Zones(DB.Model):
                  cloud_networks, cloud_init, schematic_id, config_runlist,
                  config_script, config_env, zone_msg, zone_state, zone_name,
                  size_id, image_id, name_convention, quantity, credential_id):
-        """
-        Zones provide a specific setup for a collection of instances.
-        """
-
         self.cloud_region = cloud_region
         self.security_groups = security_groups
         self.inject_files = inject_files
@@ -415,6 +458,16 @@ class Zones(DB.Model):
 
 
 class Instances(DB.Model):
+    """Table for all created instances.
+    If an instance is created it is recorded in this table and will pertain
+    to a specified Zone.
+
+    :param instance_id: ``str``
+    :param public_ip: ``str``
+    :param private_ip: ``str``
+    :param server_name: ``str``
+    :param zone_id: ``str``
+    """
     __tablename__ = 'instances'
     zone_id = DB.Column(
         'zone_id',
@@ -462,11 +515,6 @@ class Instances(DB.Model):
 
     def __init__(self, instance_id, public_ip, private_ip,
                  server_name, zone_id):
-        """
-        Table for all created instances. If an instance is created it is
-        recorded in this table and will pertain to a specified Zone.
-        """
-
         self.zone_id = zone_id
         self.public_ip = public_ip
         self.private_ip = private_ip

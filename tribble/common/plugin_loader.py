@@ -14,20 +14,41 @@ from tribble import plugins
 
 
 class PluginLoad(object):
+    """Load a given Configuration Management plugin.
+
+    :param config_type: ``str``
+    """
+
     def __init__(self, config_type):
         self.config_type = config_type
 
     def get_method(self, method, name):
-        """Import what is required to run the System."""
+        """Import what is required to run the System.
+
+        :param method:
+        :param name:
+        """
 
         to_import = '%s.%s' % (method.__name__, name)
         return __import__(to_import, fromlist="None")
 
     def validate_plugin(self):
-        if self.load_plugin():
+        """Return True if a plugin is importable.
+
+        :return: ``bol``
+        """
+        try:
+            self.load_plugin()
+        except tribble.DeadOnArival:
+            return False
+        else:
             return True
 
     def load_plugin(self):
+        """Return plugin dictionary map if it is importable.
+
+        :return: ``dict``
+        """
         for mod, name, package in pkgutil.iter_modules(plugins.__path__):
             try:
                 self.config_type = self.config_type.replace('-', '_')

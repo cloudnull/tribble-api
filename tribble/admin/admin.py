@@ -8,26 +8,31 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 import argparse
-import traceback
-import sys
 import datetime
+import sys
+import traceback
 
 import prettytable
 
 import tribble
-from tribble import info
 from tribble.admin import key_setup
-from tribble.common import rosetta
-from tribble.common import logger
-from tribble.common import system_config
-from tribble.common.db import db_proc
 from tribble.api.application import DB
+from tribble.common.db import db_proc
+from tribble.common import logger
+from tribble.common import rosetta
+from tribble.common import system_config
+from tribble import info
 
-
-CONFIG = system_config.ConfigureationSetup()
+CONFIG = system_config.ConfigurationSetup()
 
 
 class AdministrativeTasks(object):
+    """Provides the administration of Tribble.
+
+    :param args: ``dict``
+    :param log: ``object``
+    """
+
     def __init__(self, args, log):
         self.args = args
         self.log = log
@@ -38,33 +43,47 @@ class AdministrativeTasks(object):
 
     @staticmethod
     def file_write(path, conf):
+        """Write out the file
+
+        :param path: ``str``
+        :param conf: ``str``
         """
-        Write out the file
-        """
-        with open(path, 'w+') as conf_f:
+        with open(path, 'wb') as conf_f:
             conf_f.write(conf)
 
     def create_keys(self):
+        """Create a self signed certificate."""
         cert_path, key_path = key_setup.generate_self_signed_cert()
-        self.log.info('created :\n  Cert => %s\n  Key => %s' % (cert_path, key_path))
+        self.log.info(
+            'created :\n  Cert => %s\n  Key => %s' % (cert_path, key_path)
+        )
 
     def create_db_models(self):
+        """Execute the create_all method and create the DB."""
         DB.create_all()
         self.log.info('Database Models have been created')
 
     def delete_user(self):
+        """Delete a user in the Tribble DB.
+
+        :return: ``str``
+        """
         try:
             sess = DB.session
             user_query = db_proc.get_user_id(user_name=self.user)
             db_proc.delete_item(session=sess, item=user_query)
-        except Exception, exp:
-            print traceback.format_exc()
-            print 'Failed to delete user\nERROR : %s' % exp
+        except Exception as exp:
+            self.log.error(traceback.format_exc())
+            return 'Failed to delete user\nERROR : %s' % exp
         else:
             db_proc.commit_session(session=sess)
             self.log.warn('User %s was deleted' % self.user)
 
     def create_user(self):
+        """Create a user in the Tribble DB.
+
+        :return: ``str``
+        """
         try:
             sess = DB.session
             new_user = db_proc.post_user(
@@ -76,17 +95,21 @@ class AdministrativeTasks(object):
             )
             db_proc.add_item(session=sess, item=new_user)
             db_proc.commit_session(session=sess)
-        except Exception, exp:
-            print 'Failed to create user\nERROR : %s' % exp
+        except Exception as exp:
+            return 'Failed to create user\nERROR : %s' % exp
         else:
             self.log.info('User %s was created' % self.user)
 
     def reset_user(self):
+        """Reset a user in the Tribble DB.
+
+        :return: ``str``
+        """
         try:
             sess = DB.session
             user_query = db_proc.get_user_id(self.user)
             if not user_query:
-                print('No User Found.')
+                return 'No User Found.'
             else:
                 user_query.updated_at = datetime.datetime.utcnow()
                 user_query.dcsecret = rosetta.encrypt(
@@ -95,12 +118,15 @@ class AdministrativeTasks(object):
                 )
                 db_proc.commit_session(session=sess)
         except Exception:
-            print traceback.format_exc()
+            self.log.error(traceback.format_exc())
         else:
             self.log.warn('User %s was reset' % self.user)
 
-    @staticmethod
-    def user_list():
+    def user_list(self):
+        """Print out a table of all users in the Tribble DB.
+
+        :return: ``str``
+        """
         try:
             table = prettytable.PrettyTable(['Type', 'User', 'Date Created'])
             users = db_proc.get_users()
@@ -111,14 +137,15 @@ class AdministrativeTasks(object):
                     user_type = 'user'
                 table.add_row([user_type, user.dcuser, user.created_at])
         except Exception:
-            print traceback.format_exc()
+            self.log.error(traceback.format_exc())
         else:
-            print table
+            return table
 
 
 def admin_args():
-    """
-    Look for flags, these are all of the available start options.
+    """Setup all available arguments.
+
+    :return args: ``dict``
     """
     parser = argparse.ArgumentParser(
         formatter_class=lambda prog: argparse.HelpFormatter(
@@ -231,7 +258,11 @@ def admin_args():
 
 
 def admin_executable():
-    """Begin Administration Applications."""
+    """Execute the main method.
+
+    When executing this method will get the "method" from the parsed arguments
+    and then execute the class function.
+    """
     default_config = CONFIG.config_args()
     log = logger.logger_setup(
         name='tribble-api',
@@ -243,6 +274,6 @@ def admin_executable():
 
     try:
         action = getattr(admin, args['method'])
-        action()
+        print(action())
     except Exception as exp:
         raise tribble.NoKnownMethod('no method loaded, error: %s' % exp)
