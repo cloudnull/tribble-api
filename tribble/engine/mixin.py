@@ -7,28 +7,32 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import traceback
 import logging
 import multiprocessing as multi
+import traceback
 
-from kombu.mixins import ConsumerMixin
+from kombu import mixins
 
-from tribble.common import rpc
 from tribble.common.db import zone_status
+from tribble.common import rpc
+from tribble.common import system_config
 from tribble.engine import constructor
 from tribble.engine import engine_maps
-from tribble.common import system_config
 
 
 CONFIG = system_config.ConfigurationSetup()
 LOG = logging.getLogger('tribble-engine')
 
 
-class Worker(ConsumerMixin):
-    """Rip messages from Queue and then consume them."""
+class Worker(mixins.ConsumerMixin):
+    """Rip messages from Queue and then consume them.
+
+    Open a worker connection for a consumer.
+
+    :param connection: ``object``
+    """
 
     def __init__(self, connection):
-        """Open a worker connection for a consumer."""
         self.connection = connection
         self.active_jobs = []
         self.state = None
@@ -36,10 +40,12 @@ class Worker(ConsumerMixin):
     def work_doer(self, cell):
         """This is the "doing part of the work thread.
 
-        Once an Item is taken out of the queue, it is processed. The first action
-        of the process is to authenticate. If authentication is good the item will
-        be processed. If authentication is bad, then the method will log the
-        authentication failure, or raise an exception.
+        Once an Item is taken out of the queue, it is processed. The first
+        action of the process is to authenticate. If authentication is good
+        the item will be processed. If authentication is bad, then the method
+        will log the authentication failure, or raise an exception.
+
+        :param cell: ``dict``
         """
 
         deployment_manager = constructor.InstanceDeployment(packet=cell)
@@ -69,7 +75,11 @@ class Worker(ConsumerMixin):
             self.state.error(error_msg=msg)
 
     def get_consumers(self, Consumer, channel):
-        """Get the consumer."""
+        """Get the consumer.
+
+        :param Consumer: ``object``
+        :param channel: ``str``
+        """
         return [
             Consumer(
                 queues=[rpc.load_queues(self.connection)],
@@ -88,7 +98,10 @@ class Worker(ConsumerMixin):
                 self.active_jobs.remove(job)
 
     def _process_task(self, message):
-        """Execute the code."""
+        """Execute the code.
+
+        :param message: ``str``
+        """
         try:
             job = multi.Process(target=self.work_doer, args=(message,))
             self.active_jobs.append(job)
@@ -100,7 +113,13 @@ class Worker(ConsumerMixin):
             self.join_active()
 
     def process_task(self, body, message):
-        """Execute the code."""
+        """Execute the code and ack a message once it's been processes.
+
+        If an exception happens the message will be rejected.
+
+        :param message: ``str``
+        :param body: ``object``
+        """
         try:
             self.state = zone_status.ZoneState(cell=body)
             if message.acknowledged is not True:

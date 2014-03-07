@@ -7,11 +7,11 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import traceback
 import logging
+import traceback
 
-from tribble.common.db import db_proc
 from tribble.api.application import DB
+from tribble.common.db import db_proc
 
 
 LOG = logging.getLogger('tribble-api')
@@ -78,7 +78,7 @@ class ZoneState(object):
             config = db_proc.get_configmanager(skm=self.schematic)
             db_proc.delete_item(session=sess, item=self.schematic)
             db_proc.delete_item(session=sess, item=config)
-        except AttributeError, exp:
+        except AttributeError as exp:
             LOG.info('No Zone To Delete as No Zone was Found ==> %s', exp)
         else:
             db_proc.commit_session(session=sess)
@@ -101,7 +101,7 @@ class ZoneState(object):
                 key = db_proc.get_instanceskeys(zon=self.zone)
                 db_proc.delete_item(session=sess, item=self.zone)
                 db_proc.delete_item(session=sess, item=key)
-        except AttributeError, exp:
+        except AttributeError as exp:
             LOG.error('No Zone To Delete as No Zone was Found ==> %s', exp)
         else:
             db_proc.commit_session(session=sess)

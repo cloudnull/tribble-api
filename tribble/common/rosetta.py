@@ -7,8 +7,9 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import os
 import hashlib
+import os
+
 from Crypto.Cipher import AES
 
 

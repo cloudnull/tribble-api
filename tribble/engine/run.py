@@ -9,8 +9,8 @@
 # =============================================================================
 import traceback
 
-from tribble.common import rpc
 from tribble.common import logger
+from tribble.common import rpc
 from tribble.common import system_config
 from tribble.engine import mixin
 
@@ -19,6 +19,11 @@ CONFIG = system_config.ConfigurationSetup()
 
 
 def log_level(debug):
+    """Return the default Log level.
+
+    :param debug:
+    :return: ``str``
+    """
     if debug is True:
         return 'DEBUG'
     else:
@@ -26,12 +31,15 @@ def log_level(debug):
 
 
 def executable():
+    """Run the engine."""
     default_config = CONFIG.config_args()
     debug = default_config.get('debug_mode', False)
     log = logger.logger_setup(name='tribble-engine', debug_logging=debug)
 
     handlers = ['tribble-api', 'tribble-engine']
-    rpc.setup_logging(loglevel=log_level(debug=debug), loggers=handlers)
+    rpc.rpc_logging_service(
+        log_level=log_level(debug=debug), handlers=handlers
+    )
 
     conn = rpc.connect()
     try:

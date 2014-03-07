@@ -10,6 +10,7 @@
 # =============================================================================
 import local_load
 
+
 local_path = local_load.os.path.join(
     local_load.possible_topdir, 'tribble', '__init__.py'
 )
@@ -17,4 +18,4 @@ if local_load.os.path.exists(local_path):
     local_load.sys.path.insert(0, local_load.possible_topdir)
     from tribble.admin import key_setup
     cert_path, key_path = key_setup.generate_self_signed_cert()
-    print 'created cert = %s and key = %s' % (cert_path, key_path)
+    print('created cert = %s and key = %s' % (cert_path, key_path))

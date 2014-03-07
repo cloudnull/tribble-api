@@ -11,13 +11,13 @@ import datetime
 
 from sqlalchemy import and_
 
-from tribble.engine import utils
 from tribble.common.db.models import CloudAuth
-from tribble.common.db.models import Schematics
 from tribble.common.db.models import ConfigManager
 from tribble.common.db.models import Instances
 from tribble.common.db.models import InstancesKeys
+from tribble.common.db.models import Schematics
 from tribble.common.db.models import Zones
+from tribble.engine import utils
 
 
 def post_user(admin, user, encrypted):
@@ -83,6 +83,7 @@ def post_instanceskeys(pub, pri, sshu, key_name):
 
 def post_schematic(con, uid, post):
     """post a new row for a schematic.
+
     :param con: ``object``
     :param uid: ``str``
     :param post: ``dict``
@@ -274,7 +275,7 @@ def get_schematics(uid):
 
 def get_zones(skm):
     """Return all zones from a provided Schematic.
-    
+
     :param skm: ``object``
     :return: ``object``
     """
@@ -310,7 +311,7 @@ def get_zones_by_ids(skm, zon_ids):
 
 def get_configmanager(skm):
     """Return configuration management from a provided schematic.
-    
+
     :param skm: ``skm``
     :return: ``object``
     """

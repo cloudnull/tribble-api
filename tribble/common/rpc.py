@@ -7,12 +7,12 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import json
 import logging
 import traceback
-import json
 
 import kombu
-from kombu.utils.debug import setup_logging
+from kombu.utils import debug
 
 from tribble.common import system_config
 
@@ -20,6 +20,15 @@ from tribble.common import system_config
 CONFIG = system_config.ConfigurationSetup()
 RPC_CFG = CONFIG.config_args('rpc')
 LOG = logging.getLogger('tribble-api')
+
+
+def rpc_logging_service(log_level, handlers):
+    """Setup an RPC logger.
+
+    :param log_level: ``object``
+    :param handlers: ``object``
+    """
+    debug.setup_logging(loglevel=log_level, loggers=handlers)
 
 
 def load_queues(connection):

@@ -7,15 +7,20 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import sys
-import os
 import ConfigParser
+import os
 import stat
+import sys
 
 from tribble.info import __appname__
 
 
 def is_int(value):
+    """Return int if the value can be an int.
+
+    :param value: ``str``
+    :return: ``int`` :return: ``str``
+    """
     try:
         return int(value)
     except ValueError:
@@ -79,6 +84,8 @@ class ConfigurationSetup(object):
                     value = is_int(value=value)
                 self.args[name] = value
         except Exception as exp:
-            raise SystemExit('Failure Reading in the configuration file. %s' % exp)
+            raise SystemExit(
+                'Failure Reading in the configuration file. %s' % exp
+            )
         else:
             return self.args

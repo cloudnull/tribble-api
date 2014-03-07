@@ -7,13 +7,11 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import collections
+import multiprocessing
 import random
 import string
 import time
-import multiprocessing
-from multiprocessing import cpu_count
-from multiprocessing import Process
-from collections import deque
 
 import tribble
 from tribble.common import system_config
@@ -90,7 +88,9 @@ class EngineParser(object):
             self.specs[item] = self.specs[item].lower()
 
     def _run(self, init_items):
-        """Parser Example:
+        """Run the method.
+
+        Parser Example:
         'required_args': {
             'ex_force_auth_url': {
                 'get': 'cloud_url',
@@ -143,8 +143,7 @@ def escape_quote(item):
 
 
 def rand_string(length=15):
-    """
-    Generate a Random string
+    """Generate a Random string.
 
     :param length: ``int``
     :return: ``str``
@@ -169,16 +168,16 @@ def worker_proc(job_action, num_jobs, t_args=None):
     """
     proc_name = '%s-Worker' % str(job_action).split()[2]
     if t_args:
-        processes = deque(
-            [Process(
+        processes = collections.deque(
+            [multiprocessing.Process(
                 name=proc_name,
                 target=job_action,
                 args=(t_args,)
             ) for _ in range(num_jobs)]
         )
     else:
-        processes = deque(
-            [Process(
+        processes = collections.deque(
+            [multiprocessing.Process(
                 name=proc_name,
                 target=job_action
             ) for _ in range(num_jobs)]
@@ -235,8 +234,10 @@ def retryloop(attempts, timeout=None, delay=None, backoff=1):
 
     Example: Function for retring an action.
     >>> for retry in retryloop(attempts=10, timeout=30, delay=1, backoff=1):
-    ...     something()
-    ...     if somecondition:
+    ...     # perform some action and if something happens that needs a retry
+    ...     # execute the retry() method.
+    ...     something = True
+    ...     if something is True:
     ...         retry()
 
     :param attempts: ``int``

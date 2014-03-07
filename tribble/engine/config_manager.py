@@ -7,12 +7,11 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import traceback
 import logging
+import traceback
 
 from tribble.common import plugin_loader
 from tribble.engine import utils
-
 
 LOG = logging.getLogger('tribble-engine')
 
@@ -30,7 +29,7 @@ except Exception:
 
 
 class ConfigManager(utils.EngineParser):
-    """
+    """Build a script for use within a configuration management system.
 
     @inherits :class: ``utils.EngineParser.__init__``
     :param packet: ``dict``

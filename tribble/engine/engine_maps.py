@@ -36,9 +36,10 @@ required_args = dict
   "comma_split"
   "make"
 CHOICES = dict
-- Choices has a special verb, if the cloud provider only has one provider then
-  the verb to use would be "only". If the cloud provider has more than one
-  provider each provider is KEY:value with the KEY in all capital letters.
+- Choices has a special verb, if the cloud types.Provider only has one
+  "types.Provider" then the verb to use would be "only". If the cloud
+  "types.Provider" has more than one "types.Provider" each "types.Provider"
+  is KEY:value with the KEY in all capital letters.
 
 
 The jobs map contains all of the available application methods. The top level
@@ -50,7 +51,7 @@ jobs = list
 """
 
 
-from libcloud.compute.types import Provider
+from libcloud.compute import types
 
 
 CLOUD_APP_MAP = {
@@ -86,7 +87,7 @@ CLOUD_APP_MAP = {
             }
         },
         'CHOICES': {
-            'only': Provider.RACKSPACE
+            'only': types.Provider.RACKSPACE
         }
     },
     'VMWARE': {
@@ -103,7 +104,7 @@ CLOUD_APP_MAP = {
             }
         },
         'CHOICES': {
-            'only': Provider.VCLOUD
+            'only': types.Provider.VCLOUD
         }
     },
     'OPENSTACK': {
@@ -148,7 +149,7 @@ CLOUD_APP_MAP = {
             }
         },
         'CHOICES': {
-            'only': Provider.OPENSTACK
+            'only': types.Provider.OPENSTACK
         }
     },
     'AMAZON': {
@@ -172,14 +173,14 @@ CLOUD_APP_MAP = {
             }
         },
         'CHOICES': {
-            'AP_NORTHEAST': Provider.EC2_AP_NORTHEAST,
-            'AP_SOUTHEAST': Provider.EC2_AP_SOUTHEAST,
-            'AP_SOUTHEAST2': Provider.EC2_AP_SOUTHEAST2,
-            'EU_WEST': Provider.EC2_EU_WEST,
-            'US_EAST': Provider.EC2_US_EAST,
-            'US_WEST': Provider.EC2_US_WEST,
-            'US_WEST_OREGON': Provider.EC2_US_WEST_OREGON,
-            'SA_EAST': Provider.EC2_SA_EAST
+            'AP_NORTHEAST': types.Provider.EC2_AP_NORTHEAST,
+            'AP_SOUTHEAST': types.Provider.EC2_AP_SOUTHEAST,
+            'AP_SOUTHEAST2': types.Provider.EC2_AP_SOUTHEAST2,
+            'EU_WEST': types.Provider.EC2_EU_WEST,
+            'US_EAST': types.Provider.EC2_US_EAST,
+            'US_WEST': types.Provider.EC2_US_WEST,
+            'US_WEST_OREGON': types.Provider.EC2_US_WEST_OREGON,
+            'SA_EAST': types.Provider.EC2_SA_EAST
         }
     }
 }

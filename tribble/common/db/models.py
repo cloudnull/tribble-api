@@ -7,7 +7,7 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-from uuid import uuid4 as uuid
+import uuid
 
 from sqlalchemy.orm import relation
 
@@ -57,7 +57,7 @@ class CloudAuth(DB.Model):
     id = DB.Column(
         'id',
         DB.VARCHAR(length=200),
-        default=uuid,
+        default=uuid.uuid4(),
         primary_key=True,
         nullable=False
     )
@@ -114,7 +114,7 @@ class InstancesKeys(DB.Model):
     id = DB.Column(
         'id',
         DB.VARCHAR(length=200),
-        default=uuid,
+        default=uuid.uuid4(),
         primary_key=True,
         nullable=False,
         autoincrement=True
@@ -180,7 +180,7 @@ class ConfigManager(DB.Model):
     id = DB.Column(
         'id',
         DB.VARCHAR(length=200),
-        default=uuid,
+        default=uuid.uuid4(),
         primary_key=True,
         nullable=False,
         autoincrement=True
@@ -280,7 +280,7 @@ class Schematics(DB.Model):
     id = DB.Column(
         'id',
         DB.VARCHAR(length=200),
-        default=uuid,
+        default=uuid.uuid4(),
         primary_key=True,
         nullable=False,
         autoincrement=True
@@ -428,7 +428,7 @@ class Zones(DB.Model):
     id = DB.Column(
         'id',
         DB.VARCHAR(length=200),
-        default=uuid,
+        default=uuid.uuid4(),
         primary_key=True,
         nullable=False,
         autoincrement=True
@@ -459,6 +459,7 @@ class Zones(DB.Model):
 
 class Instances(DB.Model):
     """Table for all created instances.
+
     If an instance is created it is recorded in this table and will pertain
     to a specified Zone.
 
@@ -507,7 +508,7 @@ class Instances(DB.Model):
     id = DB.Column(
         'id',
         DB.VARCHAR(length=200),
-        default=uuid,
+        default=uuid.uuid4(),
         primary_key=True,
         nullable=False,
         autoincrement=True

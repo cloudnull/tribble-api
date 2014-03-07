@@ -9,14 +9,14 @@
 # =============================================================================
 import logging
 
-from libcloud.compute.providers import get_driver
+from libcloud.compute import providers
 from libcloud import security
 
 import tribble
 from tribble.common.db import zone_status
-from tribble.engine import utils
 from tribble.common import system_config
 from tribble.engine import engine_maps as cam
+from tribble.engine import utils
 
 
 LOG = logging.getLogger('tribble-engine')
@@ -102,7 +102,7 @@ class ConnectionEngine(utils.EngineParser):
             msg = 'No Provider Found for driver "%s"' % self.cloud_provider
             raise tribble.CantContinue(msg)
 
-        return get_driver(provider_region)
+        return providers.get_driver(provider_region)
 
     def run(self):
         """Run the methods.

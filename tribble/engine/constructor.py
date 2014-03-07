@@ -8,27 +8,23 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 import errno
-from httplib import BadStatusLine
+import httplib
 import logging
-import traceback
 import time
+import traceback
 
-from libcloud.compute.base import DeploymentError
-from libcloud.compute.base import LibcloudError
-from libcloud.compute.types import NodeState
-from libcloud.compute.deployment import SSHKeyDeployment
-from libcloud.compute.deployment import MultiStepDeployment
-from libcloud.compute.deployment import ScriptDeployment
+from libcloud.compute import base
+from libcloud.compute import deployment
+from libcloud.compute import types
 
 import tribble
-import tribble.engine as engine
 from tribble.api.application import DB
 from tribble.common.db import db_proc
 from tribble.common.db import zone_status
+import tribble.engine as engine
+from tribble.engine import config_manager
 from tribble.engine import connection_engine
 from tribble.engine import utils
-from tribble.engine import config_manager
-
 
 LOG = logging.getLogger('tribble-engine')
 
@@ -64,7 +60,7 @@ class InstanceDeployment(object):
         if not self.driver:
             msg = 'No Available Connection'
             self.zone_status.error(error_msg=msg)
-            raise DeploymentError(msg)
+            raise base.DeploymentError(msg)
 
         image = self.user_specs['image'] = engine.ret_image(
             conn=self.driver, specs=self.packet
@@ -72,7 +68,7 @@ class InstanceDeployment(object):
         if not image:
             msg = 'No image_id found'
             self.zone_status.error(error_msg=msg)
-            raise DeploymentError(msg)
+            raise base.DeploymentError(msg)
 
         size = self.user_specs['size'] = engine.ret_size(
             conn=self.driver, specs=self.packet
@@ -80,7 +76,7 @@ class InstanceDeployment(object):
         if not size:
             msg = 'No size_id Found'
             self.zone_status.error(error_msg=msg)
-            raise DeploymentError(msg)
+            raise base.DeploymentError(msg)
 
         server_instances = int(self.packet.get('quantity', 1))
         utils.worker_proc(
@@ -101,11 +97,11 @@ class InstanceDeployment(object):
         LOG.debug(self.user_specs)
         LOG.info('Building Node Based on %s' % self.user_specs)
 
-        for deployment in self.deployment_methods:
+        for dep in self.deployment_methods:
             try:
-                action = getattr(self, '_%s' % deployment)
+                action = getattr(self, '_%s' % dep)
                 node = action(self.user_specs)
-            except DeploymentError, exp:
+            except base.DeploymentError as exp:
                 LOG.critical('Exception while Building Instance ==> %s' % exp)
                 self.zone_status.error(error_msg=exp)
                 self.check_for_dead_nodes()
@@ -130,7 +126,7 @@ class InstanceDeployment(object):
 
         try:
             node_list = self.driver.list_nodes()
-        except LibcloudError, exp:
+        except base.LibcloudError as exp:
             self.zone_status.error(error_msg=exp)
             LOG.warn('Error When getting Node list for Deleting ==> %s' % exp)
             return False
@@ -170,11 +166,11 @@ class InstanceDeployment(object):
         return config.check_configmanager()
 
     def ssh_deploy(self):
-        """Return a Libcloud MultiStepDeployment object.
-        
-        Prepare for an SSH deployment Method for any found config management 
+        """Return a Libcloud deployment.MultiStepDeployment object.
+
+        Prepare for an SSH deployment Method for any found config management
         and or scripts.
-        
+
         :return: ``object``
         """
         script = '/tmp/deployment_tribble_%s.sh'
@@ -182,19 +178,19 @@ class InstanceDeployment(object):
 
         public_key = self.packet.get('ssh_key_pub')
         if public_key:
-            ssh = SSHKeyDeployment(key=public_key)
+            ssh = deployment.SSHKeyDeployment(key=public_key)
             dep_action.append(ssh)
 
         conf_init = self._get_user_data(use_ssh=True)
         if conf_init:
             conf_init = str(conf_init)
-            con = ScriptDeployment(
+            con = deployment.ScriptDeployment(
                 name=script % utils.rand_string(), script=conf_init
             )
             dep_action.append(con)
 
         if dep_action:
-            return MultiStepDeployment(dep_action)
+            return deployment.MultiStepDeployment(dep_action)
 
     def _ssh_deploy(self, user_specs):
         """Deploy an instance via SSH.
@@ -237,7 +233,7 @@ class InstanceDeployment(object):
         dead_nodes = []
         name = self.user_specs['name']
         for node in all_nodes:
-            if node.name == name and node.state != NodeState.RUNNING:
+            if node.name == name and node.state != types.NodeState.RUNNING:
                 dead_nodes.append(node)
 
         if not dead_nodes:
@@ -268,20 +264,19 @@ class InstanceDeployment(object):
         """
 
         all_nodes = self._list_instances()
-        self.driver
         instances = [n for n in all_nodes if n.id == node.id]
         for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
             try:
                 instance = instances[0]
-                if instance.state == NodeState.PENDING:
+                if instance.state == types.NodeState.PENDING:
                     LOG.info('Waiting for active ==> %s' % instances)
                     _retry()
-                elif instance.state == NodeState.TERMINATED:
-                    raise DeploymentError(
+                elif instance.state == types.NodeState.TERMINATED:
+                    raise base.DeploymentError(
                         'ID:%s NAME:%s was Never Active and has since been'
                         ' Terminated' % (node.id, node.name)
                     )
-                elif instance.state == NodeState.UNKNOWN:
+                elif instance.state == types.NodeState.UNKNOWN:
                     msg = (
                         'State Unknown for the instance will retry to pull'
                         ' information on %s' % instances
@@ -293,10 +288,10 @@ class InstanceDeployment(object):
             except tribble.RetryError as exp:
                 self.zone_status.error(error_msg=exp)
                 LOG.critical(exp)
-                raise DeploymentError(
+                raise base.DeploymentError(
                     'ID:%s NAME:%s was Never Active' % (node.id, node.name)
                 )
-            except BadStatusLine as exp:
+            except httplib.BadStatusLine as exp:
                 self.zone_status.error(error_msg=exp)
                 LOG.critical(exp)
                 time.sleep(utils.stupid_hack())
@@ -307,17 +302,17 @@ class InstanceDeployment(object):
                 try:
                     if exp.errno in [errno.ECONNREFUSED, errno.ECONNRESET]:
                         time.sleep(utils.stupid_hack())
-                        raise DeploymentError('No Available Connection')
-                except tribble.RetryError, exp:
+                        raise base.DeploymentError('No Available Connection')
+                except tribble.RetryError as exp:
                     LOG.critical(exp)
                     self.zone_status.error(error_msg=exp)
-                    raise DeploymentError(
+                    raise base.DeploymentError(
                         'ID:%s NAME:%s was Never Active' % (node.id, node.name)
                     )
                 except Exception as exp:
                     self.zone_status.error(error_msg=exp)
                     LOG.critical(exp)
-                    raise DeploymentError(
+                    raise base.DeploymentError(
                         'ID:%s NAME:%s was Never Active' % (node.id, node.name)
                     )
             else:
@@ -339,7 +334,7 @@ class InstanceDeployment(object):
             instances = db_proc.get_instance_ids(zon=zone, ids=ids)
             for instance in instances:
                 sess = db_proc.delete_item(session=sess, item=instance)
-        except Exception, exp:
+        except Exception as exp:
             self.zone_status.error(error_msg=exp)
             LOG.info('Critical Issues when Removing Instances %s' % exp)
         else:
@@ -357,7 +352,7 @@ class InstanceDeployment(object):
             sess = db_proc.add_item(
                 session=sess, item=new_instance
             )
-        except Exception, exp:
+        except Exception as exp:
             self.zone_status.error(error_msg=exp)
             LOG.info('Critical Issues when Posting Instances %s' % exp)
         else:

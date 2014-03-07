@@ -8,8 +8,8 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 import logging
-import logging.handlers as lhs
 import os
+
 from tribble import info
 
 
