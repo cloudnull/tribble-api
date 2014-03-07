@@ -8,11 +8,15 @@
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
 import ConfigParser
+import logging
 import os
 import stat
 import sys
 
-from tribble.info import __appname__
+from tribble import info
+
+
+LOG = logging.getLogger('tribble-common')
 
 
 def is_int(value):
@@ -34,7 +38,9 @@ class ConfigurationSetup(object):
     """
     def __init__(self):
         self.args = {}
-        self.config_file = '/etc/%s/tribble.conf' % __appname__
+        self.config_file = os.path.join(
+            '/etc/', info.__appname__, 'tribble.conf'
+        )
         self.check_perms()
 
     def check_perms(self):
@@ -53,7 +59,7 @@ class ConfigurationSetup(object):
                         ' need to be "0600" or "0400"'
                     )
         else:
-            raise SystemExit('Config file %s not found,' % self.config_file)
+            LOG.error('Config file %s not found,' % self.config_file)
 
     def config_args(self, section='default'):
         """Loop through the configuration file and set all of our values.
@@ -84,8 +90,9 @@ class ConfigurationSetup(object):
                     value = is_int(value=value)
                 self.args[name] = value
         except Exception as exp:
-            raise SystemExit(
+            LOG.error(
                 'Failure Reading in the configuration file. %s' % exp
             )
+            return {}
         else:
             return self.args

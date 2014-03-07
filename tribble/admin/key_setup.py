@@ -12,10 +12,13 @@ import socket
 
 from OpenSSL import crypto
 
-from tribble.info import __appname__ as appname
+from tribble import info
 
 
-def generate_self_signed_cert(cert_dir='/etc/%s' % appname, is_valid=True):
+BASEDIR = os.path.join('/etc', info.__appname__)
+
+
+def generate_self_signed_cert(cert_dir=BASEDIR, is_valid=True):
     """Generate a SSL certificate.
 
     If the cert_path and the key_path are present they will be overwritten.
@@ -27,8 +30,8 @@ def generate_self_signed_cert(cert_dir='/etc/%s' % appname, is_valid=True):
 
     if not os.path.exists(cert_dir):
         os.makedirs(cert_dir)
-    cert_path = os.path.join(cert_dir, '%s.crt' % appname)
-    key_path = os.path.join(cert_dir, '%s.key' % appname)
+    cert_path = os.path.join(cert_dir, '%s.crt' % info.__appname__)
+    key_path = os.path.join(cert_dir, '%s.key' % info.__appname__)
 
     if os.path.exists(cert_path):
         os.unlink(cert_path)
@@ -44,7 +47,7 @@ def generate_self_signed_cert(cert_dir='/etc/%s' % appname, is_valid=True):
     cert.get_subject().C = 'US'
     cert.get_subject().ST = 'San Antonio'
     cert.get_subject().L = 'United States'
-    cert.get_subject().O = appname
+    cert.get_subject().O = info.__appname__
     cert.get_subject().OU = 'Tribble'
     if is_valid:
         _host_name = socket.gethostname()

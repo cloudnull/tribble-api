@@ -19,7 +19,7 @@ from tribble.common import system_config
 
 CONFIG = system_config.ConfigurationSetup()
 RPC_CFG = CONFIG.config_args('rpc')
-LOG = logging.getLogger('tribble-api')
+LOG = logging.getLogger('tribble-common')
 
 
 def rpc_logging_service(log_level, handlers):
@@ -37,6 +37,9 @@ def load_queues(connection):
     :param connection: ``object``
     :return: ``object``
     """
+    if connection is False:
+        return False
+
     _routing_key = get_routing_key()
     _exchange = _load_exchange(connection)
     return declare_queue(_routing_key, connection, _exchange)
@@ -56,6 +59,9 @@ def connect():
 
     :return: ``object``
     """
+    if not RPC_CFG:
+        return False
+
     return kombu.Connection(
         hostname=RPC_CFG.get('host', '127.0.0.1'),
         port=RPC_CFG.get('port', 5672),
@@ -123,7 +129,7 @@ def get_routing_key(routing_key='control_exchange'):
     :param routing_key: ``str``
     :return: ``str``
     """
-    return '%s.info' % RPC_CFG[routing_key]
+    return '%s.info' % RPC_CFG.get(routing_key)
 
 
 def default_publisher(message):

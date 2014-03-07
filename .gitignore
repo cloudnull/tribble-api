@@ -7,6 +7,8 @@
 *.o
 *.so
 *.pyc
+build/
+dist/
 
 # Packages #
 ############
@@ -35,6 +37,8 @@
 .Spotlight-V100
 .Trashes
 .idea
+.tox
+*.egg-info
 Icon?
 ehthumbs.db
 Thumbs.db

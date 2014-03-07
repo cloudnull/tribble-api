@@ -10,11 +10,11 @@
 import logging
 import traceback
 
-from tribble.api.application import DB
+from tribble.api import application
 from tribble.common.db import db_proc
 
-
-LOG = logging.getLogger('tribble-api')
+DB = application.DB
+LOG = logging.getLogger('tribble-common')
 
 
 class ZoneState(object):

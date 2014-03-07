@@ -7,10 +7,14 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
+import logging
 import pkgutil
 
 import tribble
 from tribble import plugins
+
+
+LOG = logging.getLogger('tribble-common')
 
 
 class PluginLoad(object):
@@ -57,8 +61,9 @@ class PluginLoad(object):
                     return method.CONFIG_APP_MAP[self.config_type]
             except Exception:
                 msg = 'Plugin "%s" failed to load correctly' % name
+                LOG.error(msg)
                 raise tribble.DeadOnArival(msg)
         else:
-            raise tribble.DeadOnArival(
-                'No Plugin "%s" found' % self.config_type
-            )
+            msg = 'No Plugin "%s" found' % self.config_type
+            LOG.warn(msg)
+            raise tribble.DeadOnArival(msg)

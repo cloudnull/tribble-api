@@ -32,12 +32,11 @@ def encrypt(password, plaintext):
     padding_length = 16 - (len(plaintext) % 16)
     padded_plaintext = plaintext + chr(padding_length) * padding_length
     derived_key = password
+
     for _ in range(0, DERIVATION_ROUNDS):
-        derived_key = hashlib.sha256(
-            '%s%s' % (
-                str(derived_key),
-                str(salt))
-        ).digest()
+        _derived_key = hashlib.sha256('%s%s' % (str(derived_key), str(salt)))
+        derived_key = _derived_key.digest()
+
     derived_key = derived_key[:KEY_SIZE]
     cipher_spec = AES.new(derived_key, mode, _iv)
     ciphertext = cipher_spec.encrypt(padded_plaintext)
@@ -61,9 +60,11 @@ def decrypt(password, ciphertext):
         decoded_ciphertext[start_salt:]
     )
     derived_key = password
+
     for _ in range(0, DERIVATION_ROUNDS):
-        derived_key = hashlib.sha256('%s%s' % (str(derived_key),
-                                               str(salt))).digest()
+        _derived_key = hashlib.sha256('%s%s' % (str(derived_key), str(salt)))
+        derived_key = _derived_key.digest()
+
     derived_key = derived_key[:KEY_SIZE]
     cipher_spec = AES.new(derived_key, mode, _iv)
     plaintext_with_padding = cipher_spec.decrypt(data)

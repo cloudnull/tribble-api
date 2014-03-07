@@ -34,9 +34,11 @@ def executable():
     """Run the engine."""
     default_config = CONFIG.config_args()
     debug = default_config.get('debug_mode', False)
-    log = logger.logger_setup(name='tribble-engine', debug_logging=debug)
 
-    handlers = ['tribble-api', 'tribble-engine']
+    handlers = ['tribble-common', 'tribble-engine']
+    for handler in handlers:
+        logger.logger_setup(name=handler, debug_logging=debug)
+
     rpc.rpc_logging_service(
         log_level=log_level(debug=debug), handlers=handlers
     )
@@ -48,7 +50,7 @@ def executable():
     except KeyboardInterrupt:
         raise SystemExit('Process Killed.')
     except Exception:
-        log.error(traceback.format_exc())
+        print(traceback.format_exc())
     else:
         conn.release()
 

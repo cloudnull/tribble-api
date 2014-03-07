@@ -1,3 +1,4 @@
+pycrypto
 paramiko
 requests
 PyCrypto
@@ -5,7 +6,6 @@ PyChef
 sqlalchemy
 argparse
 apache-libcloud
-mysql-python
 Flask
 Flask-SQLAlchemy
 prettytable

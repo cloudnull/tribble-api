@@ -11,12 +11,7 @@ import datetime
 
 from sqlalchemy import and_
 
-from tribble.common.db.models import CloudAuth
-from tribble.common.db.models import ConfigManager
-from tribble.common.db.models import Instances
-from tribble.common.db.models import InstancesKeys
-from tribble.common.db.models import Schematics
-from tribble.common.db.models import Zones
+from tribble.common.db import models
 from tribble.engine import utils
 
 
@@ -27,7 +22,7 @@ def post_user(admin, user, encrypted):
     :param user: ``str``
     :param encrypted ``str``
     """
-    return CloudAuth(
+    return models.CloudAuth(
         user_type=admin,
         dcuser=user,
         created_at=datetime.datetime.utcnow(),
@@ -44,7 +39,7 @@ def post_zones(skm, zon, ssh):
     :param ssh ``object`` SSH
     :return: Zone: ``object``
     """
-    return Zones(
+    return models.Zones(
         schematic_id=skm.id,
         config_runlist=zon.get('config_runlist'),
         cloud_region=zon.get('cloud_region'),
@@ -73,7 +68,7 @@ def post_instanceskeys(pub, pri, sshu, key_name):
     :param sshu ``str`` SSH User
     :param key_name: ``object``
     """
-    return InstancesKeys(
+    return models.InstancesKeys(
         ssh_user=sshu,
         ssh_key_pub=pub,
         ssh_key_pri=pri,
@@ -89,7 +84,7 @@ def post_schematic(con, uid, post):
     :param post: ``dict``
     :return: ``object``
     """
-    return Schematics(
+    return models.Schematics(
         auth_id=uid,
         config_id=con.id,
         cloud_key=post.get('cloud_key'),
@@ -108,7 +103,7 @@ def post_configmanager(post):
     :param post: ``dict``
     :return: ``object``
     """
-    return ConfigManager(
+    return models.ConfigManager(
         config_type=post.get('config_type'),
         config_key=post.get('config_key'),
         config_server=post.get('config_server'),
@@ -125,7 +120,7 @@ def post_instance(ins, put):
     :param put: ``dict``
     :return: ``object``
     """
-    return Instances(
+    return models.Instances(
         instance_id=str(ins.id),
         public_ip=str(ins.public_ips),
         private_ip=str(ins.private_ips),
@@ -240,7 +235,7 @@ def get_users():
 
     :return: ``object``
     """
-    return CloudAuth.query.order_by(CloudAuth.dcuser)
+    return models.CloudAuth.query.order_by(models.CloudAuth.dcuser)
 
 
 def get_user_id(user_name):
@@ -249,7 +244,9 @@ def get_user_id(user_name):
     :param user_name: ``str``
     :return: ``object``
     """
-    return CloudAuth.query.filter(CloudAuth.dcuser == user_name).first()
+    return models.CloudAuth.query.filter(
+        models.CloudAuth.dcuser == user_name
+    ).first()
 
 
 def get_schematic_id(sid, uid):
@@ -259,8 +256,8 @@ def get_schematic_id(sid, uid):
     :param uid: ``str``
     :return: ``object``
     """
-    return Schematics.query.filter(
-        Schematics.auth_id == uid, Schematics.id == sid
+    return models.Schematics.query.filter(
+        models.Schematics.auth_id == uid, models.Schematics.id == sid
     ).first()
 
 
@@ -270,7 +267,9 @@ def get_schematics(uid):
     :param uid: ``str``
     :return: ``object``
     """
-    return Schematics.query.filter(Schematics.auth_id == uid).all()
+    return models.Schematics.query.filter(
+        models.Schematics.auth_id == uid
+    ).all()
 
 
 def get_zones(skm):
@@ -279,7 +278,7 @@ def get_zones(skm):
     :param skm: ``object``
     :return: ``object``
     """
-    return Zones.query.filter(Zones.schematic_id == skm.id).all()
+    return models.Zones.query.filter(models.Zones.schematic_id == skm.id).all()
 
 
 def get_zones_by_id(skm, zid):
@@ -289,22 +288,22 @@ def get_zones_by_id(skm, zid):
     :param zid: ``str``
     :return: ``object``
     """
-    return Zones.query.filter(
-        Zones.schematic_id == skm.id,
-        Zones.id == zid
+    return models.Zones.query.filter(
+        models.Zones.schematic_id == skm.id,
+        models.Zones.id == zid
     ).first()
 
 
 def get_zones_by_ids(skm, zon_ids):
-    """Return Zones by IDs.
+    """Return models.Zones by IDs.
 
     :param skm: ``object``
     :param zon_ids: ``list``
     :return: ``object``
     """
-    return Zones.query.filter(
+    return models.Zones.query.filter(
         and_(
-            Zones.schematic_id == skm.id, Zones.id.in_(zon_ids)
+            models.Zones.schematic_id == skm.id, models.Zones.id.in_(zon_ids)
         )
     ).all()
 
@@ -315,8 +314,8 @@ def get_configmanager(skm):
     :param skm: ``skm``
     :return: ``object``
     """
-    return ConfigManager.query.filter(
-        ConfigManager.id == skm.config_id
+    return models.ConfigManager.query.filter(
+        models.ConfigManager.id == skm.config_id
     ).first()
 
 
@@ -326,7 +325,9 @@ def get_instances(zon):
     :param zon: ``object``
     :return: ``object``
     """
-    return Instances.query.filter(Instances.zone_id == zon.id).all()
+    return models.Instances.query.filter(
+        models.Instances.zone_id == zon.id
+    ).all()
 
 
 def get_instance_id(zon, iid):
@@ -336,8 +337,8 @@ def get_instance_id(zon, iid):
     :param iid: ``object``
     :return: ``object``
     """
-    return Instances.query.filter(
-        Instances.zone_id == zon.id, Instances.id == iid
+    return models.Instances.query.filter(
+        models.Instances.zone_id == zon.id, models.Instances.id == iid
     ).first()
 
 
@@ -348,9 +349,10 @@ def get_instance_ids(zon, ids):
     :param ids: ``list``
     :return: ``object``
     """
-    return Instances.query.filter(
+    return models.Instances.query.filter(
         and_(
-            Instances.zone_id == zon.id, Instances.instance_id.in_(ids)
+            models.Instances.zone_id == zon.id,
+            models.Instances.instance_id.in_(ids)
         )
     ).all()
 
@@ -361,8 +363,8 @@ def get_instanceskeys(zon):
     :param zon: ``object``
     :return: ``object``
     """
-    return InstancesKeys.query.filter(
-        InstancesKeys.id == zon.credential_id
+    return models.InstancesKeys.query.filter(
+        models.InstancesKeys.id == zon.credential_id
     ).first()
 
 

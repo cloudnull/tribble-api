@@ -20,10 +20,10 @@ def executable():
 
     default_config = CONFIG.config_args()
 
-    logger.logger_setup(
-        name='tribble-api',
-        debug_logging=default_config.get('debug_mode', False)
-    )
+    debug = default_config.get('debug_mode', False)
+    handlers = ['tribble-common', 'tribble-api']
+    for handler in handlers:
+        logger.logger_setup(name=handler, debug_logging=debug)
 
     wsgi_server = wsgi.Server()
     wsgi_server.start()

@@ -38,7 +38,10 @@ if default_config.get('debug_mode', False) is True:
     app.debug = True
     app.config['SQLALCHEMY_ECHO'] = True
 
-app.config['SQLALCHEMY_DATABASE_URI'] = default_config['sql_connection']
+sql_connection = default_config.get(
+    'sql_connection', 'sqlite:////var/tribble/tribble.db'
+)
+app.config['SQLALCHEMY_DATABASE_URI'] = sql_connection
 app.config['SQLALCHEMY_POOL_SIZE'] = int(sql_config.get('pool_size', 250))
 app.config['SQLALCHEMY_POOL_TIMEOUT'] = sql_config.get('pool_timeout', 60)
 app.config['SQLALCHEMY_POOL_RECYCLE'] = sql_config.get('pool_recycle', 120)

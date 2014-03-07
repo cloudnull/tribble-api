@@ -11,7 +11,7 @@ import logging
 
 import flask
 
-from tribble.api.views import not_found
+from tribble.api import views
 from tribble.common.db import db_proc
 from tribble.common import rosetta
 from tribble import info
@@ -45,7 +45,7 @@ def cloudauth():
 
     headers = flask.request.headers
     if not headers:
-        return not_found(message='Go Away', error=400)
+        return views.not_found(message='Go Away', error=400)
 
     auth_headers = [
         ('x-user' in headers),
@@ -62,7 +62,9 @@ def cloudauth():
             LOG.debug('%s %s', flask.request.method, flask.request.path)
             return flask.jsonify(state), 200
         else:
-            return not_found(message='No Credentials Provided', error=401)
+            return views.not_found(
+                message='No Credentials Provided', error=401
+            )
     else:
         try:
             secrete = decode(
@@ -75,10 +77,10 @@ def cloudauth():
                    ' are present and correct')
             LOG.warn('Failed Authentication => Headers %s => Exception %s'
                      % (headers, exp))
-            return not_found(message=msg, error=401)
+            return views.not_found(message=msg, error=401)
         else:
             if not secrete:
                 msg = 'No Valid Credentials Provided'
-                return not_found(message=msg, error=401)
+                return views.not_found(message=msg, error=401)
             else:
                 LOG.debug('Authentication Success => Headers %s' % headers)

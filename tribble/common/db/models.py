@@ -11,7 +11,10 @@ import uuid
 
 from sqlalchemy.orm import relation
 
-from tribble.api.application import DB
+from tribble.api import application
+
+
+DB = application.DB
 
 
 class CloudAuth(DB.Model):

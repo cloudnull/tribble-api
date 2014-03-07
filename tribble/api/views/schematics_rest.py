@@ -13,7 +13,7 @@ import traceback
 import flask
 
 import tribble
-from tribble.api.application import DB
+from tribble.api import application
 from tribble.api import utils
 from tribble.common.db import db_proc
 from tribble.common import plugin_loader
@@ -25,6 +25,7 @@ mod = flask.Blueprint('schematics', __name__)
 LOG = logging.getLogger('tribble-api')
 CONFIG = system_config.ConfigurationSetup()
 DEFAULT = CONFIG.config_args()
+DB = application.DB
 
 
 def _config_check(config_type):

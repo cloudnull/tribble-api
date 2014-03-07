@@ -12,7 +12,7 @@ import traceback
 
 import flask
 
-from tribble.api.application import DB
+from tribble.api import application
 from tribble.api import utils
 from tribble.common.db import db_proc
 from tribble.common.db import zone_status
@@ -24,6 +24,7 @@ mod = flask.Blueprint('zones', __name__)
 LOG = logging.getLogger('tribble-api')
 CONFIG = system_config.ConfigurationSetup()
 DEFAULT = CONFIG.config_args()
+DB = application.DB
 
 
 @mod.route('/v1/schematics/<sid>/zones', methods=['GET'])

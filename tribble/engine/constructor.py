@@ -18,7 +18,7 @@ from libcloud.compute import deployment
 from libcloud.compute import types
 
 import tribble
-from tribble.api.application import DB
+from tribble.api import application
 from tribble.common.db import db_proc
 from tribble.common.db import zone_status
 import tribble.engine as engine
@@ -26,7 +26,9 @@ from tribble.engine import config_manager
 from tribble.engine import connection_engine
 from tribble.engine import utils
 
+
 LOG = logging.getLogger('tribble-engine')
+DB = application.DB
 
 
 class InstanceDeployment(object):

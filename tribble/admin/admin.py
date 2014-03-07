@@ -16,13 +16,15 @@ import prettytable
 
 import tribble
 from tribble.admin import key_setup
-from tribble.api.application import DB
+from tribble.api import application
 from tribble.common.db import db_proc
 from tribble.common import logger
 from tribble.common import rosetta
 from tribble.common import system_config
 from tribble import info
 
+
+DB = application.DB
 CONFIG = system_config.ConfigurationSetup()
 
 
