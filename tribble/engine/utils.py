@@ -83,9 +83,9 @@ class EngineParser(object):
         """
         item, all_args, value = args
         if value == 'lower':
-            self.specs[item] = self.specs[item].upper()
-        elif value == 'upper':
             self.specs[item] = self.specs[item].lower()
+        elif value == 'upper':
+            self.specs[item] = self.specs[item].upper()
 
     def _run(self, init_items):
         """Run the method.

@@ -79,17 +79,20 @@ class ZoneState(object):
             db_proc.delete_item(session=sess, item=self.schematic)
             db_proc.delete_item(session=sess, item=config)
         except AttributeError as exp:
-            LOG.info('No Zone To Delete as No Zone was Found ==> %s', exp)
+            msg = 'Issues while removing Schematic => %s', exp
+            LOG.info(msg)
+            self.cell['zone_state'] = 'DELETE FAILED'
+            self.cell['zone_msg'] = msg
+            self.state_update()
         else:
             db_proc.commit_session(session=sess)
 
-    def delete_resource(self):
+    def delete_zone_resource(self):
         """Perform a zone resource delete.
 
         This will delete a zone as well as it's keys.
         """
         try:
-            sess = DB.session
             instances = db_proc.get_instances(zon=self.zone)
             if instances:
                 self.cell['zone_state'] = 'DELETE FAILED'
@@ -98,13 +101,13 @@ class ZoneState(object):
                 )
                 self.state_update()
             else:
+                sess = DB.session
                 key = db_proc.get_instanceskeys(zon=self.zone)
                 db_proc.delete_item(session=sess, item=self.zone)
                 db_proc.delete_item(session=sess, item=key)
+                db_proc.commit_session(session=sess)
         except AttributeError as exp:
             LOG.error('No Zone To Delete as No Zone was Found ==> %s', exp)
-        else:
-            db_proc.commit_session(session=sess)
 
     def state_update(self):
         """Perform a state update."""

@@ -22,7 +22,8 @@ def ret_size(conn, specs):
         if str(sz.id) == str(specs.get('size_id'))
     ]
     if not size:
-        raise tribble.NoSizeFound('Size not found')
+        size = str(specs.get('size_id'))
+        raise tribble.NoSizeFound('Size ID %s not found' % size)
     else:
         return size[0]
 
@@ -39,6 +40,7 @@ def ret_image(conn, specs):
         if str(im.id) == str(specs.get('image_id'))
     ]
     if not image:
-        raise tribble.NoImageFound('Image not found')
+        image = str(specs.get('image_id'))
+        raise tribble.NoImageFound('Image ID %s not found' % image)
     else:
         return image[0]

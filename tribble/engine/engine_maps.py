@@ -204,33 +204,27 @@ JOBS_MAP = {
     'schematic_delete': {
         'enter_state': 'delete',
         'exit_state': 'delete_schematic_resource',
-        'jobs': [
-            'vm_destroyer'
-        ]
     },
     'redeploy_delete': {
         'enter_state': 'delete',
-        'exit_state': 'delete_resource',
+        'exit_state': 'active',
         'jobs': [
             'vm_destroyer'
         ]
     },
     'zone_delete': {
         'enter_state': 'delete',
-        'exit_state': 'delete_resource',
-        'job': [
-            'vm_destroyer'
-        ]
+        'exit_state': 'delete_zone_resource',
     },
     'instance_delete': {
         'enter_state': 'delete',
-        'exit_state': 'delete_resource',
+        'exit_state': 'active',
         'jobs': [
             'vm_destroyer'
         ]
     },
     'reconfig': {
-        'enter_state': 'delete',
-        'exit_state': 'delete_resource',
+        'enter_state': 'reconfig',
+        'exit_state': 'active',
     }
 }

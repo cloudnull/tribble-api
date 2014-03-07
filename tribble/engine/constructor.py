@@ -133,7 +133,7 @@ class InstanceDeployment(object):
             LOG.warn('Error When getting Node list for Deleting ==> %s' % exp)
             return False
         else:
-            LOG.debug('All nodes in the customer API ==> %s' % node_list)
+            LOG.debug('API connected.')
 
         for node in node_list:
             if node.id in self.packet['uuids']:
@@ -144,8 +144,8 @@ class InstanceDeployment(object):
                 except Exception as exp:
                     self.zone_status.error(error_msg=exp)
                     LOG.info('Node %s NOT Deleted ==> %s' % (node.id, exp))
-                else:
-                    self._node_remove(ids=self.packet['uuids'])
+        else:
+            self._node_remove(ids=self.packet['uuids'])
 
     def _remove_user_data(self):
         """Return the user data.
@@ -335,7 +335,7 @@ class InstanceDeployment(object):
             )
             instances = db_proc.get_instance_ids(zon=zone, ids=ids)
             for instance in instances:
-                sess = db_proc.delete_item(session=sess, item=instance)
+                db_proc.delete_item(session=sess, item=instance)
         except Exception as exp:
             self.zone_status.error(error_msg=exp)
             LOG.info('Critical Issues when Removing Instances %s' % exp)

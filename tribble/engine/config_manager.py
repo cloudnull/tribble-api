@@ -58,7 +58,7 @@ class ConfigManager(utils.EngineParser):
 
             config_type = config_type.upper()
             plugin = plugin_loader.PluginLoad(config_type=config_type)
-            config_manager = plugin.load_plugin
+            config_manager = plugin.load_plugin()
 
             required_args = config_manager.get('required_args')
             self._run(init_items=required_args)
