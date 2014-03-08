@@ -47,9 +47,22 @@ class ZoneState(object):
         self.cell['zone_state'] = 'RECONFIGURING'
         self.state_update()
 
-    def build(self):
-        """Set zone state to Building."""
+    def pending(self, pending_msg='Waiting for Active Instances'):
+        """Set zone state to Building.
+
+        :param pending_msg: ``str``
+        """
+        self.cell['zone_state'] = 'PENDING'
+        self.cell['zone_msg'] = pending_msg
+        self.state_update()
+
+    def build(self, build_msg='Under Construction'):
+        """Set zone state to Building.
+
+        :param build_msg: ``str``
+        """
         self.cell['zone_state'] = 'BUILDING'
+        self.cell['zone_msg'] = build_msg
         self.state_update()
 
     def active(self):

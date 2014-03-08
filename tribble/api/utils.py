@@ -303,14 +303,7 @@ def zone_basic_handler(sid, zid=None):
         zone = db_proc.get_zones_by_id(skm=schematic, zid=zid)
         if not zone:
             return False, 'no zones found', 404
-        elif zone.zone_state == 'BUILDING':
-            build_response = (
-                'Zone Delete can not be performed because Zone "%s" has a'
-                ' Pending Status' % zone.id
-            )
-            return False, build_response, 200
-        else:
-            return True, schematic, zone, user_id
+        return True, schematic, zone, user_id
     else:
         zones = db_proc.get_zones(skm=schematic)
         if not zones:

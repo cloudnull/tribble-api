@@ -100,8 +100,14 @@ def zone_delete(sid=None, zid=None):
         return utils.return_msg(msg=parsed_data[1], status=parsed_data[2])
     else:
         _success, schematic, zone, user_id = parsed_data
-        LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
+        if zone.zone_state == 'BUILDING':
+            build_response = (
+                'Zone Delete can not be performed because Zone "%s" has a'
+                ' Pending Status' % zone.id
+            )
+            return utils.return_msg(msg=build_response, status=200)
 
+        LOG.debug('%s %s %s %s', _success, schematic, zone, user_id)
         try:
             config = db_proc.get_configmanager(skm=schematic)
             instances = db_proc.get_instances(zon=zone)
@@ -261,6 +267,7 @@ def redeploy_zone(sid=None, zid=None):
     Method is accessible with POST /v1/schematics/<sid>/zones
 
     :param sid: ``str`` # schematic ID
+    :param zid: ``str`` # Zone ID
     :return json, status: ``tuple``
     """
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)
@@ -335,6 +342,7 @@ def reset_zone_state(sid=None, zid=None):
     Method is accessible with POST /v1/schematics/<sid>/zones
 
     :param sid: ``str`` # schematic ID
+    :param zid: ``str`` # Zone ID
     :return json, status: ``tuple``
     """
     parsed_data = utils.zone_basic_handler(sid=sid, zid=zid)

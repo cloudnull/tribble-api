@@ -7,7 +7,6 @@
 # details (see GNU General Public License).
 # http://www.gnu.org/licenses/gpl.html
 # =============================================================================
-import errno
 import httplib
 import logging
 import time
@@ -43,7 +42,7 @@ class InstanceDeployment(object):
         self.packet = packet
         self.user_specs = {
             'max_tries': 15,
-            'timeout': 1200
+            'timeout': 3600
         }
         self.zone_status = zone_status.ZoneState(cell=self.packet)
 
@@ -85,6 +84,26 @@ class InstanceDeployment(object):
             job_action=self._vm_constructor, num_jobs=server_instances
         )
 
+    def _build_exception(self, node=None):
+        """Log exception on build failure.
+
+        Cleanup the failed instance if provided.
+
+        :param node: ``object``
+        """
+        tb = traceback.format_exc()
+        msg = '%s ==> %s' % ('Exception while Building Instance', tb)
+        if node is None:
+            _msg = ('Node not deleted because the system did\nnot know what'
+                    ' node to delete')
+            node_none_msg = '%s\n%s' % (_msg, msg)
+            self.check_for_dead_nodes()
+            self.zone_status.error(error_msg=node_none_msg)
+        else:
+            self.driver.destroy_node(node=node)
+            self.zone_status.error(error_msg=msg)
+        LOG.critical(msg)
+
     def _vm_constructor(self):
         """Build a new Instance.
 
@@ -100,16 +119,9 @@ class InstanceDeployment(object):
         LOG.info('Building Node Based on %s' % self.user_specs)
 
         for dep in self.deployment_methods:
-            try:
-                action = getattr(self, '_%s' % dep)
-                node = action(self.user_specs)
-            except base.DeploymentError as exp:
-                LOG.critical('Exception while Building Instance ==> %s' % exp)
-                self.zone_status.error(error_msg=exp)
-                self.check_for_dead_nodes()
-            else:
-                self._node_post(info=node)
-                break
+            action = getattr(self, '_%s' % dep)
+            node = action(self.user_specs)
+            self._node_post(info=node)
 
     def vm_constructor(self):
         """Build VMs."""
@@ -150,7 +162,6 @@ class InstanceDeployment(object):
     def _remove_user_data(self):
         """Return the user data.
 
-        :param use_ssh: ``bol``
         :return: ``object``
         """
         remove_packet = self.packet.copy()
@@ -200,10 +211,14 @@ class InstanceDeployment(object):
         :param user_specs: ``dict``
         :return: ``object``
         """
-        user_specs['deploy'] = self.ssh_deploy()
-        LOG.debug('DEPLOYMENT ARGS: %s' % user_specs)
-        node = self.driver.deploy_node(**user_specs)
-        return self.state_wait(node=node)
+        node = None
+        try:
+            user_specs['deploy'] = self.ssh_deploy()
+            LOG.debug('DEPLOYMENT ARGS: %s' % user_specs)
+            node = self.driver.deploy_node(**user_specs)
+            return self.state_wait(node=node)
+        except Exception:
+            self._build_exception(node)
 
     def _cloud_init(self, user_specs):
         """Deploy an instance via Cloud Init.
@@ -248,10 +263,9 @@ class InstanceDeployment(object):
                 LOG.debug(msg)
                 self.driver.destroy_node(node)
                 remove_node.append(node.instance_id)
-            except tribble.RetryError:
-                LOG.error(traceback.format_exc())
             except Exception:
                 LOG.error(traceback.format_exc())
+                continue
 
         if remove_node:
             self._node_remove(ids=remove_node)
@@ -264,59 +278,58 @@ class InstanceDeployment(object):
         :param node: ``object``
         :return: ``object``
         """
-
-        all_nodes = self._list_instances()
-        instances = [n for n in all_nodes if n.id == node.id]
-        for _retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
-            try:
+        self.zone_status.pending()
+        for retry in utils.retryloop(attempts=90, timeout=1800, delay=20):
+            all_nodes = self._list_instances()
+            instances = [n for n in all_nodes if n.id == node.id]
+            if not instances:
+                raise base.DeploymentError(
+                    'Instance "%s" was not found while waiting.' % node
+                )
+            else:
                 instance = instances[0]
-                if instance.state == types.NodeState.PENDING:
-                    LOG.info('Waiting for active ==> %s' % instances)
-                    _retry()
-                elif instance.state == types.NodeState.TERMINATED:
+                state = instance.state
+                node_id = instance.id
+
+            try:
+                if state == types.NodeState.PENDING:
+                    msg = 'Waiting for active ==> %s' % instances
+                    LOG.info(msg)
+                    self.zone_status.pending(pending_msg=msg)
+                    retry()
+                elif state == types.NodeState.TERMINATED:
                     raise base.DeploymentError(
                         'ID:%s NAME:%s was Never Active and has since been'
-                        ' Terminated' % (node.id, node.name)
+                        ' Terminated' % (instance.id, instance.name)
                     )
-                elif instance.state == types.NodeState.UNKNOWN:
+                elif state == types.NodeState.UNKNOWN:
                     msg = (
                         'State Unknown for the instance will retry to pull'
                         ' information on %s' % instances
                     )
+                    self.zone_status.pending(pending_msg=msg)
                     LOG.info(msg)
-                    _retry()
+                    retry()
                 else:
                     LOG.info('Instance active ==> %s' % instances)
             except tribble.RetryError as exp:
-                self.zone_status.error(error_msg=exp)
-                LOG.critical(exp)
+                msg = ('Error while waiting for instance %s to go active.'
+                       ' => %s' % (exp, node_id))
+                self.zone_status.error(error_msg=msg)
+                LOG.critical(msg)
                 raise base.DeploymentError(
-                    'ID:%s NAME:%s was Never Active' % (node.id, node.name)
+                    'ID:%s was Never Active' % node_id
                 )
+            except base.DeploymentError as exp:
+                msg = ('Deployment error on instance %s Error %s'
+                       % (node_id, exp))
+                self.zone_status.error(error_msg=msg)
+                LOG.critical(msg)
             except httplib.BadStatusLine as exp:
                 self.zone_status.error(error_msg=exp)
-                LOG.critical(exp)
+                LOG.warn(exp)
                 time.sleep(utils.stupid_hack())
-                _retry()
-            except Exception as exp:
-                self.zone_status.error(error_msg=exp)
-                LOG.critical(exp)
-                try:
-                    if exp.errno in [errno.ECONNREFUSED, errno.ECONNRESET]:
-                        time.sleep(utils.stupid_hack())
-                        raise base.DeploymentError('No Available Connection')
-                except tribble.RetryError as exp:
-                    LOG.critical(exp)
-                    self.zone_status.error(error_msg=exp)
-                    raise base.DeploymentError(
-                        'ID:%s NAME:%s was Never Active' % (node.id, node.name)
-                    )
-                except Exception as exp:
-                    self.zone_status.error(error_msg=exp)
-                    LOG.critical(exp)
-                    raise base.DeploymentError(
-                        'ID:%s NAME:%s was Never Active' % (node.id, node.name)
-                    )
+                retry()
             else:
                 return instance
 
@@ -338,7 +351,7 @@ class InstanceDeployment(object):
                 db_proc.delete_item(session=sess, item=instance)
         except Exception as exp:
             self.zone_status.error(error_msg=exp)
-            LOG.info('Critical Issues when Removing Instances %s' % exp)
+            LOG.critical('Issues when Removing Instances %s' % exp)
         else:
             db_proc.commit_session(session=sess)
             self._remove_user_data()
@@ -356,7 +369,7 @@ class InstanceDeployment(object):
             )
         except Exception as exp:
             self.zone_status.error(error_msg=exp)
-            LOG.info('Critical Issues when Posting Instances %s' % exp)
+            LOG.critical('Issues when Posting Instances %s' % exp)
         else:
             db_proc.commit_session(session=sess)
             LOG.info('Instance posted ID:%s NAME:%s' % (info.id, info.name))
